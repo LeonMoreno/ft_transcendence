@@ -4,28 +4,28 @@ Thumbs.db
 
 # Files cabraping.be
 # Dependencias
-cabraping/node_modules
+/cabraping.be/node_modules
 
 # Configuración del IDE/editor
-/cabraping/.vscode
-/cabraping/!.vscode/settings.json
-/cabraping/!.vscode/tasks.json
-/cabraping/!.vscode/launch.json
-/cabraping/!.vscode/extensions.json
-/cabraping/!.vscode/*.code-snippets
+/cabraping.be/.vscode
+/cabraping.be/!.vscode/settings.json
+/cabraping.be/!.vscode/tasks.json
+/cabraping.be/!.vscode/launch.json
+/cabraping.be/!.vscode/extensions.json
+/cabraping.be/!.vscode/*.code-snippets
 
 # Archivos de registro
-/cabraping/npm-debug.log*
-/cabraping/yarn-debug.log*
-/cabraping/yarn-error.log*
+/cabraping.be/npm-debug.log*
+/cabraping.be/yarn-debug.log*
+/cabraping.be/yarn-error.log*
 
 # Directorios de construcción
-/cabraping/dist
-/cabraping/build
+/cabraping.be/dist
+/cabraping.be/build
 
 # Archivos de configuración local
-/cabraping/.env
-/cabraping/.env.local
-/cabraping/.env.development.local
-/cabraping/.env.test.local
-/cabraping/.env.production.local
+/cabraping.be/.env
+/cabraping.be/.env.local
+/cabraping.be/.env.development.local
+/cabraping.be/.env.test.local
+/cabraping.be/.env.production.local
