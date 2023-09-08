@@ -1,39 +1,31 @@
-# compiled output
-/dist
-/node_modules
-
-# Logs
-logs
-*.log
-npm-debug.log*
-pnpm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-lerna-debug.log*
-
-# OS
+# Archivos del sistema
 .DS_Store
+Thumbs.db
 
-# Tests
-/coverage
-/.nyc_output
+# Files cabraping.be
+# Dependencias
+/cabraping.be/node_modules
 
-# IDEs and editors
-/.idea
-.project
-.classpath
-.c9/
-*.launch
-.settings/
-*.sublime-workspace
+# Configuración del IDE/editor
+/cabraping.be/.vscode
+/cabraping.be/!.vscode/settings.json
+/cabraping.be/!.vscode/tasks.json
+/cabraping.be/!.vscode/launch.json
+/cabraping.be/!.vscode/extensions.json
+/cabraping.be/!.vscode/*.code-snippets
 
-# IDE - VSCode
-.vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
+# Archivos de registro
+/cabraping.be/npm-debug.log*
+/cabraping.be/yarn-debug.log*
+/cabraping.be/yarn-error.log*
 
-node_modules
-# Keep environment variables out of version control
-.env
+# Directorios de construcción
+/cabraping.be/dist
+/cabraping.be/build
+
+# Archivos de configuración local
+/cabraping.be/.env
+/cabraping.be/.env.local
+/cabraping.be/.env.development.local
+/cabraping.be/.env.test.local
+/cabraping.be/.env.production.local
