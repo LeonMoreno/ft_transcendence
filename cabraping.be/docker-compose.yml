@@ -1,0 +1,24 @@
+version: '3.9'
+
+services:
+  postgres:
+    container_name: postgres
+    image: postgres:15-alpine3.17
+    ports:
+      - 5432:5432
+    # volumes:
+    #   - db:/var/lib/postgresql/data
+    tty: true
+    environment:
+      POSTGRES_USER: puser
+      POSTGRES_PASSWORD: 123
+      POST_DB: cabraping_db
+    networks:
+      - tr-net
+
+networks:
+  tr-net:
+
+# volumes:
+#   db:
+#     driver: local
