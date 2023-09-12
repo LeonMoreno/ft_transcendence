@@ -1,9 +1,9 @@
-import { Button } from "@/components/ui/button";
+import { ButtonLink } from "@/components/ui/button-link";
 
-export default function HomeRoute() {
+export default function Home() {
   return (
     <div>
-      <Button>42 Login</Button>
+      <ButtonLink to="/dashboard">42 Login</ButtonLink>
     </div>
   );
 }
