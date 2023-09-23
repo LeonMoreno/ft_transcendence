@@ -13,7 +13,7 @@ const PhaserGame = () => {
     let keys;
     let scoreText1;
     let scoreText2;
-    const ballSpeed = 600;
+    const ballSpeed = 500;
     const playerSpeed = 800;
 
     let scorePlayer1 = 0;
@@ -32,8 +32,8 @@ const PhaserGame = () => {
       },
       scene: {
         create: function() {
-          scoreText1 = this.add.text(16, 16, 'Player 1', { fontSize: '32px', fill: '#FFF' });
-          scoreText2 = this.add.text(screenWidth - 150, 16, 'Player 2', { fontSize: '32px', fill: '#FFF' });
+          scoreText1 = this.add.text(16, 16, 'Player 1: ⬆W ⬇S', { fontSize: '1.1vw', fill: '#FFF' });
+          scoreText2 = this.add.text(screenWidth - ((screenWidth / 100) * 13), 16, 'Player 2: ⬆⬆️ ⬇⬇️', { fontSize: '1.1vw', fill: '#FFF' });
 
           // Paleta jugador 1
           player1 = this.add.rectangle(50, screenHeight / 2, 10, 100, 0xffffff).setOrigin(0.5);
