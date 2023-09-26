@@ -1,5 +1,5 @@
 // import { ButtonLink } from "@/components/ui/button-link";
-import PhaserGame from './game.games.phaser.jsx';
+import PhaserGame from './game.games.phaser';
 
 export default function Game() {
   return (

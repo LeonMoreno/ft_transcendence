@@ -3,8 +3,8 @@ import Phaser from 'phaser';
 
 const PhaserGame = () => {
   useEffect(() => {
-    const screenWidth = window.innerWidth;
-    const screenHeight = window.innerHeight;
+    const screenWidth = window.innerWidth / 2;
+    const screenHeight = window.innerHeight / 2;
 
     let player1;
     let player2;
