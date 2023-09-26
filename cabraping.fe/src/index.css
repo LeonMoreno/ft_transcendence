@@ -77,5 +77,6 @@
 
 canvas{
   position: absolute;
-  top: 0;
+  top: 25vh;
+  left: 25vw;
 }

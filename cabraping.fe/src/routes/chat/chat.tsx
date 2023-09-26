@@ -16,6 +16,12 @@ const Chat = () => {
 
   const [usuarioSeleccionado, setUsuarioSeleccionado] = useState< User | null >(null);
 
+  const [myName, setMyName] = useState('');  // Nuevo estado para el nombre del usuario
+
+  const handleSetMyName = (name: string) => {
+    setMyName(name);
+    alert(`Tu nombre ahora es ${name} 😂`);
+  };
 
   const handleSendMessage = (messageText: string) => {
     if (!usuarioSeleccionado) return;
@@ -57,10 +63,23 @@ const Chat = () => {
     setUsuarioSeleccionado(user);
   };
 
+  const handleAddNewUser = (userName: string) => {
+    const newUser = { name: userName, messages: [] };
+    setUsers(prevUsers => [...prevUsers, newUser]);
+  };
+
   return (
     <div className="flex h-screen bg-gray-200">
       <div className="w-1/4 bg-white border-r">
-        <Chanel users={users} onUserSelect={selectUser} />
+        {/* <Chanel users={users} onUserSelect={selectUser} usuarioSeleccionado={usuarioSeleccionado} /> */}
+        <Chanel
+          users={users}
+          onUserSelect={selectUser}
+          usuarioSeleccionado={usuarioSeleccionado}
+          onAddNewUser={handleAddNewUser}
+          myName={myName}
+          onSetMyName={handleSetMyName}
+        />
       </div>
       <div className="w-1/2 p-4">
           <MessagesContainer
