@@ -4,15 +4,22 @@ import "./index.css";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import HomeRoute from "./routes/home";
 import DashboardRoute from "./routes/dashboard";
+import RootRoute from "./routes/root";
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <HomeRoute />,
-  },
-  {
-    path: "/dashboard",
-    element: <DashboardRoute />,
+    element: <RootRoute />,
+    children: [
+      {
+        path: "/",
+        element: <HomeRoute />,
+      },
+      {
+        path: "/dashboard",
+        element: <DashboardRoute />,
+      },
+    ],
   },
 ]);
 
