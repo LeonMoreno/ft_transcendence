@@ -74,3 +74,9 @@
     @apply bg-background text-foreground;
   }
 }
+
+canvas{
+  position: absolute;
+  top: 25vh;
+  left: 25vw;
+}
