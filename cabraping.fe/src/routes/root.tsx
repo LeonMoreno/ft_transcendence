@@ -2,6 +2,7 @@ import { ButtonLink } from "@/components/ui/button-link";
 import { Link, Outlet } from "react-router-dom";
 
 const navItems = [
+  { to: "/", text: "Home" },
   { to: "/users", text: "Users" },
   { to: "/chat", text: "Chat" },
   { to: "/game", text: "Game" },
@@ -20,7 +21,9 @@ export default function RootRoute() {
               );
             })}
           </ul>
-          <img src="/logo.svg" alt="logo" />
+          <Link to="/">
+            <img src="/logo.svg" alt="logo" />
+          </Link>
           <div className="w-72 flex justify-end">
             <ButtonLink to="/dashboard" size="xs">
               42 Login
