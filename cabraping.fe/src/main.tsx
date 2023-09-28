@@ -6,7 +6,7 @@ import HomeRoute from "./routes/home";
 import DashboardRoute from "./routes/dashboard";
 import RootRoute from "./routes/root";
 import ChatRoute from "./routes/chat/chat";
-import GameRoute from "./routes/game/gaame.games";
+import GameRoute from "./routes/game/games";
 
 const router = createBrowserRouter([
   {

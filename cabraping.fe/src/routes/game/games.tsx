@@ -1,9 +1,9 @@
 // import { ButtonLink } from "@/components/ui/button-link";
-import PhaserGame from './game.games.phaser';
+import PhaserGame from "../../components/game/phaser";
 
 export default function Game() {
   return (
-    <main className="w-full h-screen flex justify-center items-center" >
+    <main className="w-full h-screen flex justify-center items-center">
       {/* <p>Game</p> */}
       <PhaserGame />
     </main>
