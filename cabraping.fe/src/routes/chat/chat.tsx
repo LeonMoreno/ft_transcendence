@@ -1,11 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Chanel from "./chat.channels";
 import MessagesContainer from "./chat.messagescontainer";
 import Players from "./chat.chat.players";
 import { User } from '../../lib/types';
 
+import useWebSocket from 'react-use-websocket';
+
 
 const Chat = () => {
+
+
+  const { sendJsonMessage, lastMessage, readyState } = useWebSocket('ws://localhost:8080/');
+
   const [users, setUsers] = useState<User[]>([
     { name: "General", messages: [] },
     { name: "Juan", messages: [] },
@@ -41,6 +47,10 @@ const Chat = () => {
     // Here is the key change: we are updating the selecteduser reference
     const updatedSelectedUser = updatedUsers.find(user => user.name === usuarioSeleccionado.name);
     setUsuarioSeleccionado(updatedSelectedUser);
+
+
+    // Envía el mensaje al servidor WebSocket
+    sendJsonMessage({ name: myName, text: messageText });
   };
 
   const handleInvite = (user: User) => {
