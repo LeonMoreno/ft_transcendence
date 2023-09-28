@@ -1,5 +1,8 @@
-import React, { useEffect } from 'react';
-import Phaser from 'phaser';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck
+
+import React, { useEffect } from "react";
+import Phaser from "phaser";
 
 const PhaserGame = () => {
   useEffect(() => {
@@ -23,36 +26,53 @@ const PhaserGame = () => {
       type: Phaser.AUTO,
       width: screenWidth,
       height: screenHeight,
-      backgroundColor: '#333',
+      backgroundColor: "#333",
       physics: {
-        default: 'arcade',
+        default: "arcade",
         arcade: {
-          gravity: { y: 0 }
-        }
+          gravity: { y: 0 },
+        },
       },
       scene: {
-        create: function() {
-          scoreText1 = this.add.text(16, 16, 'Player 1: ⬆W ⬇S', { fontSize: '1.1vw', fill: '#FFF' });
-          scoreText2 = this.add.text(screenWidth - ((screenWidth / 100) * 13), 16, 'Player 2: ⬆⬆️ ⬇⬇️', { fontSize: '1.1vw', fill: '#FFF' });
+        create: function () {
+          scoreText1 = this.add.text(16, 16, "Player 1: ⬆W ⬇S", {
+            fontSize: "1.1vw",
+            fill: "#FFF",
+          });
+          scoreText2 = this.add.text(
+            screenWidth - (screenWidth / 100) * 13,
+            16,
+            "Player 2: ⬆⬆️ ⬇⬇️",
+            { fontSize: "1.1vw", fill: "#FFF" }
+          );
 
           // Paleta jugador 1
-          player1 = this.add.rectangle(50, screenHeight / 2, 10, 100, 0xffffff).setOrigin(0.5);
+          player1 = this.add
+            .rectangle(50, screenHeight / 2, 10, 100, 0xffffff)
+            .setOrigin(0.5);
           this.physics.world.enable(player1);
           player1.body.setCollideWorldBounds(true);
           player1.body.setImmovable(true);
 
           // Paleta jugador 2
-          player2 = this.add.rectangle(screenWidth - 50, screenHeight / 2, 10, 100, 0xffffff).setOrigin(0.5);
+          player2 = this.add
+            .rectangle(screenWidth - 50, screenHeight / 2, 10, 100, 0xffffff)
+            .setOrigin(0.5);
           this.physics.world.enable(player2);
           player2.body.setCollideWorldBounds(true);
           player2.body.setImmovable(true);
 
           // Bola
-          ball = this.add.circle(screenWidth / 2, screenHeight / 2, 10, 0xffffff).setOrigin(0.5);
+          ball = this.add
+            .circle(screenWidth / 2, screenHeight / 2, 10, 0xffffff)
+            .setOrigin(0.5);
           this.physics.world.enable(ball);
           ball.body.setCollideWorldBounds(true);
           ball.body.setBounce(1, 1);
-          ball.body.setVelocity(Phaser.Math.Between(-ballSpeed, ballSpeed), Phaser.Math.Between(-ballSpeed, ballSpeed));
+          ball.body.setVelocity(
+            Phaser.Math.Between(-ballSpeed, ballSpeed),
+            Phaser.Math.Between(-ballSpeed, ballSpeed)
+          );
 
           // Colisiones
           this.physics.add.collider(ball, player1, hitPlayer1, null, this);
@@ -60,9 +80,9 @@ const PhaserGame = () => {
 
           // Teclas
           cursors = this.input.keyboard.createCursorKeys();
-          keys = this.input.keyboard.addKeys('W,S');
+          keys = this.input.keyboard.addKeys("W,S");
         },
-        update: function() {
+        update: function () {
           // Mover jugador 1
           if (keys.W.isDown) {
             player1.body.setVelocityY(-playerSpeed);
@@ -91,14 +111,17 @@ const PhaserGame = () => {
             scoreText1.setText(scorePlayer1);
             resetBall();
           }
-        }
-      }
+        },
+      },
     };
 
     // Esta función controla la velocidad de la pelota para que siempre sea constante
     function setBallVelocity(ball) {
       const angle = Math.atan2(ball.body.velocity.y, ball.body.velocity.x);
-      ball.body.setVelocity(Math.cos(angle) * ballSpeed, Math.sin(angle) * ballSpeed);
+      ball.body.setVelocity(
+        Math.cos(angle) * ballSpeed,
+        Math.sin(angle) * ballSpeed
+      );
     }
 
     // Esta función se llama cuando la pelota toca una de las paredes laterales
@@ -106,59 +129,63 @@ const PhaserGame = () => {
       // ball.body.setPosition(screenWidth / 2, screenHeight / 2);
       ball.setPosition(screenWidth / 2, screenHeight / 2);
 
-      ball.body.setVelocity(Phaser.Math.Between(-ballSpeed, ballSpeed), Phaser.Math.Between(-ballSpeed, ballSpeed));
+      ball.body.setVelocity(
+        Phaser.Math.Between(-ballSpeed, ballSpeed),
+        Phaser.Math.Between(-ballSpeed, ballSpeed)
+      );
       setBallVelocity(ball);
     }
 
     function hitPlayer1(ball, player) {
-
       let diff = 0;
 
       if (ball.y < player.y) {
         // Si la bola está en la parte superior del jugador
         diff = player.y - ball.y;
         ball.body.setVelocityY(10 * diff);
-    } else if (ball.y > player.y) {
+      } else if (ball.y > player.y) {
         // Si la bola está en la parte inferior del jugador
         diff = ball.y - player.y;
         ball.body.setVelocityY(-10 * diff);
-    } else {
+      } else {
         // La bola golpea el centro del jugador
         ball.body.setVelocityY(0);
-    }
+      }
 
       if (ball.x < screenWidth / 2) {
-          ball.x -= 5;
+        ball.x -= 5;
       } else {
-          ball.x += 5;
+        ball.x += 5;
       }
 
       ball.body.setVelocityX(ball.body.velocity.x * -1.5);
       const angle = Math.atan2(ball.body.velocity.y, ball.body.velocity.x);
-      ball.body.setVelocity(Math.cos(angle) * -ballSpeed, Math.sin(angle) * -ballSpeed);
+      ball.body.setVelocity(
+        Math.cos(angle) * -ballSpeed,
+        Math.sin(angle) * -ballSpeed
+      );
     }
 
     function hitPlayer2(ball, player) {
-
       let diff = 0;
 
       if (ball.y < player.y) {
         // Si la bola está en la parte superior del jugador
         diff = player.y - ball.y;
         ball.body.setVelocityY(-10 * diff);
-    } else if (ball.y > player.y) {
+      } else if (ball.y > player.y) {
         // Si la bola está en la parte inferior del jugador
         diff = ball.y - player.y;
         ball.body.setVelocityY(10 * diff);
-    } else {
+      } else {
         // La bola golpea el centro del jugador
         ball.body.setVelocityY(0);
-    }
+      }
 
       if (ball.x < screenWidth / 2) {
-          ball.x += 5;
+        ball.x += 5;
       } else {
-          ball.x -= 5;
+        ball.x -= 5;
       }
 
       ball.body.setVelocityX(ball.body.velocity.x * 1.5);

@@ -4,25 +4,32 @@ import "./index.css";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import HomeRoute from "./routes/home";
 import DashboardRoute from "./routes/dashboard";
-import Chat from "./routes/chat/chat";
-import Game from "./routes/game/gaame.games";
+import RootRoute from "./routes/root";
+import ChatRoute from "./routes/chat/chat";
+import GameRoute from "./routes/game/games";
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <HomeRoute />,
-  },
-  {
-    path: "/game",
-    element: <Game />,
-  },
-  {
-    path: "/chat",
-    element: <Chat />,
-  },
-  {
-    path: "/dashboard",
-    element: <DashboardRoute />,
+    element: <RootRoute />,
+    children: [
+      {
+        path: "/",
+        element: <HomeRoute />,
+      },
+      {
+        path: "/dashboard",
+        element: <DashboardRoute />,
+      },
+      {
+        path: "/game",
+        element: <GameRoute />,
+      },
+      {
+        path: "/chat",
+        element: <ChatRoute />,
+      },
+    ],
   },
 ]);
 
