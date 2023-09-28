@@ -5,6 +5,8 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import HomeRoute from "./routes/home";
 import DashboardRoute from "./routes/dashboard";
 import RootRoute from "./routes/root";
+import ChatRoute from "./routes/chat/chat";
+import GameRoute from "./routes/game/gaame.games";
 
 const router = createBrowserRouter([
   {
@@ -18,6 +20,14 @@ const router = createBrowserRouter([
       {
         path: "/dashboard",
         element: <DashboardRoute />,
+      },
+      {
+        path: "/game",
+        element: <GameRoute />,
+      },
+      {
+        path: "/chat",
+        element: <ChatRoute />,
       },
     ],
   },
