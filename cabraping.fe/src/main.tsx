@@ -7,6 +7,7 @@ import DashboardRoute from "./routes/dashboard";
 import RootRoute from "./routes/root";
 import ChatRoute from "./routes/chat/chat";
 import GameRoute from "./routes/game/games";
+import LoginRoute, { action as loginAction } from "./routes/auth/login";
 
 const router = createBrowserRouter([
   {
@@ -16,6 +17,11 @@ const router = createBrowserRouter([
       {
         path: "/",
         element: <HomeRoute />,
+      },
+      {
+        path: "/login",
+        element: <LoginRoute />,
+        action: loginAction,
       },
       {
         path: "/dashboard",
