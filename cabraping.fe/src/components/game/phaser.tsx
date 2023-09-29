@@ -9,13 +9,13 @@ const PhaserGame = () => {
     const screenWidth = window.innerWidth / 2;
     const screenHeight = window.innerHeight / 2;
 
-    let player1;
-    let player2;
-    let ball;
-    let cursors;
-    let keys;
-    let scoreText1;
-    let scoreText2;
+    let player1: Phaser.Physics.Arcade.Image;
+    let player2: Phaser.Physics.Arcade.Image;
+    let ball: Phaser.Physics.Arcade.Image;
+    let cursors: Phaser.Types.Input.Keyboard.CursorKeys;
+    let keys: { W: Phaser.Input.Keyboard.Key, S: Phaser.Input.Keyboard.Key };
+    let scoreText1: Phaser.GameObjects.Text;
+    let scoreText2: Phaser.GameObjects.Text;
     const ballSpeed = 500;
     const playerSpeed = 800;
 
@@ -116,7 +116,7 @@ const PhaserGame = () => {
     };
 
     // Esta función controla la velocidad de la pelota para que siempre sea constante
-    function setBallVelocity(ball) {
+    function setBallVelocity(ball: Phaser.Physics.Arcade.Image) {
       const angle = Math.atan2(ball.body.velocity.y, ball.body.velocity.x);
       ball.body.setVelocity(
         Math.cos(angle) * ballSpeed,
@@ -136,7 +136,7 @@ const PhaserGame = () => {
       setBallVelocity(ball);
     }
 
-    function hitPlayer1(ball, player) {
+    function hitPlayer1(ball: Phaser.Physics.Arcade.Image, player: Phaser.Physics.Arcade.Image) {
       let diff = 0;
 
       if (ball.y < player.y) {
@@ -166,7 +166,7 @@ const PhaserGame = () => {
       );
     }
 
-    function hitPlayer2(ball, player) {
+    function hitPlayer2(ball: Phaser.Physics.Arcade.Image, player: Phaser.Physics.Arcade.Image) {
       let diff = 0;
 
       if (ball.y < player.y) {

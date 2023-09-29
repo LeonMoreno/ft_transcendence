@@ -2,6 +2,8 @@
 .DS_Store
 Thumbs.db
 
+/node_modules/
+
 # Files cabraping.be
 # Dependencias
 /cabraping.be/node_modules

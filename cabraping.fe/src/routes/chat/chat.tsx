@@ -9,24 +9,45 @@ import useWebSocket from 'react-use-websocket';
 
 const Chat = () => {
 
-
+  const [usuarioSeleccionado, setUsuarioSeleccionado] = useState< User | null >(null);
   const { sendJsonMessage, lastMessage, readyState } = useWebSocket('ws://localhost:8080/');
+  const [myName, setMyName] = useState<string>('');
 
   const [users, setUsers] = useState<User[]>([
-    { name: "General", messages: [] },
-    { name: "Juan", messages: [] },
-    { name: "Ana", messages: [] },
-    { name: "Carlos", messages: [] },
-    { name: "Luisa", messages: [] }
+    { Chanel:  'General', name: "General", messages: [] },
+    { Chanel: 'no', name: "Juan", messages: [] },
+    { Chanel: 'no', name: "Ana", messages: [] },
+    { Chanel: 'no', name: "Carlos", messages: [] },
+    { Chanel: 'no', name: "Luisa", messages: [] }
   ]);
 
-  const [usuarioSeleccionado, setUsuarioSeleccionado] = useState< User | null >(null);
+  useEffect(() => {
 
-  const [myName, setMyName] = useState('');  // Nuevo estado para el nombre del usuario
+    if (lastMessage && typeof lastMessage.data === 'string' && lastMessage.data[0] == '{') {
+      const receivedData = JSON.parse(lastMessage.data);
+
+
+      const updatedUsers = users.map(user => {
+        if (user.name === "General") {
+          return {
+            ...user,
+            messages: [...user.messages, { text: receivedData.text, isMine: false }]
+          };
+        }
+        return user;
+      });
+
+      setUsers(updatedUsers);
+
+      const updatedSelectedUser = updatedUsers.find(user => user.name === usuarioSeleccionado.name);
+      setUsuarioSeleccionado(updatedSelectedUser);
+
+    }
+  }, [lastMessage]);
+
 
   const handleSetMyName = (name: string) => {
     setMyName(name);
-    alert(`Tu nombre ahora es ${name} 😂`);
   };
 
   const handleSendMessage = (messageText: string) => {
@@ -50,7 +71,12 @@ const Chat = () => {
 
 
     // Envía el mensaje al servidor WebSocket
-    sendJsonMessage({ name: myName, text: messageText });
+    // sendJsonMessage({ name: myName, text: messageText });
+    sendJsonMessage({
+      channel: usuarioSeleccionado.name,
+      name: myName,
+      text: messageText,
+    });
   };
 
   const handleInvite = (user: User) => {
@@ -81,7 +107,6 @@ const Chat = () => {
   return (
     <div className="flex h-screen bg-gray-200">
       <div className="w-1/4 bg-white border-r">
-        {/* <Chanel users={users} onUserSelect={selectUser} usuarioSeleccionado={usuarioSeleccionado} /> */}
         <Chanel
           users={users}
           onUserSelect={selectUser}
