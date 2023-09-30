@@ -1,21 +1,24 @@
-import { Controller, Get, Post, Req } from '@nestjs/common';
+import { Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 import { Request } from 'express';
 import { AuthService } from './auth.service';
+import { FortyTwoGuard } from './guards/42-auth.guard';
 
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
 
-  // POST /auth/signup
-  @Post('signup')
-  signup(@Req() req: Request) {
-    console.log(req.header);
-    return this.authService.signup();
+  // GET /42/login
+  @Get('42/login')
+  @UseGuards(FortyTwoGuard)
+  handle42Login() {
+    return this.authService.handle42Login();
   }
 
-  // POST /auth/signin
-  @Get('signin')
-  signin() {
-    return this.authService.signin();
+  // GET /42/redirect
+  @Get('42/redirect')
+  @UseGuards(FortyTwoGuard)
+  handle42Callback() {
+    // return { msg: 'Google Auth: Redirect' };
+    return this.authService.handle42Callback();
   }
 }
