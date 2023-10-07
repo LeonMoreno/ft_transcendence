@@ -19,12 +19,17 @@ model User {
   firstName      String?
   lastName       String?
   avatarImageURL String?
+  status         String? // online (finished), offline, playing, searching (looking)
 
   channelsAsOwner  Channel[] // 1-to-many
   channelsAsMember UserChannel[] // many-to-many
+  directChats      UserDirectChat[]
+  messages         Message[]
 
-  directChatsAsA DirectChat[] @relation("user_a")
-  directChatsAsB DirectChat[] @relation("user_b")
+  games          PlayerGame[]
+  gamesAsInviter GameInvitation[] @relation("game_inviter")
+  gamesAsInvitee GameInvitation[] @relation("game_invitee")
+  gamesAsWinner  Game[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -59,13 +64,8 @@ model UserChannel {
 
 // Explicit Many-to-Many Relationship Table
 model DirectChat {
-  id String @id @default(cuid())
-
-  userA   User   @relation("user_a", fields: [userAId], references: [id])
-  userAId String
-
-  userB   User   @relation("user_b", fields: [userBId], references: [id])
-  userBId String
+  id    String           @id @default(cuid())
+  users UserDirectChat[]
 
   messages Message[]
 
@@ -73,16 +73,65 @@ model DirectChat {
   updatedAt DateTime @updatedAt
 }
 
+model UserDirectChat {
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
+
+  directChat   DirectChat @relation(fields: [directChatId], references: [id])
+  directChatId String
+
+  @@id([userId, directChatId])
+}
+
 model Message {
   id String @id @default(cuid())
 
-  text String
+  text   String
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
 
   channel   Channel? @relation(fields: [channelId], references: [id])
   channelId String?
 
   directChat   DirectChat? @relation(fields: [directChatId], references: [id])
   directChatId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Game {
+  id String @id @default(cuid())
+
+  players    PlayerGame[]
+  winner     User            @relation(fields: [winnerId], references: [id])
+  winnerId   String
+  invitation GameInvitation?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model PlayerGame {
+  player   User   @relation(fields: [playerId], references: [id])
+  playerId String
+
+  game   Game   @relation(fields: [gameId], references: [id])
+  gameId String
+
+  @@id([playerId, gameId])
+}
+
+model GameInvitation {
+  id String @id @default(cuid())
+
+  game      Game   @relation(fields: [gameId], references: [id])
+  gameId    String @unique
+  inviter   User   @relation("game_inviter", fields: [inviterId], references: [id])
+  inviterId String
+  invitee   User   @relation("game_invitee", fields: [inviteeId], references: [id])
+  inviteeId String
+  status    String // pending, accepted, rejected
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
