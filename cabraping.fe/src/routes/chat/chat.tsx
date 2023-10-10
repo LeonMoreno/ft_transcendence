@@ -11,14 +11,14 @@ const Chat = () => {
 
   const [usuarioSeleccionado, setUsuarioSeleccionado] = useState< User | null >(null);
   const { sendJsonMessage, lastMessage, readyState } = useWebSocket('ws://localhost:8080/');
-  const [myName, setMyName] = useState<string>('');
+  const [myName, setMyName] = useState<string>('default');
 
   const [users, setUsers] = useState<User[]>([
-    { Chanel:  'General', name: "General", messages: [] },
-    { Chanel: 'no', name: "Juan", messages: [] },
-    { Chanel: 'no', name: "Ana", messages: [] },
-    { Chanel: 'no', name: "Carlos", messages: [] },
-    { Chanel: 'no', name: "Luisa", messages: [] }
+    { chanel:  'General', name: "General", messages: [] },
+    { chanel: 'no', name: "Juan", messages: [] },
+    { chanel: 'no', name: "Ana", messages: [] },
+    { chanel: 'no', name: "Carlos", messages: [] },
+    { chanel: 'no', name: "Luisa", messages: [] }
   ]);
 
   useEffect(() => {
@@ -118,7 +118,10 @@ const Chat = () => {
       </div>
       <div className="w-1/2 p-4">
           <MessagesContainer
+            // messages={usuarioSeleccionado ? usuarioSeleccionado.messages : []}
             messages={usuarioSeleccionado ? usuarioSeleccionado.messages : []}
+            user={usuarioSeleccionado ? usuarioSeleccionado: null}
+            myName={myName}
             onSendMessage={handleSendMessage}
           />
 

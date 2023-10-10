@@ -40,7 +40,7 @@ const Chanel: React.FC<ChanelProps> = ({ users, onUserSelect, usuarioSeleccionad
         />
         <button onClick={handleSetName} className="bg-blue-500 text-white px-4 py-2 rounded-r">Establecer</button>
       </div>
-      <div className="mb-4">
+      {/* <div className="mb-4">
         <input 
           type="text" 
           value={newUserName} 
@@ -49,7 +49,7 @@ const Chanel: React.FC<ChanelProps> = ({ users, onUserSelect, usuarioSeleccionad
           className="border p-2 rounded-l"
         />
         <button onClick={handleAddUser} className="bg-blue-500 text-white px-4 py-2 rounded-r">Agregar</button>
-      </div>
+      </div> */}
       <ul>
         {users.map((user, index) => (
           <li 

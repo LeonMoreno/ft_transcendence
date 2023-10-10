@@ -4,6 +4,8 @@ export type Message = {
 };
 
 export type User = {
+  chanel: string;
+  send: string;
   name: string;
   messages: Message[];
 };

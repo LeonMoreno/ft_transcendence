@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
-import { Message } from '../../lib/types';
+import { Message, User } from '../../lib/types';
 
 type MessagesContainerProps = {
   messages: Message[];
   onSendMessage: (messageText: string) => void;
+  user: User;
+  myName: String;
 };
 
-const MessagesContainer: React.FC<MessagesContainerProps> = ({ messages, onSendMessage }) => {
+const MessagesContainer: React.FC<MessagesContainerProps> = ({ messages, onSendMessage, user, myName }) => {
 
   const [newMessage, setNewMessage] = useState('');
 
@@ -22,7 +24,9 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({ messages, onSendM
       <div className="flex-grow overflow-y-auto mb-4">
         {messages.map((message, index) => (
           <div key={index} className={`p-2 rounded ${message.isMine ? 'bg-blue-500 text-white self-end' : 'bg-gray-300 text-gray-700'} mb-2`}>
-            {message.text}
+            {/* {user.name}: {message.text} */}
+            {/* {(myName)? (`${myName}: ${message.text}`): message.text } */}
+            {(message.isMine)? (`${myName}: ${message.text}`): (`${message.name}: ${message.text}`) }
           </div>
         ))}
       </div>
