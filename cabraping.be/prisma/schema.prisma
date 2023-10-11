@@ -56,15 +56,15 @@ model Channel {
 model Game {
   id String @id @default(cuid())
 
-  players  User[] @relation("game_user")
-  winner   User   @relation("game_winner", fields: [winnerId], references: [id])
-  winnerId String
+  players  User[]  @relation("game_user")
+  winner   User?   @relation("game_winner", fields: [winnerId], references: [id])
+  winnerId String?
 
-  inviter          User   @relation("game_inviter", fields: [inviterId], references: [id])
+  inviter          User    @relation("game_inviter", fields: [inviterId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   inviterId        String
-  invitee          User   @relation("game_invitee", fields: [inviteeId], references: [id])
-  inviteeId        String
-  invitationStatus String // pending, accepted, rejected
+  invitee          User?   @relation("game_invitee", fields: [inviteeId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  inviteeId        String?
+  invitationStatus String  @default("pending") // pending, accepted, rejected
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
