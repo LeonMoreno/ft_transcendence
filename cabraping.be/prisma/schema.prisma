@@ -11,14 +11,82 @@ datasource db {
 }
 
 model User {
-  id Int @id @default(autoincrement())
+  id   String  @id @default(cuid())
+  ftId String? @unique
+
+  email          String  @unique
+  username       String  @unique
+  nickname       String
+  firstName      String?
+  lastName       String?
+  avatarImageURL String?
+  status         String? // online (finished), offline, playing, searching (looking)
+
+  channelsAsOwner  Channel[] @relation("channel_owner") // 1-to-many
+  channelsAsMember Channel[] @relation("channel_member") // many-to-many
+  channelsAsAdmin  Channel[] @relation("channel_admin") // many-to-many
+
+  games          PlayerGame[]
+  gamesAsInviter GameInvitation[] @relation("game_inviter")
+  gamesAsInvitee GameInvitation[] @relation("game_invitee")
+  gamesAsWinner  Game[]
+
   createdAt DateTime @default(now())
-  updateAt DateTime @updatedAt
+  updatedAt DateTime @updatedAt
+  channelId String?
+}
 
-  email String
-  hash String
+model Channel {
+  id String @id @default(cuid())
 
-  firstName String?
-  lasttName String?
-  nicktName String?
+  owner   User   @relation("channel_owner", fields: [ownerId], references: [id])
+  ownerId String
+
+  status String // Public or Private
+  hash   String? // hash
+
+  admins  User[] @relation("channel_admin")
+  members User[] @relation("channel_member")
+
+  // public or private
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Game {
+  id String @id @default(cuid())
+
+  players    PlayerGame[]
+  winner     User            @relation(fields: [winnerId], references: [id])
+  winnerId   String
+  invitation GameInvitation?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model PlayerGame {
+  player   User   @relation(fields: [playerId], references: [id])
+  playerId String
+
+  game   Game   @relation(fields: [gameId], references: [id])
+  gameId String
+
+  @@id([playerId, gameId])
+}
+
+model GameInvitation {
+  id String @id @default(cuid())
+
+  game      Game   @relation(fields: [gameId], references: [id])
+  gameId    String @unique
+  inviter   User   @relation("game_inviter", fields: [inviterId], references: [id])
+  inviterId String
+  invitee   User   @relation("game_invitee", fields: [inviteeId], references: [id])
+  inviteeId String
+  status    String // pending, accepted, rejected
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
