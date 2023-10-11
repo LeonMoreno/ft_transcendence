@@ -22,9 +22,9 @@ model User {
   avatarImageURL String?
   status         String? // online (finished), offline, playing, searching (looking)
 
-  channelsAsOwner  Channel[] @relation("channel_owner") // 1-to-many
-  channelsAsMember Channel[] @relation("channel_member") // many-to-many
-  channelsAsAdmin  Channel[] @relation("channel_admin") // many-to-many
+  channelsAsOwner  Channel[] @relation("channel_owner")
+  channelsAsMember Channel[] @relation("channel_member")
+  channelsAsAdmin  Channel[] @relation("channel_admin")
 
   games          Game[] @relation("game_user")
   gamesAsInviter Game[] @relation("game_inviter")
@@ -33,7 +33,6 @@ model User {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  channelId String?
 }
 
 model Channel {
