@@ -1,16 +1,17 @@
 import { PrismaClient } from '@prisma/client';
 
+import { dataUsers } from './data';
+
 const prisma = new PrismaClient();
 
 async function main() {
-  const createdUser = await prisma.user.create({
-    data: {
-      email: 'jnicolas@student.42quebec.com',
-      nickname: 'Jonathan',
-      username: 'jnicolas',
-    },
+  await prisma.user.deleteMany();
+  console.info(`🔴 Deleted all users`);
+
+  const createdUsers = await prisma.user.createMany({
+    data: dataUsers,
   });
-  console.log(createdUser);
+  console.info(`🟢 Created ${createdUsers.count} users`);
 }
 
 main()
