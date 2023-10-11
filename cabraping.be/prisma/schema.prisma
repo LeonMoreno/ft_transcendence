@@ -26,10 +26,10 @@ model User {
   channelsAsMember Channel[] @relation("channel_member") // many-to-many
   channelsAsAdmin  Channel[] @relation("channel_admin") // many-to-many
 
-  games          PlayerGame[]
-  gamesAsInviter GameInvitation[] @relation("game_inviter")
-  gamesAsInvitee GameInvitation[] @relation("game_invitee")
-  gamesAsWinner  Game[]
+  games          Game[] @relation("game_user")
+  gamesAsInviter Game[] @relation("game_inviter")
+  gamesAsInvitee Game[] @relation("game_invitee")
+  gamesAsWinner  Game[] @relation("game_winner")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -57,35 +57,15 @@ model Channel {
 model Game {
   id String @id @default(cuid())
 
-  players    PlayerGame[]
-  winner     User            @relation(fields: [winnerId], references: [id])
-  winnerId   String
-  invitation GameInvitation?
+  players  User[] @relation("game_user")
+  winner   User   @relation("game_winner", fields: [winnerId], references: [id])
+  winnerId String
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model PlayerGame {
-  player   User   @relation(fields: [playerId], references: [id])
-  playerId String
-
-  game   Game   @relation(fields: [gameId], references: [id])
-  gameId String
-
-  @@id([playerId, gameId])
-}
-
-model GameInvitation {
-  id String @id @default(cuid())
-
-  game      Game   @relation(fields: [gameId], references: [id])
-  gameId    String @unique
-  inviter   User   @relation("game_inviter", fields: [inviterId], references: [id])
-  inviterId String
-  invitee   User   @relation("game_invitee", fields: [inviteeId], references: [id])
-  inviteeId String
-  status    String // pending, accepted, rejected
+  inviter          User   @relation("game_inviter", fields: [inviterId], references: [id])
+  inviterId        String
+  invitee          User   @relation("game_invitee", fields: [inviteeId], references: [id])
+  inviteeId        String
+  invitationStatus String // pending, accepted, rejected
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
