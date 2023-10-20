@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { Message, User } from '../../lib/types';
+import { Message, Channel } from '../../lib/types';
 
 type MessagesContainerProps = {
   messages: Message[];
   onSendMessage: (messageText: string) => void;
-  user: User;
-  myName: String;
+  user: Channel;
+  myName: string;
 };
 
 const MessagesContainer: React.FC<MessagesContainerProps> = ({ messages, onSendMessage, user, myName }) => {
@@ -14,7 +14,7 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({ messages, onSendM
 
   const handleSendMessage = () => {
     if (newMessage.trim()) {
-      onSendMessage(newMessage);
+      onSendMessage(newMessage, myName);
       setNewMessage('');
     }
   };
