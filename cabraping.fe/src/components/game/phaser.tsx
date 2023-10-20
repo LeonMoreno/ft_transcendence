@@ -40,13 +40,13 @@ const PhaserGame = () => {
             fill: "#FFF",
           });
           scoreText2 = this.add.text(
-            screenWidth - (screenWidth / 100) * 13,
+            (screenWidth / 4 ) * 3,
             16,
             "Player 2: ⬆⬆️ ⬇⬇️",
             { fontSize: "1.1vw", fill: "#FFF" }
           );
 
-          // Paleta jugador 1
+          // Player 1 paddle
           player1 = this.add
             .rectangle(50, screenHeight / 2, 10, 100, 0xffffff)
             .setOrigin(0.5);
@@ -54,7 +54,7 @@ const PhaserGame = () => {
           player1.body.setCollideWorldBounds(true);
           player1.body.setImmovable(true);
 
-          // Paleta jugador 2
+          // Player 2 paddle
           player2 = this.add
             .rectangle(screenWidth - 50, screenHeight / 2, 10, 100, 0xffffff)
             .setOrigin(0.5);
@@ -62,7 +62,7 @@ const PhaserGame = () => {
           player2.body.setCollideWorldBounds(true);
           player2.body.setImmovable(true);
 
-          // Bola
+          // Ball
           ball = this.add
             .circle(screenWidth / 2, screenHeight / 2, 10, 0xffffff)
             .setOrigin(0.5);
@@ -74,16 +74,16 @@ const PhaserGame = () => {
             Phaser.Math.Between(-ballSpeed, ballSpeed)
           );
 
-          // Colisiones
+          // Collisions
           this.physics.add.collider(ball, player1, hitPlayer1, null, this);
           this.physics.add.collider(ball, player2, hitPlayer2, null, this); // bien
 
-          // Teclas
+          // Keys
           cursors = this.input.keyboard.createCursorKeys();
           keys = this.input.keyboard.addKeys("W,S");
         },
         update: function () {
-          // Mover jugador 1
+          // Move player 1
           if (keys.W.isDown) {
             player1.body.setVelocityY(-playerSpeed);
           } else if (keys.S.isDown) {
@@ -92,7 +92,7 @@ const PhaserGame = () => {
             player1.body.setVelocityY(0);
           }
 
-          // Mover jugador 2
+          // Move player 2
           if (cursors.up.isDown) {
             player2.body.setVelocityY(-playerSpeed);
           } else if (cursors.down.isDown) {
@@ -115,7 +115,7 @@ const PhaserGame = () => {
       },
     };
 
-    // Esta función controla la velocidad de la pelota para que siempre sea constante
+    // This function controls the speed of the ball so that it is always constant
     function setBallVelocity(ball: Phaser.Physics.Arcade.Image) {
       const angle = Math.atan2(ball.body.velocity.y, ball.body.velocity.x);
       ball.body.setVelocity(
@@ -124,7 +124,7 @@ const PhaserGame = () => {
       );
     }
 
-    // Esta función se llama cuando la pelota toca una de las paredes laterales
+    // This function is called when the ball hits one of the side walls
     function resetBall() {
       // ball.body.setPosition(screenWidth / 2, screenHeight / 2);
       ball.setPosition(screenWidth / 2, screenHeight / 2);
@@ -140,15 +140,15 @@ const PhaserGame = () => {
       let diff = 0;
 
       if (ball.y < player.y) {
-        // Si la bola está en la parte superior del jugador
+        // If the ball is on top of the player
         diff = player.y - ball.y;
         ball.body.setVelocityY(10 * diff);
       } else if (ball.y > player.y) {
-        // Si la bola está en la parte inferior del jugador
+        // If the ball is at the bottom of the player
         diff = ball.y - player.y;
         ball.body.setVelocityY(-10 * diff);
       } else {
-        // La bola golpea el centro del jugador
+        // The ball hits the center of the player
         ball.body.setVelocityY(0);
       }
 
@@ -170,15 +170,15 @@ const PhaserGame = () => {
       let diff = 0;
 
       if (ball.y < player.y) {
-        // Si la bola está en la parte superior del jugador
+        // If the ball is on top of the player
         diff = player.y - ball.y;
         ball.body.setVelocityY(-10 * diff);
       } else if (ball.y > player.y) {
-        // Si la bola está en la parte inferior del jugador
+        // If the ball is at the bottom of the player
         diff = ball.y - player.y;
         ball.body.setVelocityY(10 * diff);
       } else {
-        // La bola golpea el centro del jugador
+        // The ball hits the center of the player
         ball.body.setVelocityY(0);
       }
 
@@ -195,8 +195,7 @@ const PhaserGame = () => {
 
     const game = new Phaser.Game(config);
 
-    // Limpia el juego cuando el componente se desmonta
-    // return () => game.destroy();
+    // Clear the game when the component is unmounted
     return () => {
       if (game) {
         game.destroy(true); // The 'true' argument removes the game canvas from the DOM.
