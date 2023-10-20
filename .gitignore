@@ -1,5 +1,6 @@
 # Archivos del sistema
 .DS_Store
+.env
 Thumbs.db
 
 node_modules/
