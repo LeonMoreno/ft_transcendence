@@ -196,7 +196,12 @@ const PhaserGame = () => {
     const game = new Phaser.Game(config);
 
     // Limpia el juego cuando el componente se desmonta
-    return () => game.destroy();
+    // return () => game.destroy();
+    return () => {
+      if (game) {
+        game.destroy(true); // The 'true' argument removes the game canvas from the DOM.
+      }
+    };
   }, []);
 
   return <div id="phaser-container"></div>;
