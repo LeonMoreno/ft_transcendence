@@ -38,6 +38,13 @@ export class ChatGateway
 
     client.join(`room_${room}`);
   }
+  
+  @SubscribeMessage('ms_join')
+  handleJoinMS(client: Socket, user: string) {
+    console.log('-> MS to:ms_' + user);
+
+    client.join(`ms_${user}`);
+  }
 
   @SubscribeMessage('event_message')
   handleIncommingMessage(
