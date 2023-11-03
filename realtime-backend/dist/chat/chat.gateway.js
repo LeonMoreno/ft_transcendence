@@ -72,7 +72,7 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], ChatGateway.prototype, "handleRoomLeave", null);
 exports.ChatGateway = ChatGateway = __decorate([
-    (0, websockets_1.WebSocketGateway)(81, {
+    (0, websockets_1.WebSocketGateway)(3000, {
         cors: { origin: '*' },
     })
 ], ChatGateway);
