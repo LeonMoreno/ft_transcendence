@@ -12,10 +12,12 @@ import getHash from "../utils/getHash";
 import resolveRoutes from "../utils/resolveRoutes";
 
 const routes = {
-  "/": Home,
-  "/game" :Game,
-  "/chat" :Chat,
-  "/user" :User,
+  "/": new Home,
+  "/game" : new Game,
+  "/chat" : new Chat,
+  // "/chat/:id" : new Chat,
+  "/user" : new User,
+  "/:id" : new User,
 };
 
 const router = async () => {
@@ -27,22 +29,36 @@ const router = async () => {
   footer.innerHTML = await Footer();
 
   let hash = getHash();
+
   let route = await resolveRoutes(hash);
+
   let user_location = location.hash.slice(1).toLocaleLowerCase().split("/");
+
+  if (route === "/:id" && user_location.length >= 1){
+    route = '/' + user_location[0] + route;
+  }
 
   let render;
 
-  if ( route > 1 &&routes[route])
-    render = routes[route]
-  else if (user_location.length == 1 && routes[`/${user_location[0]}`])
+
+  if ( route.length > 1 && routes[route])
+    render = routes[user_location]
+  else if (user_location.length >= 1 && (user_location.length <= 2 || (user_location.length <= 3 && user_location[2] == "" ) ) && routes[`/${user_location[0]}`])
+  {
     render = routes[`/${user_location[0]}`]
+  }
   else if (!routes[route] && user_location.length > 3 || (user_location.length === 3 && user_location[2].length != 0))
-    render = Error404;
+    render = new Error404;
   else
-    render = Error404;
+    render = new Error404;
 
+  try {
+    content.innerHTML = await render.getView();
+    await render.init();
+  } catch (error) {
+    console.log(error);
+  }
 
-  content.innerHTML = await render();
 };
 
 export default router;

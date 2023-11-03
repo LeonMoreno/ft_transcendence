@@ -8,7 +8,7 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 
-@WebSocketGateway(81, {
+@WebSocketGateway(3000, {
   cors: { origin: '*' },
 })
 export class ChatGateway
@@ -17,6 +17,7 @@ export class ChatGateway
   @WebSocketServer() server: Server;
 
   afterInit(server: any) {
+
     console.log('Esto se ejecuta cuando inicia');
   }
 
