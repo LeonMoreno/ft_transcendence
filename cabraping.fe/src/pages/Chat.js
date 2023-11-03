@@ -28,14 +28,12 @@ class Chat {
       this.socket.addEventListener("message", (event) => {
         const message = event.data;
         this.addMessageToChat(message);
-        console.log(`--> Ⓜ️ message: ${message}`);
       });
     }
 
     this.route = getHash();
     console.log(`-> 🦾 this.route :${this.route}`);
 
-    console.log("start");
     const button = document.getElementById('addChanel');
     console.log(button);
     if (button) {
@@ -50,7 +48,6 @@ class Chat {
   }
 
   handleSendClick = () => {
-    console.log("click 😙");
     const textarea = document.getElementById('messageTextarea');
     if (textarea) {
       const message = textarea.value;
