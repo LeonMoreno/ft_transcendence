@@ -1,104 +1,99 @@
 import image from '../assets/logo.svg';
 import getHash from "../utils/getHash";
 
-class Chat {
+let socket;
 
-  route;
+// handleSendClick = () => {
+function handleSendClick() {
+  const textarea = document.getElementById('messageTextarea');
+  if (textarea) {
+    const message = textarea.value;
+    if (message.trim() !== '') {
+      // Enviar el mensaje al servidor a través del WebSocket.
+      console.log(message);
+      socket.send(message);
 
-  constructor() {
-    this.init = this.init.bind(this);
-    this.handleButtonClick = this.handleButtonClick.bind(this);
-
-  }
-
-  init() {
-
-    // Create WebSocket connection.
-    if (!this.socket)
-    {
-      this.socket = new WebSocket("ws://localhost:3000");
-
-      // Connection opened
-      this.socket.addEventListener("open", (event) => {
-        // this.socket.send("Hello Server!");
-        console.log("start socket");
-      });
-
-      // Listen for messages
-      this.socket.addEventListener("message", (event) => {
-        const message = event.data;
-        this.addMessageToChat(message);
-      });
-    }
-
-    this.route = getHash();
-    console.log(`-> 🦾 this.route :${this.route}`);
-
-    const button = document.getElementById('addChanel');
-    console.log(button);
-    if (button) {
-      button.addEventListener('click', this.handleButtonClick);
-    }
-
-    // Escuchar clics en el botón de enviar.
-    const sendButton = document.getElementById('sendButton');
-    if (sendButton) {
-      sendButton.addEventListener('click', this.handleSendClick);
+      // Limpia el textarea después de enviar el mensaje.
+      textarea.value = '';
+      addMessageToChat(message);
     }
   }
+}
 
-  handleSendClick = () => {
-    const textarea = document.getElementById('messageTextarea');
-    if (textarea) {
-      const message = textarea.value;
-      if (message.trim() !== '') {
-        // Enviar el mensaje al servidor a través del WebSocket.
-        console.log(message);
-        this.socket.send(message);
+function addMessageToChat(message) {
+  const messageList = document.getElementById('messageList');
+  if (messageList) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'mb-3 d-flex align-items-start';
 
-        // Limpia el textarea después de enviar el mensaje.
-        textarea.value = '';
-        this.addMessageToChat(message);
-      }
-    }
+    const userImage = document.createElement('img');
+    userImage.src = `${image}`;
+    userImage.alt = 'User Image';
+    userImage.className = 'rounded-circle mr-2';
+    userImage.width = 40;
+
+    const messageContent = document.createElement('div');
+
+    const messageUsername = document.createElement('strong');
+    messageUsername.textContent = 'Username';
+    const messageText = document.createElement('p');
+    messageText.textContent = message;
+
+    messageContent.appendChild(messageUsername);
+    messageContent.appendChild(messageText);
+
+    messageDiv.appendChild(userImage);
+    messageDiv.appendChild(messageContent);
+
+    messageList.appendChild(messageDiv);
+  }
+}
+
+
+function handleButtonClick() {
+  alert('Botón presionado!');
+}
+
+
+export function ChatInit() {
+
+  // Create WebSocket connection.
+  if (!socket)
+  {
+    socket = new WebSocket("ws://localhost:3000");
+
+    // Connection opened
+    socket.addEventListener("open", (event) => {
+      // socket.send("Hello Server!");
+      console.log("start socket");
+    });
+
+    // Listen for messages
+    socket.addEventListener("message", (event) => {
+      const message = event.data;
+      addMessageToChat(message);
+    });
   }
 
-  addMessageToChat(message) {
-    const messageList = document.getElementById('messageList');
-    if (messageList) {
-      const messageDiv = document.createElement('div');
-      messageDiv.className = 'mb-3 d-flex align-items-start';
+  let route = getHash();
+  console.log(`-> 🦾 this.route :${route}`);
 
-      const userImage = document.createElement('img');
-      userImage.src = `${image}`;
-      userImage.alt = 'User Image';
-      userImage.className = 'rounded-circle mr-2';
-      userImage.width = 40;
-
-      const messageContent = document.createElement('div');
-
-      const messageUsername = document.createElement('strong');
-      messageUsername.textContent = 'Username';
-      const messageText = document.createElement('p');
-      messageText.textContent = message;
-
-      messageContent.appendChild(messageUsername);
-      messageContent.appendChild(messageText);
-
-      messageDiv.appendChild(userImage);
-      messageDiv.appendChild(messageContent);
-
-      messageList.appendChild(messageDiv);
-    }
+  const button = document.getElementById('addChanel');
+  console.log(button);
+  if (button) {
+    button.addEventListener('click', handleButtonClick);
   }
 
-
-  handleButtonClick() {
-    alert('Botón presionado!');
+  // Escuchar clics en el botón de enviar.
+  const sendButton = document.getElementById('sendButton');
+  if (sendButton) {
+    sendButton.addEventListener('click', handleSendClick);
   }
+}
 
-  getView() {
-    return `
+
+export function Chat() {
+  return `
     <div class="d-flex h-100">
        <!-- Left Panel: Channels -->
        <div class="w-25 h-100 bg-light p-3">
@@ -154,7 +149,7 @@ class Chat {
 
     </div>
     `;
-  }
 }
 
 export default Chat;
+
