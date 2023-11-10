@@ -1,19 +1,11 @@
-class  User {
+export function UserInit() {
+  console.log("Start code in User");
+}
 
-  constructor() {
-  }
-
-  init() {
-    console.log("start code in User");
-  }
-
-  getView() {
-    return `
+export function User() {
+  return `
     <div class="User" >
         <h2> User </h2>
     </div>
-    `;
-  }
+  `;
 };
-
-export default User;

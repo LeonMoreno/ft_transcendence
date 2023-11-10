@@ -1,18 +1,12 @@
-class Game{
 
-  constructor() {
-  }
+export function GameInit() {
+  console.log("Start code in Game");
+}
 
-  init() {
-    console.log("start code in Game");
-  }
-  getView() {
-    return `
+export function Game() {
+  return `
     <div class="w-100 h-100 d-flex" >
       <h1>game</h1>
     </div>
-    `;
-  }
+  `;
 };
-
-export default Game;
