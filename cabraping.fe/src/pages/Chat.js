@@ -2,6 +2,8 @@ import image from '../assets/logo.svg';
 import getHash from "../utils/getHash";
 
 let socket;
+let UserName = "default";
+let channel = "general";
 
 // handleSendClick = () => {
 function handleSendClick() {
@@ -9,9 +11,16 @@ function handleSendClick() {
   if (textarea) {
     const message = textarea.value;
     if (message.trim() !== '') {
+
+      let info_send = {
+        "message": message,
+        "channel": channel,
+        "UserName": UserName,
+      }
+
       // Enviar el mensaje al servidor a través del WebSocket.
-      console.log(message);
-      socket.send(message);
+      console.log(info_send);
+      socket.send(JSON.stringify(info_send ));
 
       // Limpia el textarea después de enviar el mensaje.
       textarea.value = '';
@@ -60,7 +69,8 @@ export function ChatInit() {
   // Create WebSocket connection.
   if (!socket)
   {
-    socket = new WebSocket("ws://localhost:3000");
+    // socket = new WebSocket("ws://localhost:3000");
+    socket = new WebSocket("ws://127.0.0.1:8000/ws/chat/");
 
     // Connection opened
     socket.addEventListener("open", (event) => {
@@ -77,6 +87,10 @@ export function ChatInit() {
 
   let route = getHash();
   console.log(`-> 🦾 this.route :${route}`);
+
+  if (route != '/'){
+    channel = route;
+  }
 
   const button = document.getElementById('addChanel');
   console.log(button);
