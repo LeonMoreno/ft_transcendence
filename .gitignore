@@ -4,6 +4,7 @@
 Thumbs.db
 
 node_modules/
+__pycache__/
 
 # Files cabraping.be
 # Dependencias

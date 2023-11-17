@@ -1,5 +1,3 @@
-import { io } from "socket.io-client";
-
 export function Game() {
   return `
     <div class="w-100 h-100 d-flex gap-4">
@@ -14,7 +12,29 @@ export function Game() {
 export function GameInit() {
   console.log("Start code in Game");
 
-  const socket = io("http://localhost:3000");
+  const socket = new WebSocket("ws://127.0.0.1:8000/ws/game/");
+
+  socket.onopen = function(e) {
+    console.log("WebSocket connection established");
+  };
+
+  socket.onmessage = function(event) {
+    const data = JSON.parse(event.data);
+    console.log("Message from server ", data);
+    handleGameState(data.message);
+  };
+
+  socket.onclose = function(event) {
+    if (event.wasClean) {
+      console.log(`Connection closed cleanly, code=${event.code}, reason=${event.reason}`);
+    } else {
+      console.log('Connection died');
+    }
+  };
+
+  socket.onerror = function(error) {
+    console.error(`WebSocket error: ${error.message}`);
+  };
 
   const canvasElement = document.getElementById("game");
   const context = canvasElement.getContext("2d");
@@ -163,26 +183,30 @@ export function GameInit() {
   }
 
   function updateGameState() {
-    socket.emit("game-state", {
+    const gameState = {
       rightPaddlePosition: rightPaddle.y,
       leftPaddlePosition: leftPaddle.y,
-      ballPositon: { x: ball.x, y: ball.y },
-    });
+      ballPosition: { x: ball.x, y: ball.y },
+    };
+
+    socket.send(JSON.stringify(gameState));
   }
 
   function handleGameState(data) {
-    rightPaddle.y = data.rightPaddlePosition;
-    leftPaddle.y = data.leftPaddlePosition;
-    ball.x = data.ballPositon.x;
-    ball.y = data.ballPositon.y;
+    if (data && data.rightPaddlePosition !== undefined && data.leftPaddlePosition !== undefined && data.ballPosition) {
+      rightPaddle.y = data.rightPaddlePosition;
+      leftPaddle.y = data.leftPaddlePosition;
+      if (data.ballPosition.x !== undefined && data.ballPosition.y !== undefined) {
+        ball.x = data.ballPosition.x;
+        ball.y = data.ballPosition.y;
+      }
+    }
   }
+  
 
   document.addEventListener("keydown", handleKeyDown);
   document.addEventListener("keyup", handleKeyUp);
 
   requestAnimationFrame(loop);
 
-  setInterval(() => {
-    socket.on("game-state", handleGameState);
-  }, 1000 / 60);
 }
