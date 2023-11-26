@@ -28,15 +28,12 @@ from game.routing import websocket_urlpatterns as game_websocket_urlpatterns
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'cabraping.settings')
 
-# combined_websocket_urlpatterns = chat_websocket_urlpatterns + game_websocket_urlpatterns
-
-
 application = ProtocolTypeRouter({
     "http": get_asgi_application(),
     "websocket": AuthMiddlewareStack(
         URLRouter(
-            chat_websocket_urlpatterns
+            chat_websocket_urlpatterns +
+            game_websocket_urlpatterns
         )
     ),
 })
-
