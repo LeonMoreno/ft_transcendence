@@ -1,5 +1,13 @@
 
 export function AuthPage() {
+
+  const jwt = localStorage.getItem('jwt');
+  if (jwt) {
+      window.location.href = '/#';
+      return;
+  }
+
+
   return `
     <div class="container mt-5">
       <div class="row">
@@ -9,7 +17,7 @@ export function AuthPage() {
             <h2>Login</h2>
             <div class="mb-3">
               <label for="username" class="form-label">Username</label>
-              <input type="text" class="form-control" id="username" required>
+              <input type="email" class="form-control" id="username" required>
             </div>
             <div class="mb-3">
               <label for="password" class="form-label">Password</label>
@@ -42,6 +50,13 @@ export function AuthPage() {
 // AuthPage.js
 
 export function AuthPageInit() {
+
+  const jwt = localStorage.getItem('jwt');
+  if (jwt) {
+      window.location.href = '/#';
+      return;
+  }
+
   const loginForm = document.getElementById('login-form');
   const signupForm = document.getElementById('signup-form');
 
@@ -71,10 +86,20 @@ function loginUser(username, password) {
     },
     body: JSON.stringify({ username, password })
   })
-  .then(response => response.json())
+  .then(response => {
+    if (response.ok) {
+        return response.json();
+    } else {
+        alert('Incorrect username or password');
+        throw new Error('Login failed');
+    }
+  })
   .then(data => {
-    console.log('Success:', data);
-    // Here you can handle the token storage and user redirection
+    console.log("data.access");
+    console.log(data.access);
+
+    localStorage.setItem('jwt', data.access);
+    window.location.href = '/#';
   })
   .catch((error) => {
     console.error('Error:', error);
