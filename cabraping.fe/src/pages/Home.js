@@ -19,6 +19,8 @@ export function Home() {
         <p class="lead">Classic Pong: Bounce to Victory! Can you outmatch your opponent in this timeless arcade game of skill and reflexes?</p>
         <a href="path-to-authentication" class="btn btn-warning">42 Auth</a>
       </div>
+
+      <a href="/#auth" class="btn btn-warning">Iniciar Sesión / Registrarse</a>
     </div>
   </div>
   `;

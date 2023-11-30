@@ -39,3 +39,9 @@ If Redis is not running, you can try to start it manually. If you installed Redi
 - brew services start redis
 
 This will start the Redis service and configure it to start automatically at boot.x
+
+
+## PosgresSQL
+
+python3 manage.py makemigrations users
+python3 manage.py migrate

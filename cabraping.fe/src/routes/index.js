@@ -5,6 +5,8 @@ import {Home, HomeInit} from "../pages/Home";
 import {Game, GameInit} from "../pages/Game"
 import {Chat, ChatInit} from "../pages/Chat"
 import {User, UserInit} from "../pages/User"
+import { AuthPage, AuthPageInit } from "../pages/AuthPage";
+
 import {Error404, Error404Init } from "../pages/Error404";
 
 import getHash from "../utils/getHash"
@@ -13,6 +15,7 @@ const routes = {
   "/":  [Home, HomeInit],
   "/game" :  [Game, GameInit],
   "/chat" :  [Chat, ChatInit],
+  "/auth" :  [AuthPage, AuthPageInit],
   "/chat/:id" : [Chat, ChatInit],
   "/user" :  [User, UserInit],
 };
