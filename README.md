@@ -41,7 +41,13 @@ If Redis is not running, you can try to start it manually. If you installed Redi
 This will start the Redis service and configure it to start automatically at boot.x
 
 
-## PosgresSQL
+## pip intall
 
-python3 manage.py makemigrations users
-python3 manage.py migrate
+- pip install -r pip_environment_dependencies.txt
+
+
+### PosgresSQL
+
+Migrate the database. You must have a database named "transcendence_db"
+- python3 manage.py makemigrations users
+- python3 manage.py migrate
