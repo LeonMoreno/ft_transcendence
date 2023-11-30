@@ -14,6 +14,7 @@ class CustomUser(AbstractUser):
     lastName = models.CharField(_('last name'), max_length=150, blank=True)
     avatarImageURL = models.URLField(blank=True, null=True)
     status = models.CharField(max_length=100, blank=True, null=True)
+    email = models.EmailField(_('email address'), unique=True)
     # Suponiendo que hay un modelo Channel y un modelo Game relacionado
     # channelsAsOwner = models.ManyToManyField('Channel', related_name='owned_by')
     # channelsAsMember = models.ManyToManyField('Channel', related_name='member')
