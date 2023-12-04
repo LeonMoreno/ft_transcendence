@@ -103,10 +103,51 @@ export function ChatInit() {
   if (sendButton) {
     sendButton.addEventListener('click', handleSendClick);
   }
+
+
+  // Manejar clics en el botón de agregar canal.
+  const saveChannelButton = document.getElementById('saveChannelButton');
+  if (saveChannelButton) {
+    saveChannelButton.addEventListener('click', () => {
+      const channelName = document.getElementById('channelName').value;
+      const selectedMembers = [...document.getElementById('channelMembers').options]
+                              .filter(option => option.selected)
+                              .map(option => option.value);
+      createChannel(channelName, selectedMembers);
+    });
+  }
+}
+
+function createChannel(channelName, members) {
+  // Deberás reemplazar esto con tu API real y el método de autenticación (por ejemplo, usando un token JWT).
+  fetch('http://127.0.0.1:8000/api/channels/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${localStorage.getItem('jwt')}`, // Asumiendo que estás usando JWT para autenticación
+    },
+    body: JSON.stringify({ name: channelName, members: members })
+  })
+  .then(response => response.json())
+  .then(data => {
+    console.log('Channel created:', data);
+    // Aquí puedes actualizar la lista de canales en la UI.
+  })
+  .catch((error) => {
+    console.error('Error:', error);
+  });
 }
 
 
+
 export function Chat() {
+
+  const jwt = localStorage.getItem('jwt');
+  if (!jwt) {
+      window.location.href = '/#';
+      return;
+  }
+
   return `
     <div class="d-flex h-100">
        <!-- Left Panel: Channels -->
@@ -161,6 +202,31 @@ export function Chat() {
          </div>
        </div>
 
+    </div>
+
+    <!-- Modal para crear un nuevo canal -->
+    <div class="modal" tabindex="-1" role="dialog" id="channelModal">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Create Channel</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <input type="text" id="channelName" class="form-control mb-2" placeholder="Channel Name" required>
+            <!-- Aquí deberías insertar la lógica para seleccionar usuarios -->
+            <select multiple class="form-control" id="channelMembers">
+              <!-- Opciones de usuarios se insertarán dinámicamente -->
+            </select>
+          </div>
+          <div class="modal-footer">
+            <button type="button" id="saveChannelButton" class="btn btn-primary">Save Channel</button>
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
     </div>
     `;
 }
