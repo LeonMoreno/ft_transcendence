@@ -27,10 +27,25 @@ export async function UsersInit() {
         type="button"
         class="btn btn-primary btn-sm"
         data-action="send-friend-request"
+        data-id="${user.id}"
         >Add Friend</button>
     </li>
     `
     )
     .join("");
+
   usersListElement.innerHTML = usersDataString;
+
+  const sendFriendRequestButttons = document.querySelectorAll(
+    '[data-action="send-friend-request"]'
+  );
+
+  sendFriendRequestButttons.forEach((button) => {
+    button.addEventListener("click", async (event) => {
+      const userId = event.target.getAttribute("data-id");
+      console.log(`Sending a friend request to user ID: ${userId}`);
+      const response = await fetch(`${BACKEND_URL}/api/users/?format=json`);
+      usersData = await response.json();
+    });
+  });
 }
