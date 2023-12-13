@@ -17,4 +17,16 @@ export async function UsersInit() {
   usersData = await response.json();
 
   console.log(usersData);
+  const usersListElement = document.getElementById("users-list");
+  const usersDataString = usersData
+    .map(
+      (user) => `
+    <li>
+        <h3>${user.username}</h3>
+        <button>Add Friend</button>
+    </li>
+    `
+    )
+    .join("");
+  usersListElement.innerHTML = usersDataString;
 }
