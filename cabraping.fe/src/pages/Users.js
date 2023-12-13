@@ -21,9 +21,13 @@ export async function UsersInit() {
   const usersDataString = usersData
     .map(
       (user) => `
-    <li>
+    <li class="list-group-item d-flex gap-4 align-items-center">
         <h3>${user.username}</h3>
-        <button>Add Friend</button>
+        <button
+        type="button"
+        class="btn btn-primary btn-sm"
+        data-action="send-friend-request"
+        >Add Friend</button>
     </li>
     `
     )
