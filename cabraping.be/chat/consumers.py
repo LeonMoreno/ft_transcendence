@@ -14,6 +14,7 @@ class MyWebSocketConsumerChat(AsyncWebsocketConsumer):
 		try:
 				text_data_json = json.loads(text_data)
 				print("-> text_data_json : {}".format(text_data_json))
+				print("-> username: {}".format(text_data_json['UserName']))
 				message = text_data_json.get('message')
 				print("-> message : {}".format(message))
 				if message:
@@ -23,7 +24,8 @@ class MyWebSocketConsumerChat(AsyncWebsocketConsumer):
 								{
 										"type": "chat_message",
 										"message": message,
-										"sender_channel_name": self.channel_name
+										"sender_channel_name": self.channel_name,
+										"UserName": text_data_json['UserName'],
 								}
 						)
 		except json.JSONDecodeError:
@@ -37,8 +39,13 @@ class MyWebSocketConsumerChat(AsyncWebsocketConsumer):
 		message = event['message']
 		sender_channel_name = event['sender_channel_name']
 
+		print("--> event")
+		print(event)
+		print("--> event")
+		print(event)
+
 			# Send the message to WebSocket if the user is not the sender
 		if self.channel_name != sender_channel_name:
 				await self.send(text_data=json.dumps({
-						'message': message
+						'message': event
 		}))

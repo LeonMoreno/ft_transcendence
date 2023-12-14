@@ -12,6 +12,13 @@ function handleSendClick() {
     const message = textarea.value;
     if (message.trim() !== '') {
 
+      const jwt = localStorage.getItem('jwt');
+      if (jwt) {
+        const payload = jwt.split('.')[1];
+        const decodedPayload = JSON.parse(atob(payload));
+        UserName = decodedPayload.user_id;
+      }
+
       let info_send = {
         "message": message,
         "channel": channel,
@@ -19,12 +26,13 @@ function handleSendClick() {
       }
 
       // Enviar el mensaje al servidor a través del WebSocket.
+      console.log("-> info_send");
       console.log(info_send);
       socket.send(JSON.stringify(info_send ));
 
       // Limpia el textarea después de enviar el mensaje.
       textarea.value = '';
-      addMessageToChat(message);
+      addMessageToChat(info_send);
     }
   }
 }
@@ -44,9 +52,9 @@ function addMessageToChat(message) {
     const messageContent = document.createElement('div');
 
     const messageUsername = document.createElement('strong');
-    messageUsername.textContent = 'Username';
+    messageUsername.textContent = message.UserName;
     const messageText = document.createElement('p');
-    messageText.textContent = message;
+    messageText.textContent = message.message;
 
     messageContent.appendChild(messageUsername);
     messageContent.appendChild(messageText);
@@ -80,7 +88,13 @@ export function ChatInit() {
 
     // Listen for messages
     socket.addEventListener("message", (event) => {
-      const message = event.data;
+      const message = JSON.parse(event.data).message;
+      console.log("event.data");
+      console.log(event.data);
+      console.log("22message");
+      console.log(message);
+      console.log(message.UserName);
+      console.log(message.message);
       addMessageToChat(message);
     });
   }
