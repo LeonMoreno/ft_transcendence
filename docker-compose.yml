@@ -1,0 +1,82 @@
+# https://docs.docker.com/engine/reference/commandline/compose_up
+version: "3.8"
+
+volumes:
+  redis_data:
+  postgres_data:
+  elk-data:
+
+networks:
+  ft_net:
+
+services:
+  redis:
+    image: redis:alpine
+    container_name: cabraping-redis
+    hostname: redis
+    restart: always
+    networks:
+      - ft_net
+    depends_on:
+      - backend
+    volumes:
+      - redis_data:/var/lib/redis
+    ports:
+      - 6379:6379
+  
+  postgres:
+    image: postgres:alpine
+    container_name: transcendence_db
+    hostname: postgres
+    restart: always
+    networks:
+      - ft_net
+    volumes:
+      - postgres_data:/var/lib/postgres
+    ports:
+      - 5432:5432
+    env_file:
+      - .env
+  
+  backend:
+    build: ./cabraping.be
+    command: python manage.py runserver 0.0.0.0:8000
+    container_name: cabraping-be
+    networks:
+      - ft_net
+    depends_on:
+      - postgres
+    volumes:
+      - ./cabraping.be/:/usr/src/app/
+    ports:
+      - 8000:8000
+    env_file:
+      - ./.env
+  
+  frontend:
+    build: ./cabraping.fe
+    container_name: cabraping-fe
+    networks:
+      - ft_net
+    depends_on:
+      - backend
+    ports:
+      - 8080:8080
+
+  # elasticsearch:
+  #   image: elasticsearch:8.11.1
+  #   container_name: elk
+  #   volumes:
+  #     - elk-data:/usr/share/elasticsearch/data
+  #   ports:
+  #     - 9200:9200
+  #   networks:
+  #     - ft_net
+
+  # logstash:
+  #   image: logstash:7.8.0
+
+  # kibana:
+  #   image: kibana:7.8.0
+
+
