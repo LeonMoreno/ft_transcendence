@@ -6,6 +6,7 @@ import { Game, GameInit } from "../pages/Game";
 import { Chat, ChatInit } from "../pages/Chat";
 import { User, UserInit } from "../pages/User";
 import { Users, UsersInit } from "../pages/Users";
+import { Friends, FriendsInit, FriendsRender } from "../pages/Friends";
 
 import { AuthPage, AuthPageInit } from "../pages/AuthPage";
 
@@ -21,6 +22,7 @@ const routes = {
   "/chat/:id": [Chat, ChatInit],
   "/user": [User, UserInit],
   "/users": [Users, UsersInit],
+  "/friends": [Friends, FriendsRender, FriendsInit],
 };
 
 const router = async () => {

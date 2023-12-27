@@ -39,7 +39,8 @@ router.register(r'users', UserViewSet)
 urlpatterns = [
     # ... tus otras URLs
     path('api/', include(router.urls)),
-     path("api/friend_requests/", FriendRequestViewSet.friend_request_list),
+    path("api/friend_requests/me", FriendRequestViewSet.friend_request_me),
+    path("api/friend_requests/", FriendRequestViewSet.friend_request_list),
     path("api/friend_requests/<int:pk>/", FriendRequestViewSet.friend_request_detail),
     path('api/token/', jwt_views.TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', jwt_views.TokenRefreshView.as_view(), name='token_refresh'),

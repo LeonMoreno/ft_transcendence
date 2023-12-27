@@ -13,6 +13,7 @@ export function Users() {
 }
 
 export async function UsersInit() {
+  const jwt = localStorage.getItem("jwt");
   const response = await fetch(`${BACKEND_URL}/api/users/?format=json`);
   usersData = await response.json();
 
@@ -36,16 +37,25 @@ export async function UsersInit() {
 
   usersListElement.innerHTML = usersDataString;
 
-  const sendFriendRequestButttons = document.querySelectorAll(
+  const addFriendButtonElements = document.querySelectorAll(
     '[data-action="send-friend-request"]'
   );
 
-  sendFriendRequestButttons.forEach((button) => {
+  addFriendButtonElements.forEach((button) => {
     button.addEventListener("click", async (event) => {
-      const userId = event.target.getAttribute("data-id");
-      console.log(`Sending a friend request to user ID: ${userId}`);
-      const response = await fetch(`${BACKEND_URL}/api/users/?format=json`);
-      usersData = await response.json();
+      const toUserId = Number(event.target.getAttribute("data-id"));
+      const response = await fetch(`${BACKEND_URL}/api/friend_requests/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${jwt}`,
+        },
+        body: JSON.stringify({ to_user: toUserId }),
+      });
+
+      const newFriendRequest = await response.json();
+
+      console.log({ newFriendRequest });
     });
   });
 }
