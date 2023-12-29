@@ -23,12 +23,19 @@ class CustomUser(AbstractUser):
     # gamesAsInviter = models.ManyToManyField('Game', related_name='invitations_sent')
     # gamesAsInvitee = models.ManyToManyField('Game', related_name='invitations_received')
     # gamesAsWinner = models.ManyToManyField('Game', related_name='won_games')
-    # createdAt = models.DateTimeField(auto_now_add=True)
+    
+    createdAt = models.DateTimeField(auto_now_add=True)
     updatedAt = models.DateTimeField(auto_now=True)
-    # createdAt = models.DateTimeField(auto_now_add=True, default=timezone.now)
 
     def __str__(self):
         return self.username
+    
+    def games_as_inviter(self):
+        return self.gamesAsInviter.all()
+
+    def games_as_invitee(self):
+        return self.gamesAsInvitee.all()
+
 
 class FriendRequest(models.Model):
     from_user = models.ForeignKey(
