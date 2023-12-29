@@ -50,8 +50,19 @@ This will start the Redis service and configure it to start automatically at boo
 
 Migrate the database. You must have a database named "transcendence_db"
 
-- python3 manage.py makemigrations users
-- python3 manage.py migrate
+```sh
+python3 manage.py makemigrations
+```
+
+```sh
+python3 manage.py migrate
+```
+
+## Run Server
+
+```sh
+python3 manage.py runserver
+```
 
 ## HTTP Requests
 
