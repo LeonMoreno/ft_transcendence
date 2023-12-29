@@ -1,4 +1,5 @@
-import Header from "../template/Header";
+// import Header from "../template/Header";
+import {Header, HeaderInit} from "../template/Header";
 import Footer from "../template/Footer";
 
 import {Home, HomeInit} from "../pages/Home";
@@ -35,6 +36,7 @@ const router = async () => {
   // We will render our Header and Footer components
   header.innerHTML = await Header();
   footer.innerHTML = await Footer();
+  HeaderInit();
 
 
   // We take our fruit and divide it into "/", we obtain a lowercase array, to work with the paths
