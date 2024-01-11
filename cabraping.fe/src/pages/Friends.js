@@ -1,8 +1,19 @@
+import { getToken } from "../utils/get-token";
+
 const BACKEND_URL = "http://localhost:8000";
-let friendRequestsData = [];
+let myUserData = {};
+let friendRequests = [];
 
 export async function Friends() {
-  console.log("Friends");
+  const jwt = getToken();
+
+  const responseMe = await fetch(`${BACKEND_URL}/api/me/`, {
+    headers: { Authorization: `Bearer ${jwt}` },
+  });
+  myUserData = await responseMe.json();
+  if (!myUserData) {
+    return null;
+  }
 
   return `
     <div class="container-sm">
@@ -13,6 +24,7 @@ export async function Friends() {
       </ul>
 
       <h2>Friend Requests</h2>
+      <p>We are the invitee</p>
       <ul id="friend-requests-list" class="list-group">
         <!-- friendsData -->
         <p>No Friend Requests Yet</p>
@@ -22,29 +34,61 @@ export async function Friends() {
 }
 
 export async function FriendsRender() {
-  console.log("FriendsRender");
+  const jwt = getToken();
+
+  const friendsListElement = document.getElementById("friends-list");
+  friendsListElement.innerHTML = "";
+
+  friendRequests = myUserData.friends;
+  if (!Array.isArray(friendRequests)) {
+    return null;
+  }
+
+  if (friendRequests.length <= 0) {
+    friendsListElement.innerHTML = "<p>No friends yet</p>";
+    return null;
+  }
+
+  friendsListElement.innerHTML = friendRequests
+    .map(
+      (
+        user
+      ) => `<li id="${user.id}" class="list-group-item d-flex gap-4 align-items-center">
+  <h3>${user.username}</h3>
+</li>`
+    )
+    .join("");
+}
+
+export async function FriendRequestsRender() {
+  const jwt = getToken();
 
   const friendRequestsListElement = document.getElementById(
     "friend-requests-list"
   );
   friendRequestsListElement.innerHTML = "";
 
-  const jwt = localStorage.getItem("jwt");
-  const response = await fetch(`${BACKEND_URL}/api/friend_requests/me`, {
-    headers: { Authorization: `Bearer ${jwt}` },
+  const responseFriendRequests = await fetch(
+    `${BACKEND_URL}/api/friend_requests/me`,
+    {
+      headers: { Authorization: `Bearer ${jwt}` },
+    }
+  );
+  friendRequests = await responseFriendRequests.json();
+
+  friendRequests = friendRequests.filter((friendRequest) => {
+    const toOurUser = friendRequest.to_user.id === myUserData.id;
+    if (toOurUser) return friendRequest;
   });
 
-  friendRequestsData = await response.json();
-  if (friendRequestsData.length <= 0) {
+  if (friendRequests.length <= 0) {
     friendRequestsListElement.innerHTML = "<p>No Friend Requests Yet</p>";
     return null;
   }
 
-  const friendRequestsDataString = friendRequestsData
-    .map(
-      (
-        friendRequest
-      ) => `<li id="${friendRequest.id}" class="list-group-item d-flex gap-4 align-items-center">
+  const friendRequestsDataString = friendRequests
+    .map((friendRequest) => {
+      return `<li id="${friendRequest.id}" class="list-group-item d-flex gap-4 align-items-center">
     <h3>${friendRequest.from_user.username}</h3>
     <div className="d-flex gap-4">
       <button
@@ -58,21 +102,15 @@ export async function FriendsRender() {
         data-action="delete"
         data-id="${friendRequest.id}">Delete</button>
     </div>
-  </li>`
-    )
+  </li>`;
+    })
     .join("");
 
   friendRequestsListElement.innerHTML = friendRequestsDataString;
 }
 
 export async function FriendsInit() {
-  console.log("FriendsInit");
-
-  const jwt = localStorage.getItem("jwt");
-  if (!jwt) {
-    window.location.href = "/#auth";
-    return;
-  }
+  const jwt = getToken();
 
   const confirmButtonElements = document.querySelectorAll(
     '[data-action="confirm"]'
@@ -85,23 +123,18 @@ export async function FriendsInit() {
     button.addEventListener("click", async (event) => {
       const friendRequestId = event.target.getAttribute("data-id");
 
-      const response = await fetch(
-        `${BACKEND_URL}/api/friend_requests/${friendRequestId}/`,
-        {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${jwt}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ intent: "confirm" }),
-        }
-      );
+      await fetch(`${BACKEND_URL}/api/friend_requests/${friendRequestId}/`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${jwt}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ intent: "confirm" }),
+      });
 
-      const updatedFriendRequest = await response.json();
-
-      console.log("updatedFriendRequest:", updatedFriendRequest);
-
+      Friends();
       FriendsRender();
+      FriendRequestsRender();
     });
   });
 
@@ -117,8 +150,9 @@ export async function FriendsInit() {
         }
       );
 
-      console.log("Deleted status:", response.status);
+      Friends();
       FriendsRender();
+      FriendRequestsRender();
     });
   });
 }

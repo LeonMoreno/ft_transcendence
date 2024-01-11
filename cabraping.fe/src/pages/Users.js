@@ -1,50 +1,97 @@
+import { getToken } from "../utils/get-token";
+
 const BACKEND_URL = "http://localhost:8000";
-let usersData = [];
+let users = [];
+let friendRequests = [];
 
 export function Users() {
+  const jwt = getToken();
+
   return `
-        <div class="container-sm">
-            <h2>List of Users</h2>
-            <ul id="users-list" class="list-group">
-                <!-- userData -->
-            </ul>
-        </div>
-    `;
+    <div class="container-sm">
+      <h2>List of Users</h2>
+      <ul id="users-list" class="list-group">
+        <!-- userData -->
+      </ul>
+    </div>
+  `;
 }
 
 export async function UsersInit() {
   const jwt = localStorage.getItem("jwt");
-  const response = await fetch(`${BACKEND_URL}/api/users/?format=json`);
-  usersData = await response.json();
+  if (!jwt) return null;
 
-  console.log(usersData);
+  const responseMyUser = await fetch(`${BACKEND_URL}/api/me/`, {
+    headers: { Authorization: `Bearer ${jwt}` },
+  });
+  const myUser = await responseMyUser.json();
+  if (!myUser) return null;
+
+  const responseUsers = await fetch(`${BACKEND_URL}/api/users/`);
+  users = await responseUsers.json();
+  if (!users) return null;
+
+  const responseFriendRequests = await fetch(
+    `${BACKEND_URL}/api/friend_requests/me`,
+    { headers: { Authorization: `Bearer ${jwt}` } }
+  );
+  friendRequests = await responseFriendRequests.json();
+
+  users = users.map((user) => {
+    const hasSent = friendRequests.find(
+      (friendRequest) => friendRequest.to_user.id === user.id
+    );
+    if (Boolean(hasSent)) return { ...user, isSentFriendRequest: true };
+    else return user;
+  });
+
   const usersListElement = document.getElementById("users-list");
-  const usersDataString = usersData
-    .map(
-      (user) => `
-    <li class="list-group-item d-flex gap-4 align-items-center">
-        <h3>${user.username}</h3>
-        <button
-        type="button"
-        class="btn btn-primary btn-sm"
-        data-action="send-friend-request"
-        data-id="${user.id}"
-        >Add Friend</button>
-    </li>
-    `
-    )
+  usersListElement.innerHTML = users
+    .map((user) => {
+      const isSameUser = user.id === myUser.id;
+      const isOurFriend = user.friends.find(
+        (friendId) => friendId === myUser.id
+      );
+
+      return `
+  <li class="list-group-item d-flex gap-4 align-items-center">
+      <h3>${user.username}</h3>
+      ${
+        !isSameUser && !isOurFriend && !user.isSentFriendRequest
+          ? `<button
+              type="button"
+              class="btn btn-primary btn-sm"
+              data-action="create-friend-request"
+              data-id="${user.id}"
+              >Add Friend</button>`
+          : ""
+      }
+
+      ${
+        user.isSentFriendRequest
+          ? `<button
+              disabled
+              type="button"
+              class="btn btn-primary btn-sm"
+              >Added Friend</button>`
+          : ""
+      }
+
+      ${isOurFriend ? `<span>Your friend</span>` : ""}
+  </li>
+  `;
+    })
     .join("");
 
-  usersListElement.innerHTML = usersDataString;
-
   const addFriendButtonElements = document.querySelectorAll(
-    '[data-action="send-friend-request"]'
+    '[data-action="create-friend-request"]'
   );
 
   addFriendButtonElements.forEach((button) => {
     button.addEventListener("click", async (event) => {
       const toUserId = Number(event.target.getAttribute("data-id"));
-      const response = await fetch(`${BACKEND_URL}/api/friend_requests/`, {
+
+      await fetch(`${BACKEND_URL}/api/friend_requests/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -53,9 +100,8 @@ export async function UsersInit() {
         body: JSON.stringify({ to_user: toUserId }),
       });
 
-      const newFriendRequest = await response.json();
-
-      console.log({ newFriendRequest });
+      Users();
+      UsersInit();
     });
   });
 }

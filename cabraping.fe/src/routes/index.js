@@ -1,28 +1,31 @@
 import Header from "../template/Header";
 import Footer from "../template/Footer";
-
 import { Home, HomeInit } from "../pages/Home";
 import { Game, GameInit } from "../pages/Game";
 import { Chat, ChatInit } from "../pages/Chat";
 import { User, UserInit } from "../pages/User";
 import { Users, UsersInit } from "../pages/Users";
-import { Friends, FriendsInit, FriendsRender } from "../pages/Friends";
-
+import {
+  Friends,
+  FriendsRender,
+  FriendRequestsRender,
+  FriendsInit,
+} from "../pages/Friends";
 import { AuthPage, AuthPageInit } from "../pages/AuthPage";
-
+import { LogoutPage } from "../pages/Logout";
 import { Error404, Error404Init } from "../pages/Error404";
-
 import getHash from "../utils/getHash";
 
 const routes = {
   "/": [Home, HomeInit],
+  "/auth": [AuthPage, AuthPageInit],
+  "/logout": [LogoutPage],
   "/game": [Game, GameInit],
   "/chat": [Chat, ChatInit],
-  "/auth": [AuthPage, AuthPageInit],
   "/chat/:id": [Chat, ChatInit],
   "/user": [User, UserInit],
   "/users": [Users, UsersInit],
-  "/friends": [Friends, FriendsRender, FriendsInit],
+  "/friends": [Friends, FriendsRender, FriendRequestsRender, FriendsInit],
 };
 
 const router = async () => {
