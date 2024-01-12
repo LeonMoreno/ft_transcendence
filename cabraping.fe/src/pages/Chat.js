@@ -68,7 +68,21 @@ function addMessageToChat(message) {
 
 
 function handleButtonClick() {
-  alert('Botón presionado!');
+
+  const modal = document.getElementById("channelModal");
+  if (modal) {
+    modal.style.display = 'block'; // Set the display to 'block' to make it visible
+  }
+
+  const closeModalButton = document.getElementById('closeModalButton');
+  if (closeModalButton) {
+    closeModalButton.addEventListener('click', () => {
+      const modal = document.getElementById("channelModal");
+      if (modal) {
+          modal.style.display = 'none'; // Hide the modal
+      }
+    });
+  }
 }
 
 
@@ -224,7 +238,7 @@ export function Chat() {
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title">Create Channel</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <button id="closeModalButton" type="button" class="close" data-dismiss="modal" aria-label="Close">
               <span aria-hidden="true">&times;</span>
             </button>
           </div>
