@@ -18,11 +18,12 @@ Compatibility and Community Support: Redis is widely used and supported in the d
 
 Ensuring that Redis is running and correctly configured is a crucial step in the setup and debugging process of any application that uses it, especially when working with real-time technologies like Django Channels. Without Redis running, these applications will not be able to properly handle real-time connections or utilize the storage and messaging features that Redis provides.
 
-
 ## isntall redis MACOS
+
 - brew install redis
 
 ### Check Redis Status: Run the following command to see if Redis is running:
+
 - redis-cli ping
 
 If Redis is up and running correctly, you should receive a PONG response.
@@ -34,20 +35,32 @@ If Redis is up and running correctly, you should receive a PONG response.
 If Redis is running, you should see one or more lines that include redis-server.
 
 ### Start Redis Manually:
+
 If Redis is not running, you can try to start it manually. If you installed Redis using Homebrew, you can start Redis with the following command:
 
 - brew services start redis
 
 This will start the Redis service and configure it to start automatically at boot.x
 
-
 ## pip intall
 
 - pip install -r pip_environment_dependencies.txt
 
-
 ### PosgresSQL
 
 Migrate the database. You must have a database named "transcendence_db"
-- python3 manage.py makemigrations users
-- python3 manage.py migrate
+
+```sh
+python3 manage.py makemigrations
+```
+
+```sh
+python3 manage.py migrate
+```
+
+## Run Server
+
+```sh
+python3 manage.py runserver
+```
+

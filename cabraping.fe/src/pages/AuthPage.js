@@ -1,12 +1,9 @@
-
 export function AuthPage() {
-
-  const jwt = localStorage.getItem('jwt');
+  const jwt = localStorage.getItem("jwt");
   if (jwt) {
-      window.location.href = '/#';
-      return;
+    window.location.href = "/#";
+    return;
   }
-
 
   return `
     <div class="container mt-5">
@@ -16,7 +13,7 @@ export function AuthPage() {
           <form id="login-form">
             <h2>Login</h2>
             <div class="mb-3">
-              <label for="username" class="form-label">Username</label>
+              <label for="username" class="form-label">Email</label>
               <input type="email" class="form-control" id="username" required>
             </div>
             <div class="mb-3">
@@ -54,41 +51,40 @@ export function AuthPage() {
 // AuthPage.js
 
 export function AuthPageInit() {
-
-  const jwt = localStorage.getItem('jwt');
+  const jwt = localStorage.getItem("jwt");
   if (jwt) {
-      window.location.href = '/#';
-      return;
+    window.location.href = "/#";
+    return;
   }
 
-  const loginForm = document.getElementById('login-form');
-  const signupForm = document.getElementById('signup-form');
+  const loginForm = document.getElementById("login-form");
+  const signupForm = document.getElementById("signup-form");
 
   // Handler for login
-  loginForm.addEventListener('submit', (e) => {
+  loginForm.addEventListener("submit", (e) => {
     e.preventDefault();
-    const username = document.getElementById('username').value;
-    const password = document.getElementById('password').value;
+    const username = document.getElementById("username").value;
+    const password = document.getElementById("password").value;
     loginUser(username, password);
   });
 
   // Handler for registration
-  signupForm.addEventListener('submit', (e) => {
+  signupForm.addEventListener("submit", (e) => {
     e.preventDefault();
-    const email = document.getElementById('new-username').value;
-    const password = document.getElementById('new-password').value;
+    const email = document.getElementById("new-username").value;
+    const password = document.getElementById("new-password").value;
     createUser(email, password);
   });
 }
 
 // Function to log in
 function loginUser(username, password) {
-  fetch('http://127.0.0.1:8000/api/token/', {
-    method: 'POST',
+  fetch("http://127.0.0.1:8000/api/token/", {
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json'
+      "Content-Type": "application/json",
     },
-    body: JSON.stringify({ username, password })
+    body: JSON.stringify({ username, password }),
   })
   .then(response => {
     if (response.ok) {

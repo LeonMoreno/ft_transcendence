@@ -1,7 +1,7 @@
-import image from '../assets/game.png';
+import image from "../assets/game.png";
 
 export function HomeInit() {
-  console.log("start code in Home");
+  return null;
 }
 
 export function Home() {

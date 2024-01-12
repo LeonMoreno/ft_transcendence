@@ -1,95 +1,58 @@
+import image from "../assets/logo.svg";
 
-// import image from '../assets/logo.svg';
+const BACKEND_URL = "http://localhost:8000";
+let myUser = null;
 
-// const Header = () => {
-//     const view = `
-//       <div class="d-flex justify-content-between align-items-center p-3 bg-light">
-//           <!-- Left Menu -->
-//           <div class="d-flex">
-//               <a href="#friends" class="m-5 text-dark text-decoration-none">Friends</a>
-//               <a href="#chat" class="m-5 text-dark text-decoration-none">Chats</a>
-//               <a href="#game" class="m-5 text-dark text-decoration-none">Games</a>
-//           </div>
+const Header = async () => {
+  const jwt = localStorage.getItem("jwt");
+  const isAuthenticated = Boolean(localStorage.getItem("jwt"));
 
-//           <!-- Logo -->
-//           <div>
-//             <a href="#" >
-//                 <img src="${image}" alt="Logo" style="height: 50px;">
-//             </a>
-//           </div>
+  if (isAuthenticated) {
+    const responseMyUser = await fetch(`${BACKEND_URL}/api/me/`, {
+      headers: { Authorization: `Bearer ${jwt}` },
+    });
+    myUser = await responseMyUser.json();
+    if (myUser.code === "user_not_found" || myUser.code === "token_not_valid") {
+      window.location.replace("/#logout");
+    }
+  }
 
-//           <!-- Right Menu -->
-//           <div>
-//               <button class="btn btn-warning text-white">42 Auth</button>
-//           </div>
-//       </div>
-//      `;
+  const view = `
+      <header class="d-flex justify-content-between align-items-center p-3 bg-light">
+        <nav id="header-nav" class="d-flex">
+          <a href="#">
+            <img src="${image}" alt="Logo" style="height: 50px;">
+          </a>
+          ${
+            isAuthenticated
+              ? `<a href="#users" class="m-3 text-dark text-decoration-none">Users</a>
+            <a href="#friends" class="m-3 text-dark text-decoration-none">Friends</a>
+            <a href="#chat" class="m-3 text-dark text-decoration-none">Chats</a>
+            <a href="#game" class="m-3 text-dark text-decoration-none">Games</a>`
+              : ""
+          }
+        </nav>
 
-//     return view;
-//   };
-
-//   export default Header;
-
-///////////
-
-import image from '../assets/logo.svg';
-
-export function Header() {
-    const view = `
-        <div class="d-flex justify-content-between align-items-center p-3 bg-light">
-            <!-- Left Menu -->
-            <div class="d-flex">
-                <a href="#friends" class="m-5 text-dark text-decoration-none">Friends</a>
-                <a href="#chat" class="m-5 text-dark text-decoration-none">Chats</a>
-                <a href="#game" class="m-5 text-dark text-decoration-none">Games</a>
-            </div>
-
-            <!-- Logo -->
-            <div>
-                <a href="#" >
-                    <img src="${image}" alt="Logo" style="height: 50px;">
-                </a>
-            </div>
-
-            <!-- Right Menu -->
-            <div>
-                <button id="authButton" class="btn btn-warning text-white">Login</button>
-            </div>
+        <div class="d-flex">
+          ${
+            isAuthenticated
+              ? `<div>
+                  <span>${myUser.username}</span>
+                  <a href="/#logout" class="btn btn-primary">Logout</a>
+                </div>`
+              : ""
+          }
+          ${
+            !isAuthenticated
+              ? `<a href="/#auth" class="btn btn-primary">Login</a>`
+              : ""
+          }
+          <a href="#" class="btn btn-secondary text-white">42 Auth</a>
         </div>
-    `;
-    return view;
+      </header>
+     `;
+
+  return view;
 };
 
-export function HeaderInit() {
-    const authButton = document.getElementById('authButton');
-
-    const updateButton = () => {
-        const jwt = localStorage.getItem('jwt');
-        console.log("--> 🤖");
-        console.log(jwt);
-        console.log("--> jwt:");
-        if (jwt) {
-            authButton.textContent = 'Logout';
-            authButton.style.backgroundColor = 'red'; // Set button background to red
-
-        } else {
-            authButton.textContent = 'Login';
-            authButton.style.backgroundColor = ''; // Reset to default
-        }
-    };
-
-    // Event listener for the button
-    authButton.addEventListener('click', () => {
-        const jwt = localStorage.getItem('jwt');
-        if (jwt) {
-            localStorage.removeItem('jwt'); // Logout the user
-            updateButton(); // Update button to reflect logged out state
-            location.reload(); // or redirect to home
-        } else {
-            location.href = '#auth'; // Redirect to auth for login
-        }
-    });
-
-    // Initialize button text based on JWT
-    updateButton();
-}
+export default Header;
