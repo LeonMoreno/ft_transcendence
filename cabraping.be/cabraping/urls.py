@@ -44,8 +44,13 @@ router = DefaultRouter()
 router.register(r"users", UserViewSet)
 router.register(r"games", GameViewSet)
 
+from django.urls import path
+from chat.views import ChannelListView
+
+
 urlpatterns = [
     path("api/", include(router.urls)),
+    path('channels/', ChannelListView.as_view(), name='channel-list'),
     path("api/me/", MeViewSet.as_view(), name="my-profile"),
     path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),

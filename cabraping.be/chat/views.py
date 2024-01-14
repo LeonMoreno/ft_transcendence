@@ -1,3 +1,7 @@
-from django.shortcuts import render
+from rest_framework.generics import ListAPIView
+from .models import Channel
+from .serializers import ChannelSerializer
 
-# Create your views here.
+class ChannelListView(ListAPIView):
+    queryset = Channel.objects.all()
+    serializer_class = ChannelSerializer

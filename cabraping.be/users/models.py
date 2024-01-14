@@ -7,7 +7,7 @@ from django.contrib.auth.models import AbstractUser
 from django.utils.translation import gettext_lazy as _
 from django.conf import settings
 from django.utils import timezone
-
+# from chat.models import Channel
 
 # class User(AbstractUser):
 class CustomUser(AbstractUser):
@@ -22,10 +22,11 @@ class CustomUser(AbstractUser):
     createdAt = models.DateTimeField(auto_now_add=True)
     updatedAt = models.DateTimeField(auto_now=True)
     friends = models.ManyToManyField("self", symmetrical=True, blank=True)
-    # Suponiendo que hay un modelo Channel y un modelo Game relacionado
-    channelsAsOwner = models.ManyToManyField('Channel', related_name='owned_by')
-    channelsAsMember = models.ManyToManyField('Channel', related_name='member')
-    channelsAsAdmin = models.ManyToManyField('Channel', related_name='administered_by')
+    # chanel
+    channelsAsOwner = models.ManyToManyField('chat.Channel', related_name='owned_by')
+    channelsAsMember = models.ManyToManyField('chat.Channel', related_name='member')
+    channelsAsAdmin = models.ManyToManyField('chat.Channel', related_name='administered_by')
+    # game
     # games = models.ManyToManyField('Game', related_name='games')
     # gamesAsInviter = models.ManyToManyField('Game', related_name='invitations_sent')
     # gamesAsInvitee = models.ManyToManyField('Game', related_name='invitations_received')
@@ -54,13 +55,13 @@ class FriendRequest(models.Model):
         # for the same from_user and to_user
         unique_together = ["from_user", "to_user"]
 
-class Channel(models.Model):
-    id = models.CharField(max_length=255, primary_key=True, default=uuid.uuid4, editable=False)
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='owned_channels', on_delete=models.CASCADE)
-    ownerId = models.CharField(max_length=255)
-    status = models.CharField(max_length=255)
-    hash = models.CharField(max_length=255, null=True, blank=True)
-    admins = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='administered_channels')
-    members = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='channels')
-    createdAt = models.DateTimeField(auto_now_add=True)
-    updatedAt = models.DateTimeField(auto_now=True)
+# class Channel(models.Model):
+#     id = models.CharField(max_length=255, primary_key=True, default=uuid.uuid4, editable=False)
+#     owner = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='owned_channels', on_delete=models.CASCADE)
+#     ownerId = models.CharField(max_length=255)
+#     status = models.CharField(max_length=255)
+#     hash = models.CharField(max_length=255, null=True, blank=True)
+#     admins = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='administered_channels')
+#     members = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='channels')
+#     createdAt = models.DateTimeField(auto_now_add=True)
+#     updatedAt = models.DateTimeField(auto_now=True)
