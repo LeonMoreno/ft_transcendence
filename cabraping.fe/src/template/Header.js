@@ -3,7 +3,8 @@ import image from "../assets/logo.svg";
 const BACKEND_URL = "http://localhost:8000";
 let myUser = null;
 
-const Header = async () => {
+// const Header = async () => {
+export async function Header() {
   const jwt = localStorage.getItem("jwt");
   const isAuthenticated = Boolean(localStorage.getItem("jwt"));
 
@@ -54,5 +55,9 @@ const Header = async () => {
 
   return view;
 };
+
+export function HeaderInit() {
+  console.log("hello");
+}
 
 export default Header;

@@ -67,23 +67,66 @@ function addMessageToChat(message) {
 }
 
 
-function handleButtonClick() {
+// function handleButtonClick() {
 
+//   const modal = document.getElementById("channelModal");
+//   if (modal) {
+//     modal.style.display = 'block'; // Set the display to 'block' to make it visible
+//   }
+
+//   const closeModalButton = document.getElementById('closeModalButton');
+//   if (closeModalButton) {
+//     closeModalButton.addEventListener('click', () => {
+//       const modal = document.getElementById("channelModal");
+//       if (modal) {
+//           modal.style.display = 'none'; // Hide the modal
+//       }
+//     });
+//   }
+// }
+
+function handleButtonClick() {
   const modal = document.getElementById("channelModal");
-  if (modal) {
-    modal.style.display = 'block'; // Set the display to 'block' to make it visible
-  }
+    const membersList = document.getElementById("channelMembers");
+
+    if (modal) {
+        modal.style.display = 'block'; // Display the modal
+
+        // Fetch the list of users
+        fetch('http://127.0.0.1:8000/api/users/')
+            .then(response => response.json())
+            .then(users => {
+                membersList.innerHTML = ''; // Clear existing list items
+                users.forEach(user => {
+                    const listItem = document.createElement('li');
+
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.value = user.id;
+                    checkbox.id = 'user-' + user.id;
+
+                    const label = document.createElement('label');
+                    label.htmlFor = 'user-' + user.id;
+                    label.textContent = user.username; // Adjust according to your user object
+
+                    listItem.appendChild(checkbox);
+                    listItem.appendChild(label);
+                    membersList.appendChild(listItem);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching users:', error);
+            });
+    }
 
   const closeModalButton = document.getElementById('closeModalButton');
   if (closeModalButton) {
-    closeModalButton.addEventListener('click', () => {
-      const modal = document.getElementById("channelModal");
-      if (modal) {
+      closeModalButton.addEventListener('click', () => {
           modal.style.display = 'none'; // Hide the modal
-      }
-    });
+      });
   }
 }
+
 
 
 export function ChatInit() {
@@ -136,14 +179,28 @@ export function ChatInit() {
   // Manejar clics en el botón de agregar canal.
   const saveChannelButton = document.getElementById('saveChannelButton');
   if (saveChannelButton) {
-    saveChannelButton.addEventListener('click', () => {
-      const channelName = document.getElementById('channelName').value;
-      const selectedMembers = [...document.getElementById('channelMembers').options]
-                              .filter(option => option.selected)
-                              .map(option => option.value);
-      createChannel(channelName, selectedMembers);
-    });
+    saveChannelButton.addEventListener('click', handleSaveChannelClick);
+
+    // saveChannelButton.addEventListener('click', () => {
+    //   const channelName = document.getElementById('channelName').value;
+    //   const selectedMembers = [...document.getElementById('channelMembers').options]
+    //                           .filter(option => option.selected)
+    //                           .map(option => option.value);
+    //   createChannel(channelName, selectedMembers);
+    // });
   }
+}
+
+function handleSaveChannelClick() {
+  // Obtén el nombre del canal y los usuarios seleccionados
+  const channelName = document.getElementById('channelName').value;
+  const selectedUsers = [...document.getElementById('channelMembers').querySelectorAll('input:checked')]
+      .map(input => input.nextSibling.textContent);
+
+  // Muestra la información en la consola
+  console.log("Nombre del nuevo canal:", channelName);
+  console.log("Usuarios seleccionados:", selectedUsers);
+  console.log("Nombre del usuario actual:", UserName);
 }
 
 function createChannel(channelName, members) {
@@ -245,9 +302,10 @@ export function Chat() {
           <div class="modal-body">
             <input type="text" id="channelName" class="form-control mb-2" placeholder="Channel Name" required>
             <!-- Aquí deberías insertar la lógica para seleccionar usuarios -->
-            <select multiple class="form-control" id="channelMembers">
+            <div class="form-control" id="channelMembers">
               <!-- Opciones de usuarios se insertarán dinámicamente -->
-            </select>
+            </div>
+
           </div>
           <div class="modal-footer">
             <button type="button" id="saveChannelButton" class="btn btn-primary">Save Channel</button>
@@ -258,6 +316,8 @@ export function Chat() {
     </div>
     `;
 }
+
+{/* <select multiple class="form-control" id="channelMembers"></select> */}
 
 export default Chat;
 
