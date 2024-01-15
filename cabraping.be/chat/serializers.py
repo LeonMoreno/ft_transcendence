@@ -16,7 +16,8 @@ class ChannelSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Channel
-        fields = ['id', 'owner', 'admins', 'members', 'createdAt', 'updatedAt']
+        fields = ['id', 'name', 'owner', 'admins', 'members', 'status', 'password', 'createdAt', 'updatedAt']
+        # fields = ['id', 'name' 'owner', 'admins', 'members', 'createdAt', 'updatedAt']
 
 User = get_user_model()
 
@@ -28,7 +29,7 @@ class ChannelCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Channel
-        fields = ['owner', 'admins', 'members', 'status', 'password']
+        fields = ['owner', 'name', 'admins', 'members', 'status', 'password']
 
     def validate(self, data):
         # if data['owner'] in data['members']:

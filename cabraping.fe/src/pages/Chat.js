@@ -66,25 +66,6 @@ function addMessageToChat(message) {
   }
 }
 
-
-// function handleButtonClick() {
-
-//   const modal = document.getElementById("channelModal");
-//   if (modal) {
-//     modal.style.display = 'block'; // Set the display to 'block' to make it visible
-//   }
-
-//   const closeModalButton = document.getElementById('closeModalButton');
-//   if (closeModalButton) {
-//     closeModalButton.addEventListener('click', () => {
-//       const modal = document.getElementById("channelModal");
-//       if (modal) {
-//           modal.style.display = 'none'; // Hide the modal
-//       }
-//     });
-//   }
-// }
-
 function handleButtonClick() {
   const modal = document.getElementById("channelModal");
     const membersList = document.getElementById("channelMembers");
@@ -189,6 +170,43 @@ export function ChatInit() {
     //   createChannel(channelName, selectedMembers);
     // });
   }
+
+  const jwt = localStorage.getItem('jwt');
+  let userId;
+  if (jwt) {
+      const payload = jwt.split('.')[1];
+      const decodedPayload = JSON.parse(atob(payload));
+      userId = decodedPayload.user_id; // Asegúrate de que esta es la clave correcta para el ID del usuario
+      // Realizar una solicitud al endpoint para obtener los canales del usuario
+      console.log("userId:" + userId);
+      fetch(`http://localhost:8000/user-channels/${userId}/?format=json`)
+          .then(response => response.json())
+          .then(channels => {
+              console.log("channels");
+              console.log(channels);
+              // Actualizar la UI con los nombres de los canales
+              const channelsList = document.getElementById('channelsList'); // Asegúrate de que este es el ID correcto
+              channelsList.innerHTML = ''; // Limpiar la lista actual
+              channels.forEach(channel => {
+                  console.log("channel");
+                  console.log(channel);
+                  console.log("channel.name: " + channel.name);
+                  const listItem = document.createElement('li');
+                  if (channel.name.length != 0){
+                    // listItem.textContent = channel.name; // Asume que los objetos de canal tienen un campo 'name'
+                    listItem.innerHTML = `<a href="#chat/${channel.id}" class="text-decoration-none">${channel.name}</a>`;
+
+                  }else{
+                    listItem.innerHTML = `<a href="#chat/${channel.id}" class="text-decoration-none">${channel.id}</a>`;
+                    // listItem.textContent = "default " + channel.id; // Asume que los objetos de canal tienen un campo 'name'
+                  }
+                  channelsList.appendChild(listItem);
+              });
+          })
+          .catch(error => {
+              console.error('Error fetching channels:', error);
+          });
+  }
 }
 
 function handleSaveChannelClick() {
@@ -243,7 +261,7 @@ export function Chat() {
              Channels
              <button id="addChanel"  class="btn btn-primary btn-sm">Add Channel</button>
            </h4>
-           <ul class="list-unstyled">
+           <ul id="channelsList" class="list-unstyled">
              <li class="mb-2"><a href="#chat/channel-alpha" class="text-decoration-none">#channel-alpha</a></li>
              <li class="mb-2"><a href="#chat/channel-beta" class="text-decoration-none">#channel-beta</a></li>
              <li class="mb-2"><a href="#chat/channel-charlie" class="text-decoration-none">#channel-charlie</a></li>

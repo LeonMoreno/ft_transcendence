@@ -45,15 +45,17 @@ router.register(r"users", UserViewSet)
 router.register(r"games", GameViewSet)
 
 from django.urls import path
-from chat.views import ChannelListView
-from chat.views import ChannelCreateView
+from chat.views import ChannelListView, ChannelCreateView, UserChannelsView
 
 
 
 urlpatterns = [
     path("api/", include(router.urls)),
+
     path('channels/', ChannelListView.as_view(), name='channel-list'),
     path('channels/create/', ChannelCreateView.as_view(), name='channel-create'),
+    path('user-channels/<int:user_id>/', UserChannelsView.as_view(), name='user-channels'),
+
     path("api/me/", MeViewSet.as_view(), name="my-profile"),
     path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),

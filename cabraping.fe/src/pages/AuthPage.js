@@ -25,7 +25,7 @@ export function AuthPage() {
         </div>
         <div class="col-md-6">
           <!-- Registration Form -->
-          
+
           <form id="signup-form">
           <h2>Create Account</h2>
           <!-- Add additional fields as per your user model -->
@@ -39,7 +39,7 @@ export function AuthPage() {
           </div>
           <button type="submit" class="btn btn-success">Create Account</button>
           </form>
-          
+
           <div class="notification-container" id="notification-container" ></div>
         </div>
       </div>
