@@ -52,10 +52,15 @@ Migrate the database. You must have a database named "transcendence_db"
 
 ```sh
 python3 manage.py makemigrations
+
+python3 manage.py makemigrations chat users
 ```
 
 ```sh
 python3 manage.py migrate
+
+python3 manage.py migrate users
+python3 manage.py migrate chat
 ```
 
 ## Run Server
