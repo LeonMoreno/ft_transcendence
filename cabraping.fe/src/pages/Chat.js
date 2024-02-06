@@ -14,7 +14,8 @@ let myUser = null;
 
 function handleSendClick() {
   const textarea = document.getElementById('messageTextarea');
-  if (textarea && sockets[channel]) { // Verificar si la conexión del canal actual existe
+  // if (textarea && sockets[channel]) { // Verificar si la conexión del canal actual existe
+  if (textarea && sockets[channel_now]) { // Verificar si la conexión del canal actual existe
       const message = textarea.value;
       if (message.trim() !== '') {
           let info_send = {
@@ -22,7 +23,8 @@ function handleSendClick() {
               "channel": channel_now,
               "UserName": UserName,
           }
-          sockets[channel].send(JSON.stringify(info_send)); // Enviar mensaje a través del WebSocket correspondiente
+          console.log("-> sockets[channel_now]:", sockets[channel_now]);
+          sockets[channel_now].send(JSON.stringify(info_send)); // Enviar mensaje a través del WebSocket correspondiente
           textarea.value = '';
           addMessageToChat(info_send);
       }
