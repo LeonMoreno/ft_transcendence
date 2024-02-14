@@ -13,9 +13,15 @@ class ChannelListView(ListAPIView):
     serializer_class = ChannelSerializer
 
 class ChannelCreateView(APIView):
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
         serializer = ChannelCreateSerializer(data=request.data)
         if serializer.is_valid():
+            name = serializer.validated_data.get('name')
+            members = serializer.validated_data.get('members')
+
+            if Channel.objects.filter(name=name, members__in=members).exists():
+                return Response({"error": "A channel with this name and members already exists."}, status=status.HTTP_400_BAD_REQUEST)
+
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -29,5 +35,4 @@ class UserChannelsView(ListAPIView):
         for the user as determined by the userID portion of the URL.
         """
         user_id = self.kwargs['user_id']
-        # return Channel.objects.filter(members__id=user_id) | Channel.objects.filter(admins__id=user_id) | Channel.objects.filter(owner__id=user_id)
         return Channel.objects.filter(members__id=user_id)

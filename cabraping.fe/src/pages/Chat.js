@@ -3,19 +3,19 @@ import getHash from "../utils/getHash";
 
 const BACKEND_URL = "http://localhost:8000";
 
-// let socket;
-// let socket;
-let sockets = {}; // Objeto para almacenar conexiones WebSocket
+let sockets = {}; // Object to store WebSocket connections
+let usersList = []; // Global variable to store the list of users
+
 
 let UserName = "default";
-let channel = "general";
+let channel = -1;
+let user_id = -1;
 let channel_now = "general";
 let myUser = null;
 
 function handleSendClick() {
   const textarea = document.getElementById('messageTextarea');
-  // if (textarea && sockets[channel]) { // Verificar si la conexión del canal actual existe
-  if (textarea && sockets[channel_now]) { // Verificar si la conexión del canal actual existe
+  if (textarea && sockets[channel_now]) { // Check if the current channel connection exists
       const message = textarea.value;
       if (message.trim() !== '') {
           let info_send = {
@@ -24,42 +24,12 @@ function handleSendClick() {
               "UserName": UserName,
           }
           console.log("-> sockets[channel_now]:", sockets[channel_now]);
-          sockets[channel_now].send(JSON.stringify(info_send)); // Enviar mensaje a través del WebSocket correspondiente
+          sockets[channel_now].send(JSON.stringify(info_send)); // Send message through the corresponding WebSocket
           textarea.value = '';
           addMessageToChat(info_send);
       }
   }
 }
-// function handleSendClick() {
-//   const textarea = document.getElementById('messageTextarea');
-//   if (textarea) {
-//     const message = textarea.value;
-//     if (message.trim() !== '') {
-
-//       const jwt = localStorage.getItem('jwt');
-//       if (jwt) {
-//         const payload = jwt.split('.')[1];
-//         const decodedPayload = JSON.parse(atob(payload));
-//         UserName = decodedPayload.user_id;
-//       }
-
-//       let info_send = {
-//         "message": message,
-//         "channel": channel,
-//         "UserName": UserName,
-//       }
-
-//       // Enviar el mensaje al servidor a través del WebSocket.
-//       console.log("-> info_send");
-//       console.log(info_send);
-//       socket.send(JSON.stringify(info_send ));
-
-//       // Limpia el textarea después de enviar el mensaje.
-//       textarea.value = '';
-//       addMessageToChat(info_send);
-//     }
-//   }
-// }
 
 function addMessageToChat(message) {
 
@@ -98,44 +68,28 @@ function addMessageToChat(message) {
 
 function handleButtonClick() {
   const modal = document.getElementById("channelModal");
-    const membersList = document.getElementById("channelMembers");
-    const adminList = document.getElementById("channelAdmins");
+  const membersList = document.getElementById("channelMembers");
 
-    if (modal) {
-        modal.style.display = 'block'; // Display the modal
-
-        // Fetch the list of users
-        // fetch(`http://127.0.0.1:8000/api/users/`)
-        fetch(`${BACKEND_URL}/api/users/`)
-            .then(response => response.json())
-            .then(users => {
-                membersList.innerHTML = ''; // Clear existing list items
-                adminList.innerHTML = '';
-                users.forEach(user => {
-
-                    if (user.username != UserName){
-                      const listItem = document.createElement('li');
-
-                      const checkbox = document.createElement('input');
-                      checkbox.type = 'checkbox';
-                      checkbox.value = user.id;
-                      checkbox.id = 'user-' + user.id;
-
-                      const label = document.createElement('label');
-                      label.htmlFor = 'user-' + user.id;
-                      label.textContent = user.username; // Adjust according to your user object
-
-                      listItem.appendChild(checkbox);
-                      listItem.appendChild(label);
-                      membersList.appendChild(listItem);
-                    }
-                });
-                adminList.innerHTML = membersList.innerHTML;
-            })
-            .catch(error => {
-                console.error('Error fetching users:', error);
-            });
-    }
+  if (modal) {
+    modal.style.display = 'block'; // Display the modal
+    fetch(`${BACKEND_URL}/api/users/`)
+      .then(response => response.json())
+      .then(users => {
+        usersList = users;
+        membersList.innerHTML = ''; // Clear existing list item
+        users.forEach(user => {
+            if (user.username != UserName){
+              const listItem = document.createElement('option');
+              listItem.textContent = user.username;
+              listItem.value = user.id;
+              membersList.appendChild(listItem);
+            }
+        });
+      })
+      .catch(error => {
+          console.error('Error fetching users:', error);
+      });
+  }
 
   const closeModalButton = document.getElementById('closeModalButton');
   if (closeModalButton) {
@@ -145,8 +99,6 @@ function handleButtonClick() {
   }
 }
 
-
-
 export async function ChatInit() {
 
   const jwt = localStorage.getItem('jwt');
@@ -155,30 +107,11 @@ export async function ChatInit() {
       return;
   }
 
+  // Extract user_id from JWT
+  const payload = jwt.split('.')[1];
+  const decodedPayload = JSON.parse(atob(payload));
+  user_id = decodedPayload.user_id; // Update user_id variable with the user ID extracted from the JWT
 
-  // Create WebSocket connection.
-  // if (!socket)
-  // {
-    // socket = new WebSocket("ws://127.0.0.1:8000/ws/chat/");
-
-    // // Connection opened
-    // socket.addEventListener("open", (event) => {
-    //   // socket.send("Hello Server!");
-    //   console.log("start socket");
-    // });
-
-    // // Listen for messages
-    // socket.addEventListener("message", (event) => {
-    //   const message = JSON.parse(event.data).message;
-    //   console.log("event.data");
-    //   console.log(event.data);
-    //   console.log("22message");
-    //   console.log(message);
-    //   console.log(message.UserName);
-    //   console.log(message.message);
-    //   addMessageToChat(message);
-    // });
-  // }
 
   let route = getHash();
   console.log(`-> 🦾 this.route :${route}`);
@@ -195,63 +128,51 @@ export async function ChatInit() {
     button.addEventListener('click', handleButtonClick);
   }
 
-  // Escuchar clics en el botón de enviar.
+  // Listen for clicks on the send button.
   const sendButton = document.getElementById('sendButton');
   if (sendButton) {
     sendButton.addEventListener('click', handleSendClick);
   }
 
 
-  // Manejar clics en el botón de agregar canal.
+  // Manage clicks on the add channel button.
   const saveChannelButton = document.getElementById('saveChannelButton');
   if (saveChannelButton) {
     saveChannelButton.addEventListener('click', handleSaveChannelClick);
 
   }
 
-  // let userId;
-
   let userId = getUserIdFromJWT(jwt);
   const channels = await getUserChannels(userId);
 
   if (channels.length > 0) {
     updateChannelListAndSubscribe(channels);
-    channel = channels[0].id; // Establece el primer canal como el canal actual
+    channel = channels[0].id; // Sets the first channel as the current channel
   }
-  // if (channels.length > 0) {
-  //   channel = channels[0].id;
-  //   channels.forEach(canal => {
-  //       createWebSocketConnection(canal.id);
-  //   });
-  //   updateChannelList(channels);
-  // }
-
 
   if (jwt) {
       const payload = jwt.split('.')[1];
       const decodedPayload = JSON.parse(atob(payload));
-      userId = decodedPayload.user_id; // Asegúrate de que esta es la clave correcta para el ID del usuario
-      // Realizar una solicitud al endpoint para obtener los canales del usuario
+      userId = decodedPayload.user_id;
+      // Make a request to the endpoint to get the user's channels
       console.log("userId:" + userId);
       // fetch(`http://localhost:8000/user-channels/${userId}/?format=json`)
       fetch(`${BACKEND_URL}/user-channels/${userId}/?format=json`)
           .then(response => response.json())
           .then(channels => {
               console.log("channels: ", channels);
-              // Actualizar la UI con los nombres de los canales
-              const channelsList = document.getElementById('channelsList'); // Asegúrate de que este es el ID correcto
-              channelsList.innerHTML = ''; // Limpiar la lista actual
+              // Update the UI with the channel names
+              const channelsList = document.getElementById('channelsList'); // Make sure that this is the correct ID
+              channelsList.innerHTML = ''; // Clear current list
               channels.forEach(channel => {
                   console.log("channel: ", channel);
                   console.log("channel.name: " + channel.name);
                   const listItem = document.createElement('li');
                   if (channel.name.length != 0){
-                    // listItem.textContent = channel.name; // Asume que los objetos de canal tienen un campo 'name'
                     listItem.innerHTML = `<a href="#chat/${channel.id}" class="text-decoration-none">${channel.name}</a>`;
 
                   }else{
                     listItem.innerHTML = `<a href="#chat/${channel.id}" class="text-decoration-none">${channel.id}</a>`;
-                    // listItem.textContent = "default " + channel.id; // Asume que los objetos de canal tienen un campo 'name'
                   }
                   channelsList.appendChild(listItem);
               });
@@ -271,14 +192,14 @@ export async function ChatInit() {
   UserName = myUser.username;
 }
 
-// Función para obtener el ID del usuario del JWT
+// Function to obtain the JWT user ID
 function getUserIdFromJWT(jwt) {
   const payload = jwt.split('.')[1];
   const decodedPayload = JSON.parse(atob(payload));
   return decodedPayload.user_id;
 }
 
-// Función para obtener los canales del usuario
+// Function to obtain the user's channels
 async function getUserChannels(userId) {
   const response = await fetch(`${BACKEND_URL}/user-channels/${userId}/?format=json`);
   const data = await response.json();
@@ -296,7 +217,7 @@ async function updateChannelListAndSubscribe(channels) {
   });
 }
 
-// Función para crear una conexión WebSocket
+// Function to create a WebSocket connection
 function createWebSocketConnection(channelId) {
   const ws = new WebSocket(`ws://127.0.0.1:8000/ws/chat/${channelId}/`);
   ws.addEventListener("message", (event) => {
@@ -305,74 +226,48 @@ function createWebSocketConnection(channelId) {
       console.log("--> Mensaje ❤️: ", message);
       addMessageToChat(message);
   });
-  sockets[channelId] = ws; // Almacenar la conexión WebSocket
+  sockets[channelId] = ws; // Store WebSocket connection
 }
 
-// function createWebSocketConnection(channelId) {
-//   const ws = new WebSocket(`ws://127.0.0.1:8000/ws/chat/${channelId}/`);
-//   ws.addEventListener("message", (event) => {
-//       const message = JSON.parse(event.data).message;
-//       addMessageToChat(message);
-//   });
-//   // Guardar la conexión WebSocket si es necesario
-// }
+function showNotification(message, type) {
+  console.log("--> showNotification");
+  const container = document.getElementById('notification-container');
+  const notification = document.createElement('div');
+  notification.classList.add('notification', type);
+  notification.textContent = message;
 
-// Función para actualizar la lista de canales en la UI
-function updateChannelList(channels) {
-  const channelsList = document.getElementById('channelsList');
-  channelsList.innerHTML = '';
-  channels.forEach(channel => {
-      const listItem = document.createElement('li');
-      listItem.innerHTML = `<a href="#chat/${channel.id}" class="text-decoration-none">${channel.name}</a>`;
-      channelsList.appendChild(listItem);
-  });
+  container.appendChild(notification);
+
+  // Automatically remove the notification after 5 seconds
+  setTimeout(() => {
+      container.removeChild(notification);
+  }, 5000);
 }
 
 
 function handleSaveChannelClick() {
-  // Obtén el nombre del canal y los usuarios seleccionados
-  const channelName = document.getElementById('channelName').value;
-  let selectedUsersMember = [...document.getElementById('channelMembers').querySelectorAll('input:checked')]
-      .map(input => input.nextSibling.textContent);
-  let selectedUsersAdmin = [...document.getElementById('channelAdmins').querySelectorAll('input:checked')]
-      .map(input => input.nextSibling.textContent);
 
-  selectedUsersMember.push(UserName);
-  selectedUsersAdmin.push(UserName);
+  let selectedOptions = document.getElementById('channelMembers').selectedOptions;
+  let selectedUsersMember = Array.from(selectedOptions).map(option => parseInt(option.value, 10));
 
-  // Unir los dos arrays
-  let combinedArray = selectedUsersMember.concat(selectedUsersAdmin);
+  selectedUsersMember.push(user_id);
 
-  // Eliminar duplicados
-  selectedUsersMember = [...new Set(combinedArray)];
-
-
-  // Obtener información sobre la privacidad del canal
-  let isPrivate = document.getElementById('privateChannelCheckbox').checked;
-  const channelPassword = isPrivate ? document.getElementById('channelPassword').value : '';
-
-  if (isPrivate === true)
-  {
-    isPrivate = "private"
-  }
-  else
-  {
-    isPrivate = "public";
-  }
+  // Extract the user name using user_id
+  const userName = usersList.find(user => user.id == selectedUsersMember[0])?.username || 'Unknown User';
 
   const channelData = {
-    owner:UserName,
-    name: channelName,
-    status: isPrivate,
-    password: channelPassword,
+    // owner: UserName,
+    owner: user_id,
+    ownerId: user_id,
+    name: userName,
+    status: "working",
     members: selectedUsersMember,
-    admins: selectedUsersAdmin
   };
 
-  // Endpoint del backend (ajusta según tu configuración)
+  // Backend endpoint (adjust according to your configuration)
   const url = `${BACKEND_URL}/channels/create/`;
-  
-  // Opciones para la solicitud fetch
+
+  // Options for fetch request
   const requestOptions = {
       method: 'POST',
       headers: {
@@ -382,38 +277,46 @@ function handleSaveChannelClick() {
   };
 
 
-  // Muestra la información en la consola
+  // Displays the information in the console
   console.log("channelData: ", channelData);
 
-  // Realizar la solicitud POST
+  // Perform POST request
   fetch(url, requestOptions)
   .then(response => response.json())
   .then(data => {
-      console.log('Canal creado con éxito:', data);
-      window.location.reload();
-      // Aquí puedes manejar la respuesta del servidor, como actualizar la UI
+      if (response.ok) { // Verify that the response status is 200 or 201.
+        return response.json().then(data => {
+            console.log('Channel successfully created:', data);
+            showNotification("Channel successfully created", "success");
+            setTimeout(() => {
+              window.location.reload();
+          }, 5000);
+        });
+    } else {
+        // return response.json().then(error => {
+          // showNotification("Error there is already a chat", "error");
+        // });
+        showNotification("Error there is already a chat", "error");
+    }
   })
   .catch(error => {
-      console.error('Error al crear el canal:', error);
+      showNotification("Error there is already a chat", "error");
   });
 
 }
 
 function createChannel(channelName, members) {
-  // Deberás reemplazar esto con tu API real y el método de autenticación (por ejemplo, usando un token JWT).
-  // fetch('http://127.0.0.1:8000/api/channels/', {
   fetch(`${BACKEND_URL}/api/channels/`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${localStorage.getItem('jwt')}`, // Asumiendo que estás usando JWT para autenticación
+      'Authorization': `Bearer ${localStorage.getItem('jwt')}`,
     },
     body: JSON.stringify({ name: channelName, members: members })
   })
   .then(response => response.json())
   .then(data => {
     console.log('Channel created:', data);
-    // Aquí puedes actualizar la lista de canales en la UI.
   })
   .catch((error) => {
     console.error('Error:', error);
@@ -433,12 +336,11 @@ export  function Chat() {
 
   return `
     <div class="d-flex h-100">
-       <!-- Left Panel: Channels -->
        <div class="w-25 h-100 bg-light p-3">
          <h3>Chat</h3>
          <div class="mb-4">
            <h4 class="d-flex justify-content-between">
-             Channels
+            Messages with all
              <button id="addChanel"  class="btn btn-primary btn-sm">Add Channel</button>
            </h4>
            <ul id="channelsList" class="list-unstyled">
@@ -448,15 +350,6 @@ export  function Chat() {
            </ul>
          </div>
 
-         <h4 class="d-flex justify-content-between">
-           Messages
-           <button id="addMessages" class="btn btn-primary btn-sm">Add Messages</button>
-         </h4>
-         <ul class="list-unstyled">
-           <li class="mb-2"><a href="#chat/username-a" class="text-decoration-none">username-a</a></li>
-           <li class="mb-2"><a href="#chat/username-b" class="text-decoration-none">username-b</a></li>
-           <li class="mb-2"><a href="#chat/username-c" class="text-decoration-none">username-c</a></li>
-         </ul>
 
          <div class="mt-4 d-flex align-items-center">
            <img src="${image}" alt="User Image" class="rounded-circle mr-2" width="40">
@@ -498,21 +391,9 @@ export  function Chat() {
             </button>
           </div>
           <div class="modal-body">
-            <input type="text" id="channelName" class="form-control mb-2" placeholder="Channel Name" required>
-            <!-- Aquí deberías insertar la lógica para seleccionar usuarios -->
-
-            <input type="checkbox" id="privateChannelCheckbox"> Canal Privado
-            <input type="password" id="channelPassword" placeholder="Contraseña del Canal">
-
-            <p>Admins</p>
-            <div class="form-control" id="channelAdmins">
-              <!-- Opciones de usuarios se insertarán dinámicamente -->
-            </div>
 
             <p>Members</p>
-            <div class="form-control" id="channelMembers">
-              <!-- Opciones de usuarios se insertarán dinámicamente -->
-            </div>
+            <select multiple class="form-control" id="channelMembers"></select>
 
           </div>
           <div class="modal-footer">
@@ -525,7 +406,4 @@ export  function Chat() {
     `;
 }
 
-{/* <select multiple class="form-control" id="channelMembers"></select> */}
-
 export default Chat;
-

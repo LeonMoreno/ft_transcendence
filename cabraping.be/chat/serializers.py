@@ -7,7 +7,7 @@ from django.contrib.auth import get_user_model
 class CustomUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ['username', 'email', 'firstName', 'lastName']  # Ajusta los campos según necesites
+        fields = ['username', 'email', 'firstName', 'lastName']
 
 class ChannelSerializer(serializers.ModelSerializer):
     owner = CustomUserSerializer(read_only=True)
@@ -17,25 +17,22 @@ class ChannelSerializer(serializers.ModelSerializer):
     class Meta:
         model = Channel
         fields = ['id', 'name', 'owner', 'admins', 'members', 'status', 'password', 'createdAt', 'updatedAt']
-        # fields = ['id', 'name' 'owner', 'admins', 'members', 'createdAt', 'updatedAt']
 
 User = get_user_model()
 
 class ChannelCreateSerializer(serializers.ModelSerializer):
-
-    owner = serializers.SlugRelatedField(slug_field='username', queryset=User.objects.all())
-    admins = serializers.SlugRelatedField(slug_field='username', queryset=User.objects.all(), many=True)
-    members = serializers.SlugRelatedField(slug_field='username', queryset=User.objects.all(), many=True)
-
     class Meta:
         model = Channel
-        fields = ['owner', 'name', 'admins', 'members', 'status', 'password']
+        fields = '__all__'
 
-    def validate(self, data):
-        # if data['owner'] in data['members']:
-            # raise serializers.ValidationError("El dueño no puede ser un participante.")
-        if len(data['members']) < 1:
-            raise serializers.ValidationError("Debe haber al menos un participante.")
-        if data['status'] == 'private' and 'password' not in data:
-            raise serializers.ValidationError("Se requiere una contraseña para los canales privados.")
-        return data
+    def create(self, validated_data):
+        # Extracts the channel name and the members of the validated_data
+        name = validated_data.get('name')
+        members = validated_data.get('members')
+
+        # Checks if a channel with the same name and members already exists
+        if Channel.objects.filter(name=name, members__in=members).exists():
+            raise serializers.ValidationError("Un canal con este nombre y miembros ya existe.")
+
+        # If it does not exist, proceed with the creation
+        return super().create(validated_data)

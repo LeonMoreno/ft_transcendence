@@ -46,6 +46,7 @@ export function AuthPage() {
     </div>
   `;
 }
+{/* <div class="notification-container" id="notification-container" ></div> */}
 
 {/* <div id="notification-container" style="position: fixed; top: 20px; right: 20px; z-index: 1000;"></div> */}
 // AuthPage.js
