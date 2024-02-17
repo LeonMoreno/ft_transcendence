@@ -23,7 +23,7 @@ class MyWebSocketConsumerChat(AsyncWebsocketConsumer):
 
 
         # Imprimir el mensaje y el nombre del usuario en la terminal del backend
-        print(f"\n Mensaje de usuario[{username}] chanel_name [{channel_name}] y message[{message}]")
+        print(f"\n Message from user [{username}] channel_name [{channel_name}] and message [{message}]")
 
         # Enviar el mensaje y el nombre del usuario a todos en el grupo del canal
         await self.channel_layer.group_send(

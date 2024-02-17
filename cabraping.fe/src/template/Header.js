@@ -18,6 +18,21 @@ export async function Header() {
     }
   }
 
+
+
+
+  const string1 = "hello";
+  const string2 = 'hello';
+  const string = "hello";
+
+
+
+
+
+
+
+
+
   const view = `
       <header class="d-flex justify-content-between align-items-center p-3 bg-light">
         <nav id="header-nav" class="d-flex">

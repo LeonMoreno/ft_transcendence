@@ -1,6 +1,6 @@
 import router from "./routes";
 
-// esperamos a que pase el "load", y queremos que aga algo
+// we wait for the "load" to pass, and we want it to do something
 window.addEventListener("load", router);
 
 window.addEventListener("hashchange", router);
