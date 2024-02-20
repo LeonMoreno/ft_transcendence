@@ -146,8 +146,7 @@ export async function ChatInit() {
   const channels = await getUserChannels(userId);
 
   if (channels.length > 0) {
-    // updateChannelListAndSubscribe(channels);
-    updateChannelList(channels); // Call the new function to update the channels dropdown
+    updateChannelListAndSubscribe(channels);
     channel = channels[0].id; // Sets the first channel as the current channel
   }
 
@@ -191,65 +190,6 @@ export async function ChatInit() {
     window.location.replace("/#logout");
   }
   UserName = myUser.username;
-}
-
-// Function to update the channels list UI with a selector
-function updateChannelList(channels) {
-  // Get the channels dropdown element
-  const channelsDropdown = document.getElementById('channelsDropdown');
-  // Clear previous options
-  channelsDropdown.innerHTML = '';
-
-  const defaultValue = document.createElement('option');
-  defaultValue.value = -1;
-  defaultValue.textContent = "Select a person for messages";
-  channelsDropdown.appendChild(defaultValue);
-
-  // Add an option for each channel
-  channels.forEach(channel => {
-    const option = document.createElement('option');
-    option.value = channel.id;
-    option.textContent = channel.name;
-    channelsDropdown.appendChild(option);
-  });
-
-  // Set up an event listener to handle channel changes
-  channelsDropdown.addEventListener('change', (event) => {
-    const selectedChannelId = event.target.value;
-    switchChannel(selectedChannelId); // Function to handle channel switch
-  });
-}
-
-function switchChannel(newChannelId) {
-  // Update the current channel
-  channel_now = newChannelId;
-
-  // Clear the chat messages from the UI
-  const messageList = document.getElementById('messageList');
-  messageList.innerHTML = '';
-
-  // Check if there's an existing WebSocket connection for the new channel
-  if (!sockets[newChannelId]) {
-    // If no existing connection, create a new WebSocket connection
-    createWebSocketConnection(newChannelId);
-  }
-
-  // Fetch the chat history for the new channel and display it
-  fetchChatHistory(newChannelId);
-}
-
-function fetchChatHistory(channelId) {
-  // Fetch the chat history from the server
-  // This will be an API call to your server to get the chat history
-  fetch(`${BACKEND_URL}/api/channels/${channelId}/messages`)
-    .then(response => response.json())
-    .then(messages => {
-      // Display each message in the UI
-      messages.forEach(message => {
-        addMessageToChat(message);
-      });
-    })
-    .catch(error => console.error('Error fetching chat history:', error));
 }
 
 // Function to obtain the JWT user ID
@@ -400,10 +340,12 @@ export  function Chat() {
             Messages with all
              <button id="addChanel"  class="btn btn-primary btn-sm">Add Channel</button>
            </h4>
-           <select id="channelsDropdown" class="form-control">
-            </select>
-
-          </div>
+           <ul id="channelsList" class="list-unstyled">
+             <li class="mb-2"><a href="#chat/channel-alpha" class="text-decoration-none">#channel-alpha</a></li>
+             <li class="mb-2"><a href="#chat/channel-beta" class="text-decoration-none">#channel-beta</a></li>
+             <li class="mb-2"><a href="#chat/channel-charlie" class="text-decoration-none">#channel-charlie</a></li>
+           </ul>
+         </div>
 
 
          <div class="mt-4 d-flex align-items-center">
