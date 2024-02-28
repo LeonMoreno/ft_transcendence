@@ -18,6 +18,8 @@ COPY ./cabraping.be /app
 
 COPY ./cabraping.be/entrypoint.sh /app/
 
+RUN echo "----> Paco = ejecutado"
+
 # Ensure that the input script is executable
 RUN chmod +x /app/entrypoint.sh
 
