@@ -1,5 +1,22 @@
 # ft_transcendence
 
+# Docker
+
+Ra run Docker:
+```
+ docker-compose up
+```
+
+will take a few seconds and you can test it on the route:
+http://localhost:8080/#friends
+
+to clean docker:
+```
+docker rm -f $(docker ps -aq) && docker rmi -f $(docker images -aq) && docker volume rm $(docker volume ls -q)
+```
+
+
+
 # Django:
 
 ## For the backend you need to use Redis:
