@@ -1,0 +1,55 @@
+# -------------------------
+# --------- Deigo ---------
+# -------------------------
+
+version: '3.9'
+
+services:
+  database:
+    image: postgres:alpine
+    container_name: transcendence_db
+    hostname: database
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASS}
+      - POSTGRES_DB=${DB_NAME}
+
+  redis:
+    image: "redis:alpine"
+    container_name: transcendence_redis
+
+  backend:
+    build:
+      context: .
+      dockerfile: cabraping.be/Dockerfile
+    volumes:
+      - ./cabraping.be:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - database
+    environment:
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASS=${DB_PASS}
+      - DB_HOST=database
+      - DB_PORT=5432
+
+  frontend:
+    build:
+      context: .
+      dockerfile: cabraping.fe/Dockerfile
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./cabraping.fe:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=production
+
+volumes:
+  postgres_data:
