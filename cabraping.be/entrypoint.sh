@@ -1,12 +1,12 @@
 #!/bin/sh
 
-echo "----> Diego = espera"
+
 
 while ! nc -z database 5432; do
   sleep 0.1
 done
 
-echo "----> Diego = ejecutado"
+
 
 # Execute migrations
 python3 manage.py migrate users
