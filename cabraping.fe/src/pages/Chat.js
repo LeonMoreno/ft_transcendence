@@ -122,6 +122,15 @@ export async function ChatInit() {
     channel = route;
   }
 
+  const responseMyUser = await fetch(`${BACKEND_URL}/api/me/`, {
+    headers: { Authorization: `Bearer ${jwt}` },
+  });
+  myUser = await responseMyUser.json();
+  if (myUser.code === "user_not_found" || myUser.code === "token_not_valid") {
+    window.location.replace("/#logout");
+  }
+  UserName = myUser.username;
+
   const button = document.getElementById('addChanel');
   console.log(button);
   if (button) {
@@ -134,12 +143,10 @@ export async function ChatInit() {
     sendButton.addEventListener('click', handleSendClick);
   }
 
-
   // Manage clicks on the add channel button.
   const saveChannelButton = document.getElementById('saveChannelButton');
   if (saveChannelButton) {
     saveChannelButton.addEventListener('click', handleSaveChannelClick);
-
   }
 
   let userId = getUserIdFromJWT(jwt);
@@ -151,50 +158,13 @@ export async function ChatInit() {
     channel = channels[0].id; // Sets the first channel as the current channel
   }
 
-  if (jwt) {
-      const payload = jwt.split('.')[1];
-      const decodedPayload = JSON.parse(atob(payload));
-      userId = decodedPayload.user_id;
-      // Make a request to the endpoint to get the user's channels
-      console.log("userId:" + userId);
-      // fetch(`http://localhost:8000/user-channels/${userId}/?format=json`)
-      fetch(`${BACKEND_URL}/user-channels/${userId}/?format=json`)
-          .then(response => response.json())
-          .then(channels => {
-              console.log("channels: ", channels);
-              // Update the UI with the channel names
-              const channelsList = document.getElementById('channelsList'); // Make sure that this is the correct ID
-              channelsList.innerHTML = ''; // Clear current list
-              channels.forEach(channel => {
-                  console.log("channel: ", channel);
-                  console.log("channel.name: " + channel.name);
-                  const listItem = document.createElement('li');
-                  if (channel.name.length != 0){
-                    listItem.innerHTML = `<a href="#chat/${channel.id}" class="text-decoration-none">${channel.name}</a>`;
-
-                  }else{
-                    listItem.innerHTML = `<a href="#chat/${channel.id}" class="text-decoration-none">${channel.id}</a>`;
-                  }
-                  channelsList.appendChild(listItem);
-              });
-          })
-          .catch(error => {
-              console.error('Error fetching channels:', error);
-          });
-  }
-
-  const responseMyUser = await fetch(`${BACKEND_URL}/api/me/`, {
-    headers: { Authorization: `Bearer ${jwt}` },
-  });
-  myUser = await responseMyUser.json();
-  if (myUser.code === "user_not_found" || myUser.code === "token_not_valid") {
-    window.location.replace("/#logout");
-  }
-  UserName = myUser.username;
 }
 
 // Function to update the channels list UI with a selector
 function updateChannelList(channels) {
+
+  console.log("---> 🎉 channels");
+  console.log(channels);
   // Get the channels dropdown element
   const channelsDropdown = document.getElementById('channelsDropdown');
   // Clear previous options
@@ -209,7 +179,27 @@ function updateChannelList(channels) {
   channels.forEach(channel => {
     const option = document.createElement('option');
     option.value = channel.id;
-    option.textContent = channel.name;
+    // option.textContent = channel.name;
+
+    console.log("--> 🤟 channel.name :", channel.name);
+    console.log("--> 🤟 UserName :", UserName);
+    if (channel.name === UserName) {
+      // Encuentra un miembro cuyo username sea diferente de UserName
+      const differentMember = channel.members.find(member => member.username !== UserName);
+    
+      // Verifica si se encontró un miembro diferente
+      if (differentMember) {
+        console.log("--> 🤟 Different member's username: ", differentMember.username);
+        option.textContent = differentMember.username;
+      } else {
+        // Manejar el caso donde no se encuentra un miembro diferente o todos tienen el mismo nombre
+        option.textContent = "No disponible";
+      }
+    }
+    else
+    {
+      option.textContent = channel.name;
+    }
     channelsDropdown.appendChild(option);
   });
 
@@ -307,10 +297,14 @@ function showNotification(message, type) {
 
 function handleSaveChannelClick() {
 
+  console.log("--> 🦾 Click 🦾");
+
   let selectedOptions = document.getElementById('channelMembers').selectedOptions;
   let selectedUsersMember = Array.from(selectedOptions).map(option => parseInt(option.value, 10));
 
   selectedUsersMember.push(user_id);
+
+  console.log("selectedUsersMember: ", selectedUsersMember);
 
   // Extract the user name using user_id
   const userName = usersList.find(user => user.id == selectedUsersMember[0])?.username || 'Unknown User';
@@ -348,38 +342,24 @@ function handleSaveChannelClick() {
     console.log(data.name);
     if (data.name) { // Verify that the response status is 200 or 201.
       showNotification("Channel successfully created", "success");
+      // Actualiza la lista de canales
+      getUserChannels(user_id).then(updateChannelList); // Asume que user_id es global
     }
     else{
       showNotification("Error there is already a chat", "error");
     }
-    setTimeout(() => {
-      window.location.reload();
-    }, 2500);
+
+     // Cierra el modal
+     const modal = document.getElementById("channelModal");
+     if (modal) {
+       modal.style.display = 'none';
+     }
   })
   .catch(error => {
       showNotification("Error there is already a chat", "error");
   });
 
 }
-
-function createChannel(channelName, members) {
-  fetch(`${BACKEND_URL}/api/channels/`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${localStorage.getItem('jwt')}`,
-    },
-    body: JSON.stringify({ name: channelName, members: members })
-  })
-  .then(response => response.json())
-  .then(data => {
-    console.log('Channel created:', data);
-  })
-  .catch((error) => {
-    console.error('Error:', error);
-  });
-}
-
 
 
 // export function Chat() {
@@ -401,7 +381,8 @@ export  function Chat() {
              <button id="addChanel"  class="btn btn-primary btn-sm">Add Channel</button>
            </h4>
            <select id="channelsDropdown" class="form-control">
-            </select>
+            <option value="-1">Select a person for messages</option>
+           </select>
 
           </div>
 
@@ -453,7 +434,6 @@ export  function Chat() {
           </div>
           <div class="modal-footer">
             <button type="button" id="saveChannelButton" class="btn btn-primary">Save Channel</button>
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
           </div>
         </div>
       </div>

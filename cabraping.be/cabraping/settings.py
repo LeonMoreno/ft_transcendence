@@ -99,10 +99,12 @@ DATABASES = {
         'NAME': 'transcendence_db',
         'USER': 'transcendence_user',
         'PASSWORD': 'transcendence_password',
-        'HOST': 'database',
+        'HOST': 'localhost',
         'PORT': '5432',
     }
 }
+        # 'HOST': 'database',
+        # 'HOST': 'localhost',
 
 
 MIDDLEWARE = [
