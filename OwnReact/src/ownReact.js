@@ -26,7 +26,8 @@ function createDom(fiber) {
     return createDom(fiber.type(fiber.props));
   }
   // Otherwise, we are working with a standard HTML element represented as a string
-  const dom =
+  // const dom =
+  let dom =
     fiber.type === 'TEXT_ELEMENT'
       ? document.createTextNode("")
       : document.createElement(fiber.type);
@@ -106,14 +107,23 @@ function commitWork(fiber) {
   while (!domParentFiber.dom) {
     domParentFiber = domParentFiber.parent;
   }
-  const domParent = domParentFiber.dom;
+
+  if (!domParentFiber) {
+    console.error("No domParent found for fiber", fiber);
+    return;
+  }
+
+  // const domParent = domParentFiber.dom;
+  let domParent = domParentFiber.dom;
 
   if (fiber.effectTag === "PLACEMENT" && fiber.dom != null) {
     domParent.appendChild(fiber.dom);
   } else if (fiber.effectTag === "UPDATE" && fiber.dom != null) {
     updateDom(fiber.dom, fiber.alternate.props, fiber.props);
   } else if (fiber.effectTag === "DELETION") {
+    console.log("==> delete: domParent:", domParent, ":fiber:", fiber, ":fiber.dom:", fiber.dom);
     commitDeletion(fiber, domParent);
+    console.log("==> delete: fiber:", fiber);
   }
 
   commitWork(fiber.child);
@@ -121,15 +131,40 @@ function commitWork(fiber) {
 }
 
 function commitDeletion(fiber, domParent) {
-  if (fiber.dom) {
+  if (fiber && fiber.dom) {
     // Only remove the child if it's actually a child of the parent
-    if (domParent.contains(fiber.dom)) {
+    console.log("+> fiber.dom:", fiber.dom);
+    console.log(domParent);
+    if (domParent && domParent.contains(fiber.dom)) {
+      console.log("+++> domParent");
+      console.log(domParent);
+      console.log("+++> fiber.dom:", fiber.dom);
+      console.log(fiber.dom);
+      console.log("+++> domParent.firstChild", domParent.firstChild);
+      console.log("++++> removeChild");
+      // domParent.removeChild(fiber.dom);
       domParent.removeChild(fiber.dom);
+      fiber.child = null;
+      fiber.dom = null;
+      console.log("+++> domParent end");
+      console.log(domParent);
+      console.log("+++> fiber end");
+      console.log(fiber);
+      // domParent.removeChild(fiber.dom);
     }
-  } else {
+  } else if (fiber) {
     // If the fiber doesn't have a DOM node, recurse to find a child that does
+    console.log("++> fiber.child");
     commitDeletion(fiber.child, domParent);
   }
+
+  // También deberías asegurarte de que los fibers hermanos o hijos se manejen correctamente
+  // if(fiber && fiber.child) {
+  //   commitDeletion(fiber.child, fiber.dom);
+  // }
+  // if(fiber.sibling) {
+  //   commitDeletion(fiber.sibling, fiber.dom);
+  // }
 }
 // function commitDeletion(fiber, domParent) {
 //   if (fiber.dom) {
@@ -204,7 +239,8 @@ function updateFunctionComponent(fiber) {
   wipFiber = fiber;
   hookIndex = 0;
   wipFiber.hooks = [];
-  const children = [fiber.type(fiber.props)];
+  let children = [fiber.type(fiber.props)];
+  // const children = [fiber.type(fiber.props)];
   reconcileChildren(fiber, children);
 }
 

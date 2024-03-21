@@ -27,9 +27,13 @@ const router = async () => {
     console.log(`> route:{${route}}`);
     console.log(`> routeComplete:{${routeComplete}}`);
 
-    container.innerHTML = "";
-    container.innerHTML = "";
-    container.innerHTML = "";
+    // container.innerHTML = "";
+    // container.innerHTML = "";
+    // container.innerHTML = "";
+
+    // while (container.firstChild) {
+    //   container.removeChild(container.firstChild);
+    // }
 
     console.log("> container");
     console.log(container);
