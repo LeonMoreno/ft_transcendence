@@ -1,5 +1,6 @@
 /** @jsx Didact.createElement */
 import Didact from "../ownReact";
+import Hello from "./hello";
 
 function Counter() {
   const [state, setState] = Didact.useState(0);
@@ -12,6 +13,11 @@ function Counter() {
         Count: {state}
       </h1>
       <a href="#/home">Go to Home</a>
+      <br />
+      <br />
+      <br />
+
+      {state > 4 ? <Hello/> : "bye"}
     </div>
   );
 }

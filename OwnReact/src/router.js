@@ -24,29 +24,8 @@ const router = async () => {
 
     const routeComplete = route === "/" ? "/" : `/${route}`;
 
-    console.log(`> route:{${route}}`);
-    console.log(`> routeComplete:{${routeComplete}}`);
-
-    // container.innerHTML = "";
-    // container.innerHTML = "";
-    // container.innerHTML = "";
-
-    // while (container.firstChild) {
-    //   container.removeChild(container.firstChild);
-    // }
-
-    console.log("> container");
-    console.log(container);
-    console.log("> container.innerHTML");
-    console.log(container.innerHTML);
-
-    // Create a new instance of the component for the route
-    // const newComponent = routes[routeComplete] ? Didact.createElement(routes[routeComplete], {}) : Didact.createElement(Counter, {});
     const newComponent = routes[routeComplete] ? Didact.createElement(routes[routeComplete], {}) : <Counter />;
-    console.log(`> newComponent:`);
-    console.log(newComponent);
 
-    
     Didact.render(newComponent, container);
   } catch (error) {
     console.error(error);
