@@ -11,6 +11,8 @@ let UserName = "default";
 let channel = -1;
 let user_id = -1;
 let channel_now = "general";
+let channel_title = "general";
+let array_channels;
 let myUser = null;
 
 function handleSendClick() {
@@ -158,6 +160,15 @@ export async function ChatInit() {
     channel = channels[0].id; // Sets the first channel as the current channel
   }
 
+  const channelsDropdown = document.getElementById('channelsDropdown');
+  if (channelsDropdown) {
+    channelsDropdown.addEventListener('click', async () => {
+      let userId = getUserIdFromJWT(localStorage.getItem('jwt'));
+      const channels = await getUserChannels(userId);
+      updateChannelList(channels);
+    });
+  }
+
 }
 
 // Function to update the channels list UI with a selector
@@ -176,20 +187,23 @@ function updateChannelList(channels) {
   channelsDropdown.appendChild(defaultValue);
 
   // Add an option for each channel
+  array_channels = channels;
   channels.forEach(channel => {
     const option = document.createElement('option');
     option.value = channel.id;
     // option.textContent = channel.name;
 
-    console.log("--> 🤟 channel.name :", channel.name);
-    console.log("--> 🤟 UserName :", UserName);
+    // console.log("--> 🤟 channel.name :", channel.name);
+    // console.log("--> 🤟 UserName :", UserName);
+    // changeNameChanel(channel);
     if (channel.name === UserName) {
       // Encuentra un miembro cuyo username sea diferente de UserName
       const differentMember = channel.members.find(member => member.username !== UserName);
+      // channel_title = differentMember.username;
     
       // Verifica si se encontró un miembro diferente
       if (differentMember) {
-        console.log("--> 🤟 Different member's username: ", differentMember.username);
+        // console.log("--> 🤟 Different member's username: ", differentMember.username);
         option.textContent = differentMember.username;
       } else {
         // Manejar el caso donde no se encuentra un miembro diferente o todos tienen el mismo nombre
@@ -199,6 +213,7 @@ function updateChannelList(channels) {
     else
     {
       option.textContent = channel.name;
+      // channel_title = channel.name;
     }
     channelsDropdown.appendChild(option);
   });
@@ -211,6 +226,7 @@ function updateChannelList(channels) {
 }
 
 function switchChannel(newChannelId) {
+  console.log("--> switchChannel:", newChannelId);
   // Update the current channel
   channel_now = newChannelId;
 
@@ -224,8 +240,16 @@ function switchChannel(newChannelId) {
     createWebSocketConnection(newChannelId);
   }
 
+  for (let index = 0; index < array_channels.length; index++) {
+    if(array_channels[index].id ==newChannelId)
+    {
+      changeNameChanel(array_channels[index]);
+    }
+  }
+
+
   // Fetch the chat history for the new channel and display it
-  fetchChatHistory(newChannelId);
+  // fetchChatHistory(newChannelId);
 }
 
 function fetchChatHistory(channelId) {
@@ -256,17 +280,35 @@ async function getUserChannels(userId) {
   return data;
 }
 
-async function updateChannelListAndSubscribe(channels) {
-  const channelsList = document.getElementById('channelsList');
-  channelsList.innerHTML = '';
-  channels.forEach(c => {
-    const listItem = document.createElement('li');
-    listItem.innerHTML = `<a href="#chat/${c.id}">${c.name}</a>`;
-    channelsList.appendChild(listItem);
-    createWebSocketConnection(c.id);
-  });
-}
+// async function updateChannelListAndSubscribe(channels) {
+//   const channelsList = document.getElementById('channelsList');
+//   channelsList.innerHTML = '';
+//   channels.forEach(c => {
+//     const listItem = document.createElement('li');
+//     listItem.innerHTML = `<a href="#chat/${c.id}">${c.name}</a>`;
+//     channelsList.appendChild(listItem);
+//     createWebSocketConnection(c.id);
+//   });
+// }
 
+// Function to create a WebSocket connection
+function changeNameChanel(channel) {
+  if (channel.name === UserName) {
+    // Encuentra un miembro cuyo username sea diferente de UserName
+    const differentMember = channel.members.find(member => member.username !== UserName);
+    channel_title = differentMember.username;
+  }
+  else
+  {
+    channel_title = channel.name;
+  }
+  // Update the header with the selected channel's name
+  const channelHeader = document.getElementById('channel-title');
+  if (channelHeader) {
+    channelHeader.textContent = `${channel_title}`;
+  }
+  console.log("---> 🤖 change name :", channel_title);
+}
 // Function to create a WebSocket connection
 function createWebSocketConnection(channelId) {
   const ws = new WebSocket(`ws://127.0.0.1:8000/ws/chat/${channelId}/`);
@@ -398,7 +440,7 @@ export  function Chat() {
 
        <!-- Middle Panel: Chat Messages -->
        <div class="w-75 h-100 bg-white p-3 overflow-auto">
-         <h3 class="mb-4">#channel-alpha</h3>
+         <h3 id="channel-title" class="mb-4">#channel-alpha</h3>
 
          <!-- Messages go here -->
          <!-- Repeat for other messages -->
