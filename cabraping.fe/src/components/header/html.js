@@ -1,10 +1,10 @@
-import image from "../assets/logo.svg";
+import image from "../../assets/logo.svg";
 
 const BACKEND_URL = "http://localhost:8000";
 let myUser = null;
 
-// const Header = async () => {
-export async function Header() {
+// export async function Header() {
+export async function Header_html() {
   const jwt = localStorage.getItem("jwt");
   const isAuthenticated = Boolean(localStorage.getItem("jwt"));
 
@@ -17,21 +17,6 @@ export async function Header() {
       window.location.replace("/#logout");
     }
   }
-
-
-
-
-  const string1 = "hello";
-  const string2 = 'hello';
-  const string = "hello";
-
-
-
-
-
-
-
-
 
   const view = `
       <header class="d-flex justify-content-between align-items-center p-3 bg-light">
@@ -70,9 +55,3 @@ export async function Header() {
 
   return view;
 };
-
-export function HeaderInit() {
-  console.log("hello");
-}
-
-export default Header;

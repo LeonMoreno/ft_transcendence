@@ -1,10 +1,12 @@
-import image from "../assets/game.png";
+import image from "../../assets/game.png";
 
-export function HomeInit() {
+// export function HomeInit() {
+export function Home_js() {
   return null;
 }
 
-export function Home() {
+// export function Home() {
+export function Home_html() {
   return `
   <div class="container mt-5">
     <div class="row align-items-center">
