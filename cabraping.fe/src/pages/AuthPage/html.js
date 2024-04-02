@@ -42,9 +42,10 @@ export function AuthPage_html() {
           <button type="submit" class="btn btn-success">Create Account</button>
           </form>
 
-          <div class="notification-container" id="notification-container" ></div>
         </div>
       </div>
     </div>
   `;
 }
+
+{/* <div class="notification-container" id="notification-container" ></div> */}
