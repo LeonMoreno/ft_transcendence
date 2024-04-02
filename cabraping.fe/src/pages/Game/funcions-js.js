@@ -1,15 +1,5 @@
-export function Game() {
-  return `
-    <div class="w-100 h-100 d-flex gap-4">
-      <h1>game</h1>
-      <div class="game-board">
-        <canvas width="750" height="585" id="game"></canvas>
-      </div>
-    </div>
-  `;
-}
 
-export function GameInit() {
+export function Game_js() {
   console.log("Start code in Game");
 
   const socket = new WebSocket("ws://127.0.0.1:8000/ws/game/");

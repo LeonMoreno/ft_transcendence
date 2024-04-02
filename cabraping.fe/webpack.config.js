@@ -33,14 +33,6 @@ module.exports = {
       template: "./public/index.html",
       filename: "./index.html",
     }),
-    new CopyWebpackPlugin({
-      patterns: [
-        {
-          from: "./src/styles/style.css",
-          to: "",
-        },
-      ],
-    }),
   ],
   optimization: {
     minimizer: [

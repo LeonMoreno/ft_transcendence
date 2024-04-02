@@ -1,23 +1,11 @@
-import { getToken } from "../utils/get-token";
+import { Users_html } from "./html";
 
 const BACKEND_URL = "http://localhost:8000";
 let users = [];
 let friendRequests = [];
 
-export function Users() {
-  const jwt = getToken();
-
-  return `
-    <div class="container-sm">
-      <h2>List of Users</h2>
-      <ul id="users-list" class="list-group">
-        <!-- userData -->
-      </ul>
-    </div>
-  `;
-}
-
-export async function UsersInit() {
+// export async function UsersInit() {
+export async function Users_js() {
   const jwt = localStorage.getItem("jwt");
   if (!jwt) return null;
 
@@ -100,8 +88,10 @@ export async function UsersInit() {
         body: JSON.stringify({ to_user: toUserId }),
       });
 
-      Users();
-      UsersInit();
+      // Users();
+      // UsersInit();
+      Users_html();
+      Users_js();
     });
   });
 }
