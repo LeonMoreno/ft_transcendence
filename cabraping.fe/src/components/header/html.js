@@ -3,10 +3,9 @@ import image from "../../assets/logo.svg";
 const BACKEND_URL = "http://localhost:8000";
 let myUser = null;
 
-// export async function Header() {
 export async function Header_html() {
   const jwt = localStorage.getItem("jwt");
-  const isAuthenticated = Boolean(localStorage.getItem("jwt"));
+  const isAuthenticated = Boolean(jwt);
 
   if (isAuthenticated) {
     const responseMyUser = await fetch(`${BACKEND_URL}/api/me/`, {
@@ -19,38 +18,36 @@ export async function Header_html() {
   }
 
   const view = `
-      <header class="d-flex justify-content-between align-items-center p-3 bg-light">
-        <nav id="header-nav" class="d-flex">
-          <a href="#">
-            <img src="${image}" alt="Logo" style="height: 50px;">
-          </a>
-          ${
-            isAuthenticated
-              ? `<a href="#users" class="m-3 text-dark text-decoration-none">Users</a>
-            <a href="#friends" class="m-3 text-dark text-decoration-none">Friends</a>
-            <a href="#chat" class="m-3 text-dark text-decoration-none">Chats</a>
-            <a href="#game" class="m-3 text-dark text-decoration-none">Games</a>`
-              : ""
-          }
-        </nav>
+  <header id="nav" class="d-flex justify-content-between align-items-center p-3 bg-light">
+    <nav class="navbar navbar-expand-lg navbar-light">
+      <a class="navbar-brand" href="#">
+        <img src="${image}" alt="Logo" style="height: 50px;">
+      </a>
+      <button class="navbar-toggler" type="button" id="navbarToggle">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+          ${isAuthenticated ? `
+            <li class="nav-item"><a class="nav-link" href="#users">Users</a></li>
+            <li class="nav-item"><a class="nav-link" href="#friends">Friends</a></li>
+            <li class="nav-item"><a class="nav-link" href="#chat">Chats</a></li>
+            <li class="nav-item"><a class="nav-link" href="#game">Games</a></li>
+          ` : ""}
+        </ul>
+      </div>
+    </nav>
 
-        <div class="d-flex">
-          ${
-            isAuthenticated
-              ? `<div>
-                  <span>${myUser.username}</span>
-                  <a href="/#logout" class="btn btn-primary">Logout</a>
-                </div>`
-              : ""
-          }
-          ${
-            !isAuthenticated
-              ? `<a href="/#auth" class="btn btn-primary">Login</a>`
-              : ""
-          }
-          <a href="#" class="btn btn-secondary text-white">42 Auth</a>
+    <div>
+      ${isAuthenticated ? `
+        <div>
+          <span class="me-3">${myUser.username}</span>
+          <a href="/#logout" class="btn btn-primary">Logout</a>
         </div>
-      </header>
+      ` : `<a href="/#auth" class="btn btn-primary">Login</a>`}
+    </div>
+  </header>
+
      `;
 
   return view;

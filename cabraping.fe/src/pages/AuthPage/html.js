@@ -47,5 +47,3 @@ export function AuthPage_html() {
     </div>
   `;
 }
-
-{/* <div class="notification-container" id="notification-container" ></div> */}
