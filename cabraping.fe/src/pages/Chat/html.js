@@ -1,4 +1,6 @@
-import image from '../../assets/logo.svg';
+// import image from '../../assets/logo.svg';
+
+let image = 'assets/logo.svg';
 
 export  function Chat_html() {
 

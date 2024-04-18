@@ -1,6 +1,8 @@
-import image from '../../assets/logo.svg';
-import getHash from "../../utils/getHash";
-import { showNotification } from '../../components/showNotification';
+// import image from '../../assets/logo.svg';
+import getHash from "../../utils/getHash.js";
+import { showNotification } from '../../components/showNotification.js';
+
+let image = 'assets/logo.svg';
 
 const BACKEND_URL = "http://localhost:8000";
 

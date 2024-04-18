@@ -20,4 +20,5 @@ RUN npm run build
 EXPOSE 8080
 
 # Command to serve the application using a simple HTTP server to serve static files.
-CMD ["npx", "serve", "-s", "dist", "-l", "8080"]
+# CMD ["npx", "serve", "-s", "dist", "-l", "8080"]
+CMD ["npx", "serve", "-s", "src", "-l", "8080"]

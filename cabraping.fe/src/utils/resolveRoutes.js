@@ -1,6 +1,6 @@
-import getHash from "./getHash";
+import getHash from "./getHash.js";
 
-const resolveRoutes = (routes, user_location) => {
+export default function resolveRoutes(routes, user_location) {
 
   let render;
   let catch_path;
@@ -27,5 +27,3 @@ const resolveRoutes = (routes, user_location) => {
 
   return render;
 };
-
-export default resolveRoutes;

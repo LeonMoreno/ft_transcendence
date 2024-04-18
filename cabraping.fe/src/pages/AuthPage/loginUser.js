@@ -1,4 +1,4 @@
-import { showNotification } from "../../components/showNotification"
+import { showNotification } from "../../components/showNotification.js"
 
 // Function to log in
 export function loginUser(username, password) {

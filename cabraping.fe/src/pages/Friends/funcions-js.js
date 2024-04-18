@@ -1,4 +1,4 @@
-import { getToken } from "../../utils/get-token";
+import { getToken } from "../../utils/get-token.js";
 
 const BACKEND_URL = "http://localhost:8000";
 let myUserData = {};
