@@ -1,6 +1,5 @@
 import image from '../../assets/logo.svg';
 
-// export  function Chat() {
 export  function Chat_html() {
 
   const jwt = localStorage.getItem('jwt');

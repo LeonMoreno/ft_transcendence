@@ -4,7 +4,6 @@ const BACKEND_URL = "http://localhost:8000";
 let myUserData = {};
 let friendRequests = [];
 
-// export async function Friends() {
 export async function Friends_html() {
   const jwt = getToken();
 
@@ -17,7 +16,7 @@ export async function Friends_html() {
   }
 
   return `
-    <div class="container-sm">
+    <div class="container-sm min-vh-100">
       <h2>All of My Friends</h2>
       <ul id="friends-list" class="list-group">
         <!-- friendsData -->

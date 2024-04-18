@@ -29,12 +29,16 @@ export function Game_js() {
   const canvasElement = document.getElementById("game");
   const context = canvasElement.getContext("2d");
 
-  const grid = 15;
+  // const grid = 15;
+  const grid = 5;
+
   const paddleHeight = grid * 5;
   const maxPaddleY = canvasElement.height - grid - paddleHeight;
 
-  var paddleSpeed = 6;
-  var ballSpeed = 5;
+  // var ballSpeed = 5;
+  // var paddleSpeed = 6;
+  var paddleSpeed = 3;
+  var ballSpeed = 0.5;
 
   let leftPaddle = {
     x: grid * 2,

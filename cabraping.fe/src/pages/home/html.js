@@ -2,7 +2,7 @@ import image from "../../assets/game.png";
 
 export function Home_html() {
   return `
-  <div class="container mt-5">
+  <div class="container mt-5 min-vh-100">
     <div class="row align-items-center">
       <!-- Imagen de Pong -->
       <div class="col-md-6">
