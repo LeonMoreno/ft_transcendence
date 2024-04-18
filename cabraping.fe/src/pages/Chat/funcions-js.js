@@ -47,7 +47,7 @@ export async function Chat_js() {
     }
     UserName = myUser.username;
   
-    const button = document.getElementById('addChanel');
+    const button = document.getElementById('addChannel');
     console.log(button);
     if (button) {
       button.addEventListener('click', handleButtonClick);
