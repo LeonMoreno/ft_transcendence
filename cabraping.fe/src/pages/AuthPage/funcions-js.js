@@ -1,7 +1,7 @@
 // AuthPage.js
 
-import { loginUser } from "./loginUser"
-import { createUser } from "./createUser"
+import { loginUser } from "./loginUser.js"
+import { createUser } from "./createUser.js"
 
 // export function AuthPageInit() {
 export function AuthPage_js() {

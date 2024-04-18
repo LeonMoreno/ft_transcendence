@@ -1,4 +1,6 @@
-import image from "../../assets/game.png";
+// import image from "../../assets/game.png";
+
+let image = "assets/game.png";
 
 export function Home_html() {
   return `

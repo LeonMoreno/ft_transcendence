@@ -1,4 +1,4 @@
-import { getToken } from "../../utils/get-token";
+import { getToken } from "../../utils/get-token.js";
 
 // export function Users() {
 export function Users_html() {

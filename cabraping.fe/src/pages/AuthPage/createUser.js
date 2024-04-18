@@ -1,4 +1,4 @@
-import { showNotification } from "../../components/showNotification"
+import { showNotification } from "../../components/showNotification.js"
 
 export function createUser(email, password) {
   const username = email.split('@')[0];
