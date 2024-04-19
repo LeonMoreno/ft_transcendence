@@ -125,8 +125,6 @@ DATABASES = {
 #         'PORT': '5432',
 #     }
 # }
-        # 'HOST': 'database', # Docker
-        # 'HOST': 'localhost', # Local
 
 
 MIDDLEWARE = [

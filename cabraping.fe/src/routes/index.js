@@ -1,24 +1,24 @@
-import Footer_html from "../components/footer/html";
-import { Home_js } from "../pages/home/funcions-js";
-import { Home_html } from "../pages/home/html";
-import { AuthPage_js } from "../pages/AuthPage/funcions-js";
-import { AuthPage_html } from "../pages/AuthPage/html";
-import { Error404_js } from "../pages/Error404/funcions-js";
-import { Error404_html } from "../pages/Error404/html";
-import { User_js } from "../pages/User/funcions-js";
-import { User_html } from "../pages/User/html";
-import { LogoutPage_js } from "../pages/Logout/funcions-js";
-import { Users_js } from "../pages/Users/funcions-js";
-import { Users_html } from "../pages/Users/html";
-import { Header_js} from "../components/header/funcions-js";
-import { Header_html } from "../components/header/html";
-import { Game_js } from "../pages/Game/funcions-js";
-import { Game_html } from "../pages/Game/html";
-import { Friends_html } from "../pages/Friends/html";
-import { FriendsRender, FriendRequestsRender, Friends_js } from "../pages/Friends/funcions-js";
-import { Chat_js } from "../pages/Chat/funcions-js";
-import { Chat_html } from "../pages/Chat/html";
-import resolveRoutes from "../utils/resolveRoutes";
+import Footer_html from "../components/footer/html.js";
+import { Home_js } from "../pages/home/funcions-js.js";
+import { Home_html } from "../pages/home/html.js";
+import { AuthPage_js } from "../pages/AuthPage/funcions-js.js";
+import { AuthPage_html } from "../pages/AuthPage/html.js";
+import { Error404_js } from "../pages/Error404/funcions-js.js";
+import { Error404_html } from "../pages/Error404/html.js";
+import { User_js } from "../pages/User/funcions-js.js";
+import { User_html } from "../pages/User/html.js";
+import { LogoutPage_js } from "../pages/Logout/funcions-js.js";
+import { Users_js } from "../pages/Users/funcions-js.js";
+import { Users_html } from "../pages/Users/html.js";
+import { Header_js} from "../components/header/funcions-js.js";
+import { Header_html } from "../components/header/html.js";
+import { Game_js } from "../pages/Game/funcions-js.js";
+import { Game_html } from "../pages/Game/html.js";
+import { Friends_html } from "../pages/Friends/html.js";
+import { FriendsRender, FriendRequestsRender, Friends_js } from "../pages/Friends/funcions-js.js";
+import { Chat_js } from "../pages/Chat/funcions-js.js";
+import { Chat_html } from "../pages/Chat/html.js";
+import resolveRoutes from "../utils/resolveRoutes.js";
 
 const routes = {
   "/": [Home_html, Home_js],

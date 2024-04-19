@@ -1,14 +1,10 @@
-import image from "../../assets/game.png";
+// import image from "../../assets/game.png";
 
-// export function HomeInit() {
-export function Home_js() {
-  return null;
-}
+let image = "assets/game.png";
 
-// export function Home() {
 export function Home_html() {
   return `
-  <div class="container mt-5">
+  <div class="container mt-5 min-vh-100">
     <div class="row align-items-center">
       <!-- Imagen de Pong -->
       <div class="col-md-6">
@@ -20,7 +16,7 @@ export function Home_html() {
         <h1>CabraPing</h1>
         <p class="lead">Classic Pong: Bounce to Victory! Can you outmatch your opponent in this timeless arcade game of skill and reflexes?</p>
         <a href="path-to-authentication" class="btn btn-warning">42 Auth</a>
-        <a href="/#auth" class="btn btn-warning">Sign in / Sign up</a>
+        <a href="/#auth" class="btn btn-warning">Iniciar Sesión / Registrarse</a>
       </div>
     </div>
   </div>

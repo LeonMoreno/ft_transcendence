@@ -1,4 +1,4 @@
-import { Users_html } from "./html";
+import { Users_html } from "./html.js";
 
 const BACKEND_URL = "http://localhost:8000";
 let users = [];
