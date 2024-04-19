@@ -1,0 +1,56 @@
+@import url("https://fonts.googleapis.com/css?family=Open+Sans:300,400&display=swap");
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #f4f4f4;
+  color: #3c484e;
+  font-family: "Open Sans", sans-serif;
+}
+
+a {
+  text-decoration: none;
+}
+
+.game-board {
+  background: black;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+/* .notification {
+  padding: 10px 20px;
+  color: white;
+  border-radius: 5px;
+  margin-bottom: 10px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  display: inline-block;
+  min-width: 200px;
+} */
+
+#notification-container {
+  position: fixed;
+  top: 50vh;
+  left: 50vw;
+  z-index: 10;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+  text-align: center;
+}
+
+.notification {
+  padding: 10px 20px;
+  color: white;
+  border-radius: 5px;
+  margin-bottom: 10px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  display: inline-block;
+  min-width: 200px;
+  margin: 5px; /* Spacing between notifications if multiple */
+}
+
+
+.notification.success { background-color: #4CAF50; }
+.notification.error { background-color: #f44336; }

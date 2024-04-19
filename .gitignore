@@ -1,0 +1,36 @@
+# Archivos del sistema
+.DS_Store
+.env
+Thumbs.db
+
+node_modules/
+__pycache__/
+transcendence/
+
+# Files cabraping.be
+# Dependencias
+/cabraping.be/node_modules
+
+# Configuración del IDE/editor
+/cabraping.be/.vscode
+/cabraping.be/!.vscode/settings.json
+/cabraping.be/!.vscode/tasks.json
+/cabraping.be/!.vscode/launch.json
+/cabraping.be/!.vscode/extensions.json
+/cabraping.be/!.vscode/*.code-snippets
+
+# Archivos de registro
+/cabraping.be/npm-debug.log*
+/cabraping.be/yarn-debug.log*
+/cabraping.be/yarn-error.log*
+
+# Directorios de construcción
+/cabraping.be/dist
+/cabraping.be/build
+
+# Archivos de configuración local
+/cabraping.be/.env
+/cabraping.be/.env.local
+/cabraping.be/.env.development.local
+/cabraping.be/.env.test.local
+/cabraping.be/.env.production.local

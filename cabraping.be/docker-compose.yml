@@ -1,0 +1,42 @@
+# https://docs.docker.com/engine/reference/commandline/compose_up
+version: "3.9"
+
+services:
+  django:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/code
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      - DATABASE_URL=postgres://transcendence_user:transcendence_password@postgres:5432/transcendence_db
+      - REDIS_HOST=cabraping-redis
+  redis:
+    image: redis:alpine
+    container_name: cabraping-redis
+    hostname: database
+    restart: always
+    volumes:
+      - redis_data:/var/lib/redis
+    ports:
+      - 6379:6379
+  postgres:
+    image: postgres:alpine
+    container_name: transcendence_db
+    hostname: database
+    restart: always
+    volumes:
+      - postgres_data:/var/lib/postgres/data
+    ports:
+      - 5433:5432
+      # - 5432:5432
+    env_file:
+      - .env
+
+volumes:
+  redis_data:
+  postgres_data:
