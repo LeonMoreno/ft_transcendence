@@ -1,9 +1,3 @@
-# Example usage:
-
-HTTP_PROTOCOL = 'https://'
-APP42_DOMAIN = 'api.intra.42.fr'
-APP42_AUTH = '/oauth2/auth'
-
 from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework.decorators import action
@@ -26,9 +20,7 @@ def api_view(request):
 
 #  Create a url will return the access token link
 def get_access_token(autorization_code):
-    url   = HTTP_PROTOCOL + \
-            APP42_DOMAIN + \
-            "/oauth/token"
+    url   = "https://api.intra.42.fr/oauth/token"
                 
     client_id     = UID
     client_secret = SECRET
@@ -43,7 +35,5 @@ def get_access_token(autorization_code):
     
 #  Create a url will return the public data of the user from the api
 def get_api_data():
-    url = HTTP_PROTOCOL + \
-          APP42_DOMAIN + \
-          "/v2/me/"
+    url = "https://api.intra.42.fr/v2/me/"
     return (url)
