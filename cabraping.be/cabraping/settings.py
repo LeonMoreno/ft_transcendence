@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'chat',
     'game',
     'users',
+    'auth42',
 ]
 
 CORS_ALLOWED_ORIGINS = [

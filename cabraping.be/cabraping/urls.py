@@ -35,6 +35,7 @@ from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 from users.views import UserViewSet, FriendRequestViewSet, MeViewSet
 from game.views import GameViewSet
+from auth42.views import api_view, get_access_token, get_api_data
 
 from django.urls import path
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
@@ -62,4 +63,5 @@ urlpatterns = [
     path("api/friend_requests/me", FriendRequestViewSet.friend_request_me),
     path("api/friend_requests/", FriendRequestViewSet.friend_request_list),
     path("api/friend_requests/<int:pk>/", FriendRequestViewSet.friend_request_detail),
+    path("auth42/", api_view, name="login42"),
 ]
