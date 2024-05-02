@@ -1,5 +1,4 @@
 export function Header_js() {
-  console.log("Header_js function loaded");
 
   // Acceder al botón, al menú y al elemento header
   const navbarToggler = document.getElementById('navbarToggle');
