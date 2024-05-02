@@ -4,7 +4,6 @@ const BACKEND_URL = "http://localhost:8000";
 let myUserData = {};
 let friendRequests = [];
 
-
 export async function FriendsRender() {
   const jwt = getToken();
 
@@ -84,6 +83,19 @@ export async function FriendRequestsRender() {
 // export async function FriendsInit() {
 export async function Friends_js() {
   const jwt = getToken();
+  console.log({ jwt });
+
+  FriendsRender();
+  FriendRequestsRender();
+
+  const responseMe = await fetch(`${BACKEND_URL}/api/me/`, {
+    headers: { Authorization: `Bearer ${jwt}` },
+  });
+  myUserData = await responseMe.json();
+  if (!myUserData) {
+    return null;
+  }
+  // console.log({ myUserData });
 
   const confirmButtonElements = document.querySelectorAll(
     '[data-action="confirm"]'
@@ -105,7 +117,6 @@ export async function Friends_js() {
         body: JSON.stringify({ intent: "confirm" }),
       });
 
-      Friends();
       FriendsRender();
       FriendRequestsRender();
     });
@@ -123,7 +134,6 @@ export async function Friends_js() {
         }
       );
 
-      Friends();
       FriendsRender();
       FriendRequestsRender();
     });

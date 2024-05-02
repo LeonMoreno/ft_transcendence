@@ -1,20 +1,8 @@
 import { getToken } from "../../utils/get-token.js";
 
 const BACKEND_URL = "http://localhost:8000";
-let myUserData = {};
-let friendRequests = [];
 
 export async function Friends_html() {
-  const jwt = getToken();
-
-  const responseMe = await fetch(`${BACKEND_URL}/api/me/`, {
-    headers: { Authorization: `Bearer ${jwt}` },
-  });
-  myUserData = await responseMe.json();
-  if (!myUserData) {
-    return null;
-  }
-
   return `
     <div class="container-sm min-vh-100">
       <h2>All of My Friends</h2>
