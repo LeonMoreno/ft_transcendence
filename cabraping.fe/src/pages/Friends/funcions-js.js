@@ -4,8 +4,31 @@ const BACKEND_URL = "http://localhost:8000";
 let myUserData = {};
 let friendRequests = [];
 
+// export async function FriendsInit() {
+
+export async function Friends_js() {
+  const jwt = getToken();
+
+  await fetchMyUserData();
+  FriendsRender();
+  FriendRequestsRender();
+}
+
+export async function fetchMyUserData() {
+  const jwt = getToken();
+
+  const responseMe = await fetch(`${BACKEND_URL}/api/me/`, {
+    headers: { Authorization: `Bearer ${jwt}` },
+  });
+  myUserData = await responseMe.json();
+  if (!myUserData) {
+    return null;
+  }
+}
+
 export async function FriendsRender() {
   const jwt = getToken();
+  await fetchMyUserData();
 
   const friendsListElement = document.getElementById("friends-list");
   friendsListElement.innerHTML = "";
@@ -77,26 +100,10 @@ export async function FriendRequestsRender() {
     })
     .join("");
 
+  // render all the friend requests first
   friendRequestsListElement.innerHTML = friendRequestsDataString;
-}
 
-// export async function FriendsInit() {
-export async function Friends_js() {
-  const jwt = getToken();
-  console.log({ jwt });
-
-  FriendsRender();
-  FriendRequestsRender();
-
-  const responseMe = await fetch(`${BACKEND_URL}/api/me/`, {
-    headers: { Authorization: `Bearer ${jwt}` },
-  });
-  myUserData = await responseMe.json();
-  if (!myUserData) {
-    return null;
-  }
-  // console.log({ myUserData });
-
+  // add the event listeners
   const confirmButtonElements = document.querySelectorAll(
     '[data-action="confirm"]'
   );
