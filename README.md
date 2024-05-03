@@ -3,6 +3,7 @@
 # Docker
 
 Ra run Docker:
+
 ```
  docker-compose up
 ```
@@ -11,11 +12,10 @@ will take a few seconds and you can test it on the route:
 http://localhost:8080/#friends
 
 to clean docker:
+
 ```
 docker rm -f $(docker ps -aq) && docker rmi -f $(docker images -aq) && docker volume rm $(docker volume ls -q)
 ```
-
-
 
 # Django:
 
@@ -86,3 +86,21 @@ python3 manage.py migrate chat
 python3 manage.py runserver
 ```
 
+## Run databases for development
+
+```py
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'transcendence_db',
+        'USER': 'transcendence_user',
+        'PASSWORD': 'transcendence_password',
+        'HOST': 'localhost', #change to local from database
+        'PORT': '5432',
+    }
+}
+```
+
+```sh
+docker compose -f docker-compose-dev.yml up -d
+```
