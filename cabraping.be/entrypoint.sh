@@ -11,6 +11,7 @@ done
 # Execute migrations
 python3 manage.py migrate users
 python3 manage.py migrate chat
+python3 manage.py migrate auth42
 
 
 # # Starts the server
