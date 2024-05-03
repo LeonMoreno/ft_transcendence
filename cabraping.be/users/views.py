@@ -1,6 +1,7 @@
 from rest_framework.generics import RetrieveUpdateAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import viewsets
+from rest_framework import status
 from .models import CustomUser, FriendRequest
 from .serializers import (
     UserSerializer,
@@ -8,6 +9,7 @@ from .serializers import (
     MeDataSerializer,
     FriendRequestDataSerializer,
     FriendRequestSerializer,
+    UserSerializerUpdate,
 )
 from rest_framework.decorators import action
 from game.serializers import GameSerializer
@@ -17,7 +19,33 @@ from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.parsers import JSONParser
 from rest_framework_simplejwt.tokens import AccessToken
+from rest_framework.views import APIView
+from .models import CustomUser
 
+class CurrentUserView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        # Suponiendo que la autenticación ya está manejada correctamente
+        user = request.user
+        serializer = UserSerializer(user)
+        return Response(serializer.data)
+
+
+class UserUpdate(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, pk):
+        try:
+            user = CustomUser.objects.get(pk=pk)
+            serializer = UserSerializer(user, data=request.data, partial=True)  # Allow partial updates
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except User.DoesNotExist:
+            return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = CustomUser.objects.all()
