@@ -13,6 +13,8 @@ export async function Header_html() {
       headers: { Authorization: `Bearer ${jwt}` },
     });
     myUser = await responseMyUser.json();
+    console.log("myUser");
+    console.log(myUser);
     if (myUser.code === "user_not_found" || myUser.code === "token_not_valid") {
       window.location.replace("/#logout");
     }
@@ -42,7 +44,7 @@ export async function Header_html() {
     <div>
       ${isAuthenticated ? `
         <div>
-          <span class="me-3">${myUser.username}</span>
+          <a href="/#user" class="me-3 text-decoration-none text-dark">${myUser.username}</a>
           <a href="/#logout" class="btn btn-primary">Logout</a>
         </div>
       ` : `<a href="/#auth" class="btn btn-primary">Login</a>`}

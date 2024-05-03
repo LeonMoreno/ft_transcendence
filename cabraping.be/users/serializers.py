@@ -1,15 +1,31 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from .models import FriendRequest
+from .models import CustomUser
+from django.core.validators import URLValidator
+from django.core.exceptions import ValidationError
+
 
 User = get_user_model()
 
+class UserSerializerUpdate(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ["id", "username", "first_name", "last_name", "nick_name", "avatarImageURL"]
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User
-        fields = ["id", "username", "email", "password"]
+        model = CustomUser
+        fields = ["id", "username", "email", "password", "nickname", "first_name", "last_name", "avatarImageURL"]
         extra_kwargs = {"password": {"write_only": True}}
+
+    def validate_avatarImageURL(self, value):
+        validator = URLValidator()
+        try:
+            validator(value)
+        except ValidationError:
+            raise serializers.ValidationError("Invalid URL format")
+        return value
 
     def create(self, validated_data):
         user = User.objects.create_user(**validated_data)
