@@ -10,12 +10,16 @@ import { User_html } from "../pages/User/html.js";
 import { LogoutPage_js } from "../pages/Logout/funcions-js.js";
 import { Users_js } from "../pages/Users/funcions-js.js";
 import { Users_html } from "../pages/Users/html.js";
-import { Header_js} from "../components/header/funcions-js.js";
+import { Header_js } from "../components/header/funcions-js.js";
 import { Header_html } from "../components/header/html.js";
 import { Game_js } from "../pages/Game/funcions-js.js";
 import { Game_html } from "../pages/Game/html.js";
 import { Friends_html } from "../pages/Friends/html.js";
-import { FriendsRender, FriendRequestsRender, Friends_js } from "../pages/Friends/funcions-js.js";
+import {
+  FriendsRender,
+  FriendRequestsRender,
+  Friends_js,
+} from "../pages/Friends/funcions-js.js";
 import { Chat_js } from "../pages/Chat/funcions-js.js";
 import { Chat_html } from "../pages/Chat/html.js";
 import resolveRoutes from "../utils/resolveRoutes.js";
@@ -29,7 +33,7 @@ const routes = {
   "/chat/:id": [Chat_html, Chat_js],
   "/user": [User_html, User_js],
   "/users": [Users_html, Users_js],
-  "/friends": [Friends_html, FriendsRender, FriendRequestsRender, Friends_js],
+  "/friends": [Friends_html, Friends_js],
   "/404": [Error404_html, Error404_js],
 };
 
