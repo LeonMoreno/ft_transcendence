@@ -23,7 +23,8 @@ export async function User_js() {
 
 async function updateInfo(){
 
-  const responseMyUser = await fetch(`${BACKEND_URL}/api/me/`, {
+  // const responseMyUser = await fetch(`${BACKEND_URL}/api/me/`, {
+  const responseMyUser = await fetch(`${BACKEND_URL}/api/me-full/`, {
     headers: { Authorization: `Bearer ${jwt}` },
   });
   myUser = await responseMyUser.json();
