@@ -31,7 +31,9 @@ urlpatterns = [
     path('user-channels/<int:user_id>/', UserChannelsView.as_view(), name='user-channels'),
 
     # path("api/me/", MeViewSet.as_view(), name="my-profile"),
-    path('api/me/', CurrentUserView.as_view(), name='current-user'),
+    # # path('api/me/', CurrentUserView.as_view(), name='current-user'),
+    path("api/me/", MeViewSet.as_view(), name="my-profile"),
+    path('api/me-full/', CurrentUserView.as_view(), name='current-user'),
 
     path('api/user/update/<int:pk>/', UserUpdate.as_view(), name='user-update'),
 
