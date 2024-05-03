@@ -1,7 +1,7 @@
 
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-from django.shortcuts import redirect
+from django.shortcuts import render, redirect
 from django.http import JsonResponse
 import os
 import requests
@@ -40,3 +40,17 @@ def get_access_token(autorization_code):
 def get_api_data():
     url = "https://api.intra.42.fr/v2/me/"
     return (url)
+
+
+def reset_homepage(request):
+        
+    authorization_code = request.GET.get('code', None)
+    if (authorization_code):
+        token_code = requests.post(get_access_token(authorization_code), timeout=10)
+        access_token = token_code.json()['access_token']
+        headers = {'Authorization': 'Bearer ' + access_token}
+        url = get_api_data()
+        #This request is to get the user data
+        user_data = requests.get(url, headers=headers, timeout=10)
+    
+    return render(request, 'master.html')
