@@ -18,7 +18,8 @@ export default function resolveRoutes(routes, user_location) {
   // We check that the route exists.
   if (routes[catch_path] && user_location.length >= 1 && user_location.length <= 2)
   {
-    render = routes[`/${user_location[0]}`];
+    // render = routes[`/${user_location[0]}`];
+    render = routes[catch_path];
   }
   else
   {
