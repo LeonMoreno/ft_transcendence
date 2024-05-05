@@ -23,6 +23,7 @@ class CustomUser(AbstractUser):
     friends = models.ManyToManyField("self", symmetrical=True, blank=True)
     has_chevre_verte_award = models.BooleanField(default=False)
     trophies = models.IntegerField(default=0)
+    is_online = models.BooleanField(default=False)
     # game
     # games = models.ManyToManyField('Game', related_name='games')
     # gamesAsInviter = models.ManyToManyField('Game', related_name='invitations_sent')

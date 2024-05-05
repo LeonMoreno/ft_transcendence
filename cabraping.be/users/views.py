@@ -1,3 +1,4 @@
+from django.contrib.auth import authenticate, login, logout
 from rest_framework.generics import RetrieveUpdateAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import viewsets
@@ -11,14 +12,14 @@ from .serializers import (
     FriendRequestSerializer,
     UserSerializerUpdate,
 )
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view
 from game.serializers import GameSerializer
 from rest_framework.response import Response
 from django.db.models import Q
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.parsers import JSONParser
-from rest_framework_simplejwt.tokens import AccessToken
+from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
 from rest_framework.views import APIView
 from .models import CustomUser
 
@@ -182,3 +183,30 @@ class FriendRequestViewSet(viewsets.ModelViewSet):
         elif request.method == "DELETE":
             friend_request.delete()
             return HttpResponse(status=204)
+
+@api_view(['POST'])
+def custom_login(request):
+    username = request.data.get('username')
+    password = request.data.get('password')
+    user = authenticate(request, username=username, password=password)
+    if user is not None:
+        login(request, user)
+        user.is_online = True
+        user.save()
+        refresh = RefreshToken.for_user(user)
+        return Response({
+            'refresh': str(refresh),
+            'access': str(refresh.access_token),
+            'message': 'Logged in successfully'
+        })
+
+    return Response({'error': 'Invalid credentials'}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+def custom_logout(request):
+    if request.user.is_authenticated:
+        request.user.is_online = False
+        request.user.save()
+        logout(request)
+        return Response({'message': 'Logged out successfully'})
+    return Response({'error': 'Not logged in'}, status=status.HTTP_400_BAD_REQUEST)

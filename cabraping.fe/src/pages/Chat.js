@@ -1,4 +1,4 @@
-import image from '../assets/logo.svg';
+import image from '../../assets/logo.svg';
 import getHash from "../utils/getHash";
 
 const BACKEND_URL = "http://localhost:8000";

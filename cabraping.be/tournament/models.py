@@ -15,6 +15,7 @@ class Tournament(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     champion = models.ForeignKey(CustomUser, related_name='won_tournaments', null=True, blank=True, on_delete=models.SET_NULL)
+    #id is automatically handled by django - no need to add a field here
 
 class Participant(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)

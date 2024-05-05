@@ -86,45 +86,57 @@ SIMPLE_JWT = {
 ASGI_APPLICATION = 'cabraping.asgi.application'
 
 # Docker
-# CHANNEL_LAYERS = {
-#     'default': {
-#         'BACKEND': 'channels_redis.core.RedisChannelLayer',
-#         'CONFIG': {
-#             "hosts": [('redis', 6379)],  # Cambia si tu servidor Redis está en una ubicación diferente
-#         },
-#     },
-# }
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': 'transcendence_db',
-#         'USER': 'transcendence_user',
-#         'PASSWORD': 'transcendence_password',
-#         'HOST': 'database',
-#         'PORT': '5432',
-#     }
-# }
-
-#Local
 CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
-            "hosts": [('127.0.0.1', 6379)],  # Cambia si tu servidor Redis está en una ubicación diferente
+            "hosts": [('redis', 6379)],  # Cambia si tu servidor Redis está en una ubicación diferente
         },
     },
 }
+
+#DATABASES = {
+#    'default': {
+#        'ENGINE': 'django.db.backends.postgresql',
+#        'NAME': 'transcendence_db',
+#        'USER': 'transcendence_user',
+#        'PASSWORD': 'transcendence_password',
+#        'HOST': 'database',
+#        'PORT': '5432',
+#    }
+#}
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'transcendence_db',
-        'USER': 'transcendence_user',
-        'PASSWORD': 'transcendence_password',
-        'HOST': 'localhost',
-        'PORT': '5432',
+        'NAME': os.getenv('POSTGRES_DB', 'transcendence_db'),
+        'USER': os.getenv('POSTGRES_USER', 'transcendence_user'),
+        'PASSWORD': os.getenv('POSTGRES_PASSWORD', 'transcendence_password'),
+        'HOST': 'database',  # Docker service name for PostgreSQL
+        'PORT': '5432',       # Default PostgreSQL port
     }
 }
+
+
+#Local
+#CHANNEL_LAYERS = {
+#    'default': {
+#        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+#        'CONFIG': {
+#            "hosts": [('127.0.0.1', 6379)],  # Cambia si tu servidor Redis está en una ubicación diferente
+#        },
+#    },
+#}
+#DATABASES = {
+#    'default': {
+#        'ENGINE': 'django.db.backends.postgresql',
+#        'NAME': 'transcendence_db',
+#        'USER': 'transcendence_user',
+#        'PASSWORD': 'transcendence_password',
+#        'HOST': 'localhost',
+#        'PORT': '5432',
+#    }
+#}
 
 
 MIDDLEWARE = [

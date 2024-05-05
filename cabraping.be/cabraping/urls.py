@@ -1,9 +1,8 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
-from users.views import UserViewSet, FriendRequestViewSet, MeViewSet
+from users.views import UserViewSet, FriendRequestViewSet, MeViewSet, custom_login, custom_logout
 from game.views import GameViewSet
 from tournament.views import TournamentViewSet, ParticipantViewSet, MatchViewSet
-
 from users.views import CurrentUserView
 
 
@@ -30,7 +29,8 @@ from users.views import UserUpdate
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-
+    path('api/login/', custom_login, name='custom_login'),
+    path('api/logout/', custom_logout, name='custom_logout'),
     path("api/", include(router.urls)),
 
     path('channels/', ChannelListView.as_view(), name='channel-list'),

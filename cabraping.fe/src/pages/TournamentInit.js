@@ -38,7 +38,7 @@ function handleRegisterParticipant(e) {
         headers: {
             'Content-Type': 'application/json',
             //assuming authentication is required:
-            'Authorization': `Bearer ${getToken()}`, //include authentication token
+            'Authorization': `Bearer ${getToken()}`, 
         },
         body: JSON.stringify({ name: participantName }),
     })
@@ -58,12 +58,11 @@ function handleRegisterParticipant(e) {
 }
 
 function createTournament(tournamentName) {
-    fetch(`/api/tournaments/${tournamentId}/start_tournament/`, {
+    fetch(`/api/tournaments/`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            // Add your authorization token if required:
-            'Authorization': `Bearer ${getToken()}`
+            'Authorization': `Bearer ${getToken()}` //check if this is the right function
         },
         body: JSON.stringify({ name: tournamentName }),
     })
@@ -75,7 +74,8 @@ function createTournament(tournamentName) {
     })
     .then(data => {
         console.log('Tournament created:', data);
-        window.location.href = `/tournamentPage?tournamentId=${data.id}`; // Redirect to tournament page with ID
+        sessionStorage.setItem('currentTournamentId', data.id);
+        window.location.href = `/tournamentPage?tournamentId=${data.id}`;
     })
     .catch(error => {
         console.error('Error creating tournament:', error);
@@ -177,3 +177,15 @@ function displayErrorMessage(message) {
 // Example usage
 // Bind this function to your "Begin Match" button's click event
 document.getElementById('beginMatchButton').addEventListener('click', playGoatSoundAndDisplayImage);
+
+function getToken() {
+    const token = localStorage.getItem('jwt');
+    if (!token) {
+        console.error('No token found, user might not be logged in');
+        // Redirect to login page or show a login prompt
+        window.location.href = '/login';
+        return null;
+    }
+    return token;
+}
+

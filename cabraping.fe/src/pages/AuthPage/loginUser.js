@@ -2,7 +2,8 @@ import { showNotification } from "../../components/showNotification.js"
 
 // Function to log in
 export function loginUser(username, password) {
-  fetch("http://127.0.0.1:8000/api/token/", {
+  //fetch("http://127.0.0.1:8000/api/token/", {
+    fetch("/api/login/", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -23,6 +24,7 @@ export function loginUser(username, password) {
     console.log(data.access);
 
     localStorage.setItem('jwt', data.access);
+    showNotification("successful login", "success");
     // window.location.href = '/#';
     setTimeout(() => {
       window.location.href = '/#';
