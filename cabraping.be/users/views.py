@@ -18,6 +18,7 @@ from rest_framework.response import Response
 from django.db.models import Q
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.shortcuts import get_object_or_404
 from rest_framework.parsers import JSONParser
 from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
 from rest_framework.views import APIView
@@ -62,6 +63,11 @@ class UserViewSet(viewsets.ModelViewSet):
         # DELETE /api/users/<pk>
         else:
             return UserSerializer
+    
+    @api_view(['GET'])
+    def check_user_status(request, username):
+        user = get_object_or_404(CustomUser, username=username)
+        return Response({'isOnline': user.is_online})
 
     # Delete all users
     # DELETE /api/users/

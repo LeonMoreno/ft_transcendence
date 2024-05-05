@@ -15,12 +15,32 @@ document.addEventListener("DOMContentLoaded", function() {
             if (tournamentId) {
                 console.log("Tournament ID: ", tournamentId);
                 fetchTournamentData(tournamentId);
+                checkTournamentStatus(tournamentId);
             } else {
                 console.error("No tournament ID provided in the URL.");
             }
         });
     }
 });
+
+function checkTournamentStatus(tournamentId) {
+    fetch(`/api/tournaments/${tournamentId}/status`) // This endpoint needs to be implemented
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'completed') {
+            displayViewResultsButton(tournamentId);
+        }
+    })
+    .catch(error => console.error('Error checking tournament status:', error));
+}
+
+function displayViewResultsButton(tournamentId) {
+    const viewResultsButton = document.createElement('button');
+    viewResultsButton.id = 'viewResultsButton';
+    viewResultsButton.textContent = 'View Results';
+    viewResultsButton.onclick = () => fetchTournamentResults(tournamentId);
+    document.body.appendChild(viewResultsButton);
+}
 
 
 function handleCreateTournament(e) {
@@ -54,6 +74,7 @@ function handleRegisterParticipant(e) {
                     return response.json();
                 })
                 .then(data => {
+                    sendInvitation(participantName);
                     console.log('Invitation sent to participant:', data);
                     updateParticipantListUI(data); // Update the UI with the new participant
                 })
@@ -76,12 +97,36 @@ function checkUserOnlineStatus(username) {
         headers: {'Authorization': `Bearer ${getToken()}`}
     })
     .then(response => response.json())
-    .then(data => data.isOnline)
+    .then(data => {
+        if (data.isOnline) {
+            sendInvitation(username);
+        } else {
+            console.error('User is not online');
+        }
+    })
     .catch(error => {
         console.error('Error checking user online status:', error);
-        return false;
     });
 }
+
+function sendInvitation(participantId) {
+    fetch(`/api/participants/${participantId}/invite-participant`, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${getToken()}`,
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => {
+        if (response.ok) {
+            console.log('Invitation sent successfully');
+        } else {
+            console.error('Failed to send invitation');
+        }
+    })
+    .catch(error => console.error('Error sending invitation:', error));
+}
+
 
 function createTournament(tournamentName) {
     fetch(`/api/tournaments/`, {
@@ -137,6 +182,7 @@ function displayMatches(matches) {
         `;
         matchesContainer.appendChild(matchElement);
     });
+    setupMatchButtons();
 }
 
 function setupMatchButtons() {
@@ -145,27 +191,19 @@ function setupMatchButtons() {
     beginMatchButton.innerText = 'Begin Match';
     beginMatchButton.className = 'btn btn-success'; // Bootstrap button class
     beginMatchButton.onclick = function() {
-        // Logic to start the match
-        playGoatSoundAndDisplayImage(); // Assuming this function plays the goat sound and displays the image
-        // Additional logic to start the match could go here
+        playGoatSoundAndDisplayImage();
+        startMatch(); //or whatever is the function that starts it
     };
-    matchesContainer.appendChild(beginMatchButton); // This appends the button to your matches container. Adjust as needed based on your UI structure.
+    matchesContainer.appendChild(beginMatchButton); //double check
 }
 
-// Make sure to call this function at the appropriate time in your tournament setup process
-
-
-// Function to play goat sound and display goat image
 function playGoatSoundAndDisplayImage() {
-    // Assuming the URLs are correct relative to your public directory
-    const goatSoundUrl = './assets/goat_noise.mp3';
-    const goatImageUrl = './assets/bleating_goat.png';
+    const goatSoundUrl = '../../assets/goat_noise.mp3';
+    const goatImageUrl = '../../assets/bleating_goat.png';
 
-    // Create and play the audio
     const audio = new Audio(goatSoundUrl);
     audio.play();
 
-    // Create and display the goat image
     const goatImage = document.createElement('img');
     goatImage.src = goatImageUrl;
     goatImage.alt = 'Goat Bleating';
@@ -175,21 +213,20 @@ function playGoatSoundAndDisplayImage() {
     goatImage.style.right = '20px';
     document.body.appendChild(goatImage);
 
-    // Remove the image after the sound finishes or after a set timeout
+    //removes the image after the sound finishes or after a set timeout
     // audio.onended = () => {
     //     document.body.removeChild(goatImage);
     // };
 
-    // Alternatively, remove the image after a delay if you want to ensure it's shown for a certain period
+    // ensuring it's shown for a certain period:
     setTimeout(() => {
         if (document.body.contains(goatImage)) {
             document.body.removeChild(goatImage);
         }
-    }, 5000); // Adjust time as needed
+    }, 5000);
 }
 
 function displayErrorMessage(message) {
-    // Example of displaying an error message to the user
     const errorMessageContainer = document.getElementById('errorMessage');
     if (!errorMessageContainer) {
         console.error('Error message container not found');
@@ -199,16 +236,32 @@ function displayErrorMessage(message) {
     errorMessageContainer.style.display = 'block';
 }
 
-
-// Example usage
-// Bind this function to your "Begin Match" button's click event
-document.getElementById('beginMatchButton').addEventListener('click', playGoatSoundAndDisplayImage);
+function fetchTournamentResults(tournamentId) {
+    fetch(`/api/tournaments/${tournamentId}/results`)
+      .then(response => response.json())
+      .then(data => {
+        if (data.winner) {
+          awardWinner(`Congratulations ${data.winner.name}, you've won the Chèvre Verte Award!`);
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching tournament results:', error);
+      });
+  }
+  
+function awardWinner(message) {
+    document.getElementById('winnerMessage').textContent = message;
+    document.getElementById('winnerModal').style.display = "block";
+  }
+  
+  function closeModal() {
+    document.getElementById('winnerModal').style.display = "none";
+  }
 
 function getToken() {
     const token = localStorage.getItem('jwt');
     if (!token) {
         console.error('No token found, user might not be logged in');
-        // Redirect to login page or show a login prompt
         window.location.href = '/login';
         return null;
     }

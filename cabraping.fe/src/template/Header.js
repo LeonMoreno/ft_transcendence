@@ -44,7 +44,8 @@ export async function Header() {
               ? `<a href="#users" class="m-3 text-dark text-decoration-none">Users</a>
             <a href="#friends" class="m-3 text-dark text-decoration-none">Friends</a>
             <a href="#chat" class="m-3 text-dark text-decoration-none">Chats</a>
-            <a href="#game" class="m-3 text-dark text-decoration-none">Games</a>`
+            <a href="#game" class="m-3 text-dark text-decoration-none">Games</a>
+            <a href="#tournament" class="m-3 text-dark text-decoration-none">Tournament</a>`
               : ""
           }
         </nav>

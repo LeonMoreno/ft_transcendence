@@ -83,6 +83,11 @@ function createTournament(tournamentName) {
     });
 }
 
+document.getElementById('viewResultsButton').addEventListener('click', function() {
+    const tournamentId = urlParams.get('tournamentId');
+    fetchTournamentResults(tournamentId);
+});
+
 function fetchTournamentData(tournamentId) {
     fetch(`/api/tournaments/${tournamentId}/`)
         .then(response => response.json())
@@ -119,11 +124,10 @@ function setupMatchButtons() {
     beginMatchButton.innerText = 'Begin Match';
     beginMatchButton.className = 'btn btn-success'; // Bootstrap button class
     beginMatchButton.onclick = function() {
-        // Logic to start the match
-        playGoatSoundAndDisplayImage(); // Assuming this function plays the goat sound and displays the image
-        // Additional logic to start the match could go here
+        playGoatSoundAndDisplayImage();
+        startMatch(); //or whatever the name is for the function that starts it
     };
-    matchesContainer.appendChild(beginMatchButton); // This appends the button to your matches container. Adjust as needed based on your UI structure.
+    matchesContainer.appendChild(beginMatchButton);
 }
 
 // Make sure to call this function at the appropriate time in your tournament setup process
@@ -172,11 +176,6 @@ function displayErrorMessage(message) {
     errorMessageContainer.textContent = message;
     errorMessageContainer.style.display = 'block';
 }
-
-
-// Example usage
-// Bind this function to your "Begin Match" button's click event
-document.getElementById('beginMatchButton').addEventListener('click', playGoatSoundAndDisplayImage);
 
 function getToken() {
     const token = localStorage.getItem('jwt');

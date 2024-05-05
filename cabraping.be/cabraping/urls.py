@@ -3,8 +3,7 @@ from rest_framework.routers import DefaultRouter
 from users.views import UserViewSet, FriendRequestViewSet, MeViewSet, custom_login, custom_logout
 from game.views import GameViewSet
 from tournament.views import TournamentViewSet, ParticipantViewSet, MatchViewSet
-from users.views import CurrentUserView
-
+from users.views import CurrentUserView, check_user_status
 
 from django.contrib import admin
 from django.urls import path
@@ -19,7 +18,7 @@ router.register(r'participants', ParticipantViewSet)
 router.register(r'matches', MatchViewSet)
 
 
-from django.urls import path
+from django.urls import include, path
 from chat.views import ChannelListView, ChannelCreateView, UserChannelsView
 
 from django.conf import settings
@@ -44,6 +43,7 @@ urlpatterns = [
 
     path('api/user/update/<int:pk>/', UserUpdate.as_view(), name='user-update'),
 
+    path('api/users/<str:username>/status/', views.check_user_status, name='check_user_status'),
 
     path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),

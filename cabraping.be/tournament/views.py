@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from .models import Tournament, Match, Participant
 from .serializers import TournamentSerializer, ParticipantSerializer, MatchSerializer
 from rest_framework.permissions import IsAuthenticated
+from django.core.exceptions import ValidationError
 from users.models import CustomUser
 from django.db import transaction
 
@@ -55,6 +56,23 @@ class TournamentViewSet(viewsets.ModelViewSet):
 
             self._present_trophy(final_match.winner)
 
+    @action(detail=True, methods=['GET'], url_path='status')
+    def get_status(self, request, pk=None):
+        tournament = self.get_object()
+        status = {'status': tournament.status}
+        return Response(status)
+
+    @action(detail=True, methods=['GET'], url_path='results')
+    def tournament_results(self, request, pk=None):
+        tournament = self.get_object()
+        if tournament.winner:
+            return Response({
+                'winner': {
+                    'name': tournament.winner.username,
+                }
+            })
+        return Response({'message': 'No winner declared yet'}, status=status.HTTP_404_NOT_FOUND)
+
     def _present_trophy(self, winner_participant):
         winner_user = winner_participant.user
         winner_user.trophies += 1
@@ -74,6 +92,14 @@ class ParticipantViewSet(viewsets.ModelViewSet):
     queryset = Participant.objects.all()
     serializer_class = ParticipantSerializer
 
+    @action(detail=True, methods=['post'], url_path='invite-participant')
+    def invite_participant(self, request, pk=None):
+        participant = self.get_object()
+        if not participant.user.is_online:
+            return Response({'error': 'User is not online'}, status=status.HTTP_400_BAD_REQUEST)
+        send_invitation(participant)  #work on this or use jonathan's
+        return Response({'message': 'Invitation sent successfully'})
+
     @transaction.atomic
     def create(self, request, *args, **kwargs):
         tournament_id = request.data.get('tournament')
@@ -88,7 +114,6 @@ class ParticipantViewSet(viewsets.ModelViewSet):
         
         response = super(ParticipantViewSet, self).create(request, *args, **kwargs)
         participant = self.get_object()
-        send_invitation_email(participant)  # use method that Jonathan will implement for game invitation
         return response
 
     @action(detail=True, methods=['post'], url_path='accept-invitation')

@@ -24,6 +24,14 @@ const Tournament = async () => {
         <button type="submit" class="btn btn-secondary">Send Invitation</button>
     </form>
     <button id="startTournamentButton" class="btn btn-primary">Start Tournament</button>
+    <!-- Winner Modal HTML -->
+        <div id="winnerModal" class="modal">
+            <div class="modal-content">
+                <img src="../../assets/chevre_verte.png" class="rotating" alt="Award">
+                <p id="winnerMessage"></p>
+                <button onclick="closeModal()">Close</button>
+            </div>
+        </div>
 </div>
     `;
 };
