@@ -45,22 +45,43 @@ export async function FriendsRender() {
     return null;
   }
 
+  const responseGames = await fetch(`${BACKEND_URL}/api/games/`, {
+    headers: { Authorization: `Bearer ${jwt}` },
+  });
+  const games = await responseGames.json();
+
   friendsListElement.innerHTML = friends
-    .map(
-      (
-        friend
-      ) => `<li id="${friend.id}" class="list-group-item d-flex gap-4 align-items-center">
-<h3>${friend.username}</h3>
-<button type="button"
-  class="btn btn-sm btn-primary"
-  data-action="invite-game"
-  data-id="${friend.id}">Invite to a game</button>
-</li>`
-    )
+    .map((friend) => {
+      const game = games.find(
+        (game) =>
+          game.invitee.id === myUserData.id &&
+          game.inviter.id === friend.id &&
+          game.invitationStatus === "PENDING"
+      );
+      return `<li id="${
+        friend.id
+      }" class="list-group-item d-flex gap-4 align-items-center">
+    <h3>${friend.username}</h3>
+      <button type="button" class="btn btn-sm btn-primary" data-action="invite-game"
+      data-id="${friend.id}">Invite to a game</button>
+    ${
+      game
+        ? ` <button type="button"
+      class="btn btn-sm btn-secondary"
+      data-action="accept-game"
+      data-id="${game.id}">Accept to join the game</button>`
+        : ""
+    }
+    </li>`;
+    })
     .join("");
 
   const inviteGameButtonElements = document.querySelectorAll(
     '[data-action="invite-game"]'
+  );
+
+  const acceptGameButtonElements = document.querySelectorAll(
+    '[data-action="accept-game"]'
   );
 
   inviteGameButtonElements.forEach((button) => {
@@ -79,6 +100,28 @@ export async function FriendsRender() {
           invitee: friendId,
         }),
       });
+
+      console.log({ result: await result.json() });
+
+      FriendsRender();
+      FriendRequestsRender();
+    });
+  });
+
+  acceptGameButtonElements.forEach((button) => {
+    button.addEventListener("click", async (event) => {
+      const gameId = Number(event.target.getAttribute("data-id"));
+
+      const result = await fetch(
+        `${BACKEND_URL}/api/games/${gameId}/accept_game/`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${jwt}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       console.log({ result: await result.json() });
 
