@@ -53,6 +53,9 @@ const router = async () => {
   // We take our fruit and divide it into "/", we obtain a lowercase array, to work with the paths
   let user_location = location.hash.slice(1).toLocaleLowerCase().split("/");
 
+  // We check that the route exists.
+  render = resolveRoutes(routes, user_location);
+
   // We render our html and execute the js
   content.innerHTML = await render[0]();
   for (let index = 1; index < render.length; index++) {
