@@ -20,6 +20,7 @@ class Tournament(models.Model):
 class Participant(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     tournament = models.ForeignKey(Tournament, related_name='participants', on_delete=models.CASCADE)
+    received_invite = models.BooleanField(default=False)
     accepted_invite = models.BooleanField(default=False)
 
 class Match(models.Model):

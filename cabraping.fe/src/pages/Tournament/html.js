@@ -24,6 +24,28 @@ const Tournament = async () => {
         <button type="submit" class="btn btn-secondary">Send Invitation</button>
     </form>
     <button id="startTournamentButton" class="btn btn-primary">Start Tournament</button>
+    <!-- Invitation Modal -->
+<div class="modal fade" id="invitationModal" tabindex="-1" role="dialog" aria-labelledby="modalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalLabel">Tournament Invitation</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p id="modal-content"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary">Accept</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
     <!-- Winner Modal HTML -->
         <div id="winnerModal" class="modal">
             <div class="modal-content">

@@ -3,10 +3,14 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+//  "scripts": {
+  //  "build": "webpack --mode production",
+    //"start": "webpack-dev-server --open --mode development"
+  //},
   "scripts": {
-    "build": "webpack --mode production",
-    "start": "webpack-dev-server --open --mode development"
-  },
+    "start": "webpack-dev-server --config webpack.config.js --mode development",
+    "build": "webpack --config webpack.config.js --mode production"
+},
   "author": "Diego Luna <diegofcolunalopez@gmail.com>",
   "license": "MIT",
   "devDependencies": {

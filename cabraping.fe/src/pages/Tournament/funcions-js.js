@@ -241,7 +241,7 @@ function fetchTournamentResults(tournamentId) {
       .then(response => response.json())
       .then(data => {
         if (data.winner) {
-          awardWinner(`Congratulations ${data.winner.name}, you've won the Chèvre Verte Award!`);
+          awardWinner(`Congratulations ${data.winner.name}, you've won the ${data.tournamentName}, making you the illustrious recipient of the Chèvre Verte Award! In other words, you are the GOAT!`);
         }
       })
       .catch(error => {
@@ -254,9 +254,21 @@ function awardWinner(message) {
     document.getElementById('winnerModal').style.display = "block";
   }
   
-  function closeModal() {
+function closeModal() {
     document.getElementById('winnerModal').style.display = "none";
   }
+
+function displayInvitationModal(message) {
+    const modal = document.getElementById('invitationModal');
+    const modalContent = document.getElementById('modal-content');
+    modalContent.textContent = message;
+    modal.style.display = 'block';
+}
+
+function closeModal() {
+    document.getElementById('invitationModal').style.display = "none";
+}
+
 
 function getToken() {
     const token = localStorage.getItem('jwt');
@@ -267,5 +279,24 @@ function getToken() {
     }
     return token;
 }
+
+// Assuming userID is available in your environment, perhaps passed from the server on page load
+const userWebSocket = new WebSocket(
+    'ws://' + window.location.host + '/ws/user/' + userId + '/'
+);
+
+userWebSocket.onmessage = function(e) {
+    const data = JSON.parse(e.data);
+    if (data.type === 'tournament_invitation') {
+        displayInvitationModal(data.message);
+    }
+};
+
+function displayInvitationModal(message) {
+    const modalContent = document.getElementById('modal-content');
+    modalContent.textContent = message;
+   $('#invitationModal').modal('show');
+}
+
 
 export { handleCreateTournament, handleRegisterParticipant, fetchTournamentData };

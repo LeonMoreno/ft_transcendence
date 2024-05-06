@@ -64,12 +64,7 @@ class UserViewSet(viewsets.ModelViewSet):
         else:
             return UserSerializer
     
-    @api_view(['GET'])
-    def check_user_status(request, username):
-        user = get_object_or_404(CustomUser, username=username)
-        return Response({'isOnline': user.is_online})
-
-    # Delete all users
+     # Delete all users
     # DELETE /api/users/
     @action(detail=False, methods=["delete"])
     def delete_all(self, request):
@@ -216,3 +211,8 @@ def custom_logout(request):
         logout(request)
         return Response({'message': 'Logged out successfully'})
     return Response({'error': 'Not logged in'}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+def check_user_status(request, username):
+    user = get_object_or_404(CustomUser, username=username)
+    return Response({'isOnline': user.is_online})
