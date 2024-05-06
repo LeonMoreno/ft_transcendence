@@ -29,6 +29,7 @@ const routes = {
   "/auth": [AuthPage_html, AuthPage_js],
   "/logout": [LogoutPage_js],
   "/game": [Game_html, Game_js],
+  "/game/:id": [Game_html, Game_js],
   "/chat": [Chat_html, Chat_js],
   "/chat/:id": [Chat_html, Chat_js],
   "/user": [User_html, User_js],

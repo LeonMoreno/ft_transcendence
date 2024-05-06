@@ -1,4 +1,10 @@
+import getHash from "../../utils/getHash.js";
+
 export function Game_html() {
+
+  let route = getHash();
+  console.log(`-> 🦾 game/:id  value:${route}`);
+
   return `
     <div class="container-fluid d-flex align-items-center justify-content-center mb-5 mt-5">
       <div class="row w-100">

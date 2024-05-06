@@ -124,6 +124,8 @@ export async function FriendsRender() {
       );
 
       console.log({ result: await result.json() });
+      // /game
+      window.location.href = `/#game/${gameId}`;
 
       FriendsRender();
       FriendRequestsRender();
