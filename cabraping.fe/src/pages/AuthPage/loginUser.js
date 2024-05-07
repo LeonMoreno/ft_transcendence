@@ -30,7 +30,7 @@ export function loginUser(username, password) {
       window.location.href = '/#';
   }, 500);
   })
-  .catch((error) => {
-    console.error('Error:', error);
-  });
+  //.catch((error) => {
+  //  console.error('Error:', error);
+  //});
 }
