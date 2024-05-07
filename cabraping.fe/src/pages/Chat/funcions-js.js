@@ -1,4 +1,5 @@
 // import image from '../../assets/logo.svg';
+
 import getHash from "../../utils/getHash.js";
 import { showNotification } from '../../components/showNotification.js';
 

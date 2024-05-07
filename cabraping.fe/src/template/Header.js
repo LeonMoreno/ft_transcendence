@@ -1,4 +1,6 @@
-import image from "../../assets/logo.svg";
+//import image from "../../assets/logo.svg";
+
+let image = 'assets/logo.svg';
 
 const BACKEND_URL = "http://localhost:8000";
 let myUser = null;
