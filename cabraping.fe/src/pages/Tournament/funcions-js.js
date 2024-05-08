@@ -254,9 +254,12 @@ function awardWinner(message) {
     document.getElementById('winnerModal').style.display = "block";
   }
   
-function closeModal() {
-    document.getElementById('winnerModal').style.display = "none";
-  }
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.style.display = "none";
+    }
+}
 
 function displayInvitationModal(message) {
     const modal = document.getElementById('invitationModal');
@@ -264,11 +267,6 @@ function displayInvitationModal(message) {
     modalContent.textContent = message;
     modal.style.display = 'block';
 }
-
-function closeModal() {
-    document.getElementById('invitationModal').style.display = "none";
-}
-
 
 function getToken() {
     const token = localStorage.getItem('jwt');
@@ -291,12 +289,6 @@ userWebSocket.onmessage = function(e) {
         displayInvitationModal(data.message);
     }
 };
-
-function displayInvitationModal(message) {
-    const modalContent = document.getElementById('modal-content');
-    modalContent.textContent = message;
-   $('#invitationModal').modal('show');
-}
 
 
 export { handleCreateTournament, handleRegisterParticipant, fetchTournamentData };

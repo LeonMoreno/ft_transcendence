@@ -14,6 +14,8 @@ import { Header_js } from "../components/header/funcions-js.js";
 import { Header_html } from "../components/header/html.js";
 import { Game_js } from "../pages/Game/funcions-js.js";
 import { Game_html } from "../pages/Game/html.js";
+//import { Tournament_js } from "../pages/Tournament/funcions-js.js";
+import { Tournament } from "../pages/Tournament/html.js";
 import { Friends_html } from "../pages/Friends/html.js";
 import {
   FriendsRender,
@@ -35,6 +37,7 @@ const routes = {
   "/users": [Users_html, Users_js],
   "/friends": [Friends_html, Friends_js],
   "/404": [Error404_html, Error404_js],
+  "/tournament": [Tournament],
 };
 
 const router = async () => {

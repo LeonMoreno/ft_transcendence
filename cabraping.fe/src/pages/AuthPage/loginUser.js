@@ -2,8 +2,7 @@ import { showNotification } from "../../components/showNotification.js"
 
 // Function to log in
 export function loginUser(username, password) {
-  //fetch("http://127.0.0.1:8000/api/token/", {
-    fetch("/api/login/", {
+    fetch("http://127.0.0.1:8000/api/token/", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
