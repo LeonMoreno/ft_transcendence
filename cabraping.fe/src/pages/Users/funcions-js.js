@@ -6,6 +6,38 @@ let friendRequests = [];
 
 // export async function UsersInit() {
 export async function Users_js() {
+  //to be moved
+  const urlParams = new URLSearchParams(window.location.search);
+  const authorizationCode = urlParams.get('code');
+  console.log(authorizationCode);
+  const accessTokenResponse = await fetch(`${BACKEND_URL}/auth42/get_access_token/${authorizationCode}`, {
+    method: 'POST',
+  });
+  
+  const accessTokenData = await accessTokenResponse.json();
+  if (!accessTokenResponse.ok) {
+    console.error('Failed to fetch access token');
+    return null;
+  }
+  
+  const accessToken = accessTokenData.access_token;
+  const responseAuthUser = await fetch(`${BACKEND_URL}/auth42/api_view`, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+  if (!responseAuthUser.ok) {
+    console.error('Failed to authenticate user');
+    return null;
+  }
+  
+  const authUser = await responseAuthUser.json();
+  if (!authUser) {
+    console.error('User authentication failed');
+    return null;
+  }
+  //to be moved
+    
   const jwt = localStorage.getItem("jwt");
   if (!jwt) return null;
 
