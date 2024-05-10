@@ -61,7 +61,8 @@ INSTALLED_APPS = [
 ]
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:8080",  # Agrega los dominios de tu frontend
+    "http://localhost:8080",
+    "https://api.intra.42.fr",
 ]
 
 

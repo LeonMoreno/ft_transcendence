@@ -12,6 +12,17 @@ load_dotenv()
 UID = os.getenv("UID")
 SECRET = os.getenv("SECRET")
 
+@api_view(['GET'])
+def get_config(request):
+    # Define the environment variables you want to expose
+    config = {
+        'UID': UID,
+        'SECRET': SECRET,
+        # Add more variables as needed
+    }
+    
+    return JsonResponse(config)
+
 #  Create a url will return the access autorisation_code
 def redirect42(request):
     api_url =   'https://api.intra.42.fr/oauth/authorize' + \
@@ -21,7 +32,7 @@ def redirect42(request):
     return (redirect(api_url))
 
 #  Create a url will return the access token link
-def get_access_token(authorization_code):
+def get_access_token(request, authorization_code):
     url   = "https://api.intra.42.fr/oauth/token"
                 
     client_id     = UID

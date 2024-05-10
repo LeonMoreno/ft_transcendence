@@ -31,6 +31,7 @@ const routes = {
   "/users": [Users_html, Users_js],
   "/friends": [Friends_html, FriendsRender, FriendRequestsRender, Friends_js],
   "/404": [Error404_html, Error404_js],
+  
 };
 
 const router = async () => {
