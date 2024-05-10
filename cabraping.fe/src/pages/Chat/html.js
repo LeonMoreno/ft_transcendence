@@ -1,6 +1,6 @@
 // import image from '../../assets/logo.svg';
 
-let image = 'assets/logo.svg';
+// let image = 'assets/logo.svg';
 
 export  function Chat_html() {
 
@@ -24,18 +24,20 @@ export  function Chat_html() {
           <option value="-1">Select a person for messages</option>
         </select>
       </div>
-      <div class="mt-4 d-flex align-items-center">
-        <img src="${image}" alt="User Image" class="rounded-circle mr-2" width="40">
-        <div>
-          <strong>username</strong>
-          <button class="btn btn-link p-0">Logout</button>
+      <div class="mt-4">
+        <h3>Block users</h3>
+        <div id="list-block" class="">
         </div>
       </div>
     </div>
 
     <!-- Panel Medio: Chat Messages -->
     <div class="bg-white p-3 overflow-auto" style="flex-grow: 1;">
-      <h3 id="channel-title" class="mb-4">#channel-alpha</h3>
+      <h3 id="channel-title" class="mb-4">
+        Channel Title
+      </h3>
+      <button id="blockUserButton" class="btn btn-danger btn-sm ml-2">Block User</button>
+      <button id="usersRouteButton" class="btn btn-secondary btn-sm ml-2">Users</button>
       <!-- Messages go here -->
       <ul id="messageList" class="list-unstyled">
         <!-- Aquí se agregarán los mensajes -->
@@ -46,6 +48,8 @@ export  function Chat_html() {
         <button id="sendButton" class="btn btn-primary mt-2">Enviar</button>
       </div>
     </div>
+
+
   </div>
 
 
