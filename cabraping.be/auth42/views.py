@@ -21,7 +21,7 @@ def redirect42(request):
     return (redirect(api_url))
 
 #  Create a url will return the access token link
-def get_access_token(code):
+def get_access_token(authorization_code):
     url   = "https://api.intra.42.fr/oauth/token"
                 
     client_id     = UID
@@ -30,7 +30,7 @@ def get_access_token(code):
     data          = '?grant_type=authorization_code' + \
                     '&client_id=' + client_id + \
                     '&client_secret=' + client_secret + \
-                    '&code=' + code + \
+                    '&code=' + authorization_code + \
                     '&redirect_uri=' + "http%3A%2F%2Flocalhost%3A8080"
             
     return (url + data)
