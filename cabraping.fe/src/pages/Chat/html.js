@@ -37,7 +37,8 @@ export  function Chat_html() {
         Channel Title
       </h3>
       <button id="blockUserButton" class="btn btn-danger btn-sm ml-2">Block User</button>
-      <button id="usersRouteButton" class="btn btn-secondary btn-sm ml-2">Users</button>
+      <button id="usersRouteButton" class="btn btn-secondary btn-sm ml-2">User info</button>
+      <button id="inviteGameButton" class="btn btn-secondary btn-sm ml-2">Invite to a game</button>
       <!-- Messages go here -->
       <ul id="messageList" class="list-unstyled">
         <!-- Aquí se agregarán los mensajes -->

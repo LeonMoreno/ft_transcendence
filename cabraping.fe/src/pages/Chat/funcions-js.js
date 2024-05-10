@@ -14,7 +14,8 @@ let channels = []; // Global variable to store the list of channels
 let UserName = "default";
 let channel = -1;
 let user_id = -1;
-let user_block_id = -1;
+// let communication_user_id = -1;
+let communication_user_id = -1;
 let channel_now = "general";
 let channel_title = "general";
 let array_channels;
@@ -57,14 +58,21 @@ export async function Chat_js() {
     const blockUserButton = document.getElementById('blockUserButton');
     if (blockUserButton) {
       blockUserButton.disabled = true;
-      blockUserButton.addEventListener('click', () => blockUser(user_block_id));
+      blockUserButton.addEventListener('click', () => blockUser(communication_user_id));
+    }
+
+    // Agregar evento para el botón "Block User"
+    const inviteGameButtonButton = document.getElementById('inviteGameButton');
+    if (inviteGameButtonButton) {
+      inviteGameButtonButton.disabled = true;
+      inviteGameButtonButton.addEventListener('click', () => inviteGame());
     }
 
     // Agregar evento para el botón "Users"
     const usersRouteButton = document.getElementById('usersRouteButton');
     if (usersRouteButton) {
       usersRouteButton.disabled = true;
-      usersRouteButton.addEventListener('click', () => window.location.href = '#usuarios');
+      usersRouteButton.addEventListener('click', () => window.location.href = '#users');
     }
 
     const button = document.getElementById('addChannel');
@@ -106,13 +114,45 @@ export async function Chat_js() {
 
   }
 
+  async function inviteGame() {
+
+    const jwt = localStorage.getItem('jwt');
+
+    const response = await fetch(`${BACKEND_URL}/api/games/`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${jwt}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        invitationStatus: "PENDING",
+        inviter: user_id,
+        invitee: communication_user_id,
+      }),
+    });
+
+    console.log("-> response");
+    console.log(response);
+
+    if (response.ok) {
+      showNotification('Sent invitation', 'success');
+    } else {
+      showNotification('Failed to invitation user', 'error');
+    }
+
+    const inviteGameButtonButton = document.getElementById('inviteGameButton');
+    if (inviteGameButtonButton) inviteGameButtonButton.disabled = true;
+
+  }
+
+
   async function blockUser(userId) {
 
     console.log("--> blockUser");
-    console.log("---> user_block_id");
-    console.log(user_block_id);
+    console.log("---> communication_user_id");
+    console.log(communication_user_id);
 
-    if (user_id < 0 || user_block_id < 0){
+    if (user_id < 0 || communication_user_id < 0){
       return;
     }
 
@@ -124,7 +164,7 @@ export async function Chat_js() {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${jwt}`,
       },
-      body: JSON.stringify({ blocked_user_id: user_block_id }),
+      body: JSON.stringify({ blocked_user_id: communication_user_id }),
     });
 
     console.log("--> response")
@@ -167,6 +207,7 @@ export async function Chat_js() {
       userImage.alt = 'User Image';
       userImage.className = 'rounded-circle mr-2';
       userImage.width = 40;
+      userImage.height = 40;
 
       const userName = document.createElement('strong');
 
@@ -215,6 +256,7 @@ function handleSendClick() {
               "message": message,
               "channel": channel_now,
               "UserName": UserName,
+              "userDetails": myUser,
           }
           console.log("-> sockets[channel_now]:", sockets[channel_now]);
           sockets[channel_now].send(JSON.stringify(info_send)); // Send message through the corresponding WebSocket
@@ -236,10 +278,11 @@ function addMessageToChat(message) {
       messageDiv.className = 'mb-3 d-flex align-items-start';
 
       const userImage = document.createElement('img');
-      userImage.src = `${image}`;
+      userImage.src = `${message.userDetails.avatarImageURL}`;
       userImage.alt = 'User Image';
       userImage.className = 'rounded-circle mr-2';
       userImage.width = 40;
+      userImage.height = 40;
 
       const messageContent = document.createElement('div');
 
@@ -352,6 +395,7 @@ function switchChannel(newChannelId) {
 
   // Clear the chat messages from the UI
 
+  const inviteGameButtonButton = document.getElementById('inviteGameButton');
   const userButton = document.getElementById('usersRouteButton');
   const blockButton = document.getElementById('blockUserButton');
   const sendButton = document.getElementById('sendButton');
@@ -366,6 +410,7 @@ function switchChannel(newChannelId) {
     if (sendButton) sendButton.disabled = true;
     if (userButton) userButton.disabled = true;
     if (blockButton) blockButton.disabled = true;
+    if (inviteGameButtonButton) inviteGameButtonButton.disabled = true;
     if (messageTextarea) {
         messageTextarea.disabled = true;
         messageTextarea.placeholder = "Select a channel to send messages";
@@ -390,6 +435,7 @@ function switchChannel(newChannelId) {
     if (sendButton) sendButton.disabled = false;
     if (userButton) userButton.disabled = false;
     if (blockButton) blockButton.disabled = false;
+    if (inviteGameButtonButton) inviteGameButtonButton.disabled = false;
     if (messageTextarea) {
         messageTextarea.disabled = false;
         messageTextarea.placeholder = "Enter your message here...";
@@ -430,17 +476,17 @@ function changeNameChanel(channel) {
     // Encuentra un miembro cuyo username sea diferente de UserName
     const differentMember = channel.members.find(member => member.username !== UserName);
     channel_title = differentMember.username;
-    user_block_id = differentMember.id;
+    communication_user_id = differentMember.id;
   }
   else
   {
     // channel_title = channel.name;
     channel_title = channel.members.find(member => member.username !== UserName).username;
-    user_block_id = channel.members.find(member => member.username !== UserName).id;
+    communication_user_id = channel.members.find(member => member.username !== UserName).id;
   }
 
-  console.log("----> change user_block_id:");
-  console.log(user_block_id);
+  console.log("----> change communication_user_id:");
+  console.log(communication_user_id);
   // Update the header with the selected channel's name
   const channelHeader = document.getElementById('channel-title');
   if (channelHeader) {

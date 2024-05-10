@@ -8,6 +8,11 @@ from django.core.exceptions import ValidationError
 
 User = get_user_model()
 
+class CustomUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ('id', 'username', 'email', 'first_name', 'last_name', 'avatarImageURL', 'friends')
+
 class BlockUserSerializer(serializers.Serializer):
     blocked_user_id = serializers.IntegerField()
 

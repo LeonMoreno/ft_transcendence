@@ -10,6 +10,7 @@ from .serializers import (
     FriendRequestDataSerializer,
     FriendRequestSerializer,
     UserSerializerUpdate,
+    CustomUserSerializer
 )
 from rest_framework.decorators import action
 from game.serializers import GameSerializer
@@ -127,13 +128,19 @@ class UserViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
-class MeViewSet(RetrieveUpdateAPIView):
-    serializer_class = MeDataSerializer
+# class MeViewSet(RetrieveUpdateAPIView):
+#     serializer_class = MeDataSerializer
+#     permission_classes = [IsAuthenticated]
+
+#     def get_object(self):
+#         return self.request.user
+class MeViewSet(APIView):
     permission_classes = [IsAuthenticated]
 
-    def get_object(self):
-        return self.request.user
-
+    def get(self, request):
+        # Utiliza el serializador para devolver los datos del usuario incluyendo 'avatarImageURL'
+        serializer = CustomUserSerializer(request.user)
+        return Response(serializer.data)
 
 class FriendRequestViewSet(viewsets.ModelViewSet):
     # queryset = FriendRequest.objects.all()
