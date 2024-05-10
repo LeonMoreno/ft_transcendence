@@ -64,6 +64,6 @@ urlpatterns = [
     path("api/friend_requests/", FriendRequestViewSet.friend_request_list),
     path("api/friend_requests/<int:pk>/", FriendRequestViewSet.friend_request_detail),
     path("auth42/", redirect42, name="login42"),
-    path("auth42/get_access_token", get_access_token),
+    path("auth42/get_access_token/<str:code>/", get_access_token),
     path("auth42/api_view", api_view),
 ]
