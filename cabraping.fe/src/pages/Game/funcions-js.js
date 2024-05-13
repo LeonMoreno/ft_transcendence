@@ -1,28 +1,48 @@
+import { getToken } from "../../utils/get-token.js";
+import { getHash } from "../../utils/getHash";
+const BACKEND_URL = "http://localhost:8000";
 
-export function Game_js() {
+export async function Game_js() {
   console.log("Start code in Game");
+  let gameId = getHash();
+
+  if (gameId === "/") {
+    return;
+  }
+
+  const jwt = getToken();
+
+  const responseGame = await fetch(`${BACKEND_URL}/api/games/${gameId}/`, {
+    headers: { Authorization: `Bearer ${jwt}` },
+  });
+
+  const game = await responseGame.json();
+
+  console.log({ game });
 
   const socket = new WebSocket("ws://127.0.0.1:8000/ws/game/");
 
-  socket.onopen = function(e) {
+  socket.onopen = function (e) {
     console.log("WebSocket connection established");
   };
 
-  socket.onmessage = function(event) {
+  socket.onmessage = function (event) {
     const data = JSON.parse(event.data);
     console.log("Message from server ", data);
     handleGameState(data.message);
   };
 
-  socket.onclose = function(event) {
+  socket.onclose = function (event) {
     if (event.wasClean) {
-      console.log(`Connection closed cleanly, code=${event.code}, reason=${event.reason}`);
+      console.log(
+        `Connection closed cleanly, code=${event.code}, reason=${event.reason}`
+      );
     } else {
-      console.log('Connection died');
+      console.log("Connection died");
     }
   };
 
-  socket.onerror = function(error) {
+  socket.onerror = function (error) {
     console.error(`WebSocket error: ${error.message}`);
   };
 
@@ -187,20 +207,26 @@ export function Game_js() {
   }
 
   function handleGameState(data) {
-    if (data && data.rightPaddlePosition !== undefined && data.leftPaddlePosition !== undefined && data.ballPosition) {
+    if (
+      data &&
+      data.rightPaddlePosition !== undefined &&
+      data.leftPaddlePosition !== undefined &&
+      data.ballPosition
+    ) {
       rightPaddle.y = data.rightPaddlePosition;
       leftPaddle.y = data.leftPaddlePosition;
-      if (data.ballPosition.x !== undefined && data.ballPosition.y !== undefined) {
+      if (
+        data.ballPosition.x !== undefined &&
+        data.ballPosition.y !== undefined
+      ) {
         ball.x = data.ballPosition.x;
         ball.y = data.ballPosition.y;
       }
     }
   }
-  
 
   document.addEventListener("keydown", handleKeyDown);
   document.addEventListener("keyup", handleKeyUp);
 
   requestAnimationFrame(loop);
-
 }
