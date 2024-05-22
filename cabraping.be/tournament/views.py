@@ -24,44 +24,31 @@ class TournamentViewSet(viewsets.ModelViewSet):
         if len(participants) != 4:
             return Response({'error': 'Tournament must have exactly 4 participants.'}, status=400)
 
-        # Create a round-robin schedule
-        matches = [
-            (participants[i], participants[j])
-            for i in range(len(participants))
-            for j in range(i + 1, len(participants))
-        ]
+        semifinal1 = Match.objects.create(tournament=tournament, participant1=participants[0], participant2=participants[1])
+        semifinal2 = Match.objects.create(tournament=tournament, participant1=participants[2], participant2=participants[3])
+        tournament.status = 'Semifinals'
+        tournament.save()
 
-        for match in matches:
-            Match.objects.create(tournament=tournament, participant1=match[0], participant2=match[1])
+        return Response({'message': 'Tournament started. Semifinals are set up.'})
 
-        return Response({'message': 'Round-robin phase started.'})
 
     def progress_tournament(self, tournament):
         matches = Match.objects.filter(tournament=tournament)
         completed_matches = matches.filter(winner__isnull=False)
         
-        if completed_matches.count() == 6:  # All round-robin matches are completed
+        if completed_matches.count() == 2:
             participant_wins = Participant.objects.filter(
                 tournament=tournament
             ).annotate(
                 wins=Count('match_winner')
             ).order_by('-wins')
 
-            semifinalists = list(participant_wins)[:4]
-            semifinal1 = Match.objects.create(tournament=tournament, participant1=semifinalists[0], participant2=semifinalists[3])
-            semifinal2 = Match.objects.create(tournament=tournament, participant1=semifinalists[1], participant2=semifinalists[2])
-            tournament.status = 'Semifinals'
+            finalists = list(participant_wins)[:4]
+            final = Match.objects.create(tournament=tournament, participant1=finalists[0], participant2=finalists[1])
+            tournament.status = 'Final'
             tournament.save()
         
-        elif completed_matches.count() == 8:  # Semifinals are completed
-            semifinal_winners = [
-                match.winner for match in completed_matches.order_by('-id')[:2]
-            ]
-            final_match = Match.objects.create(tournament=tournament, participant1=semifinal_winners[0], participant2=semifinal_winners[1])
-            tournament.status = 'Finals'
-            tournament.save()
-        
-        elif completed_matches.count() == 9:  # Final match completed
+        elif completed_matches.count() == 3:
             final_match = completed_matches.latest('id')
             tournament.champion = final_match.winner
             tournament.status = 'Completed'
@@ -124,6 +111,24 @@ class ParticipantViewSet(viewsets.ModelViewSet):
         participant.received_invite = True
         participant.save()
         return Response({'message': f'Invitation sent successfully to {participant.user.username} for {participant.tournament.name}'})
+
+    @action(detail=False, methods=['GET'], url_path='status')
+    def get_participants_status(self, request):
+        tournament_id = request.query_params.get('tournament_id')
+        participants = self.queryset.filter(tournament_id=tournament_id)
+        serializer = self.get_serializer(participants, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['PATCH'], url_path='update-status')
+    def update_status(self, request, pk=None):
+        participant = self.get_object()
+        status = request.data.get('status')
+        if status:
+            participant.status = status
+            participant.save()
+            return Response({'message': 'Status updated successfully'})
+        return Response({'error': 'Status not provided'}, status=400)
+
 
 class MatchViewSet(viewsets.ModelViewSet):
     queryset = Match.objects.all()

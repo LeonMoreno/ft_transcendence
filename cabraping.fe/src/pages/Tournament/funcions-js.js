@@ -1,294 +1,454 @@
-document.addEventListener("DOMContentLoaded", function() {
-    const tournamentForm = document.getElementById('tournamentForm');
-    tournamentForm.addEventListener('submit', handleCreateTournament);
+import { getToken } from "../../utils/get-token.js";
+import { showNotification } from "../../components/showNotification.js"
 
-    for (let i = 1; i <= 4; i++) {
-        const participantForm = document.getElementById(`registerParticipantForm${i}`);
-        participantForm.addEventListener('submit', handleRegisterParticipant);
-    }
+const BACKEND_URL = "http://localhost:8000";
 
-    const startTournamentButton = document.getElementById('startTournamentButton');
-    if (startTournamentButton) {
-        startTournamentButton.addEventListener('click', () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const tournamentId = urlParams.get('tournamentId'); 
-            if (tournamentId) {
-                console.log("Tournament ID: ", tournamentId);
-                fetchTournamentData(tournamentId);
-                checkTournamentStatus(tournamentId);
-            } else {
-                console.error("No tournament ID provided in the URL.");
-            }
-        });
+//Function to display notifications using a modal
+function displayNotification(message) {
+    const modal = document.getElementById('notificationModal');
+    const modalMessage = document.getElementById('modalMessage');
+    const closeButton = document.getElementById('closeModalButton');
+
+    modalMessage.textContent = message;
+    modal.style.display = 'block'; 
+
+    closeButton.onclick = function() {
+        modal.style.display = 'none';
+    };
+}
+
+function displayErrorMessage(message) {
+    displayNotification(message);
+}
+
+/* 
+
+
+
+
+document.addEventListener('DOMContentLoaded', function() {
+    const tournamentId = sessionStorage.getItem('currentTournamentId');
+    if (tournamentId) {
+        fetchTournamentDetails(tournamentId);
+        monitorInvitationStatus(tournamentId);
+    } else {
+        window.location.href = '/'; // Redirect to home if no ID is found
     }
 });
 
-function checkTournamentStatus(tournamentId) {
-    fetch(`/api/tournaments/${tournamentId}/status`) // This endpoint needs to be implemented
-    .then(response => response.json())
-    .then(data => {
-        if (data.status === 'completed') {
-            displayViewResultsButton(tournamentId);
+async function fetchTournamentDetails(tournamentId) {
+    const response = await fetch(`${BACKEND_URL}/api/tournaments/${tournamentId}`, {
+        headers: {
+            'Authorization': `Bearer ${getToken()}`,
+            'Content-Type': 'application/json'
         }
-    })
-    .catch(error => console.error('Error checking tournament status:', error));
-}
-
-function displayViewResultsButton(tournamentId) {
-    const viewResultsButton = document.createElement('button');
-    viewResultsButton.id = 'viewResultsButton';
-    viewResultsButton.textContent = 'View Results';
-    viewResultsButton.onclick = () => fetchTournamentResults(tournamentId);
-    document.body.appendChild(viewResultsButton);
-}
-
-
-function handleCreateTournament(e) {
-    e.preventDefault();
-    const tournamentName = document.getElementById('tournamentNameInput').value;
-    createTournament(tournamentName);
-}
-
-function handleRegisterParticipant(e) {
-    e.preventDefault();
-    const participantName = document.getElementById('participantNameInput').value;
-    //need to check if backend endpoint to register participants and a way to associate them with a tournament
-    const tournamentId = sessionStorage.getItem('currentTournamentId');
-    if (!tournamentId) {
-        displayErrorMessage('No tournament selected. Please select a tournament first.');
-        return;
-    }
-    checkUserOnlineStatus(participantName)
-        .then(isOnline => {
-            if (isOnline) {
-                fetch(`/api/tournaments/${tournamentId}/invite-participant`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${getToken()}`,
-                    },
-                    body: JSON.stringify({ name: participantName }),
-                })
-                .then(response => {
-                    if (!response.ok) throw new Error('Network response was not ok');
-                    return response.json();
-                })
-                .then(data => {
-                    sendInvitation(participantName);
-                    console.log('Invitation sent to participant:', data);
-                    updateParticipantListUI(data); // Update the UI with the new participant
-                })
-                .catch(error => {
-                    console.error('Error inviting participant:', error);
-                    displayErrorMessage('Failed to invite participant. Please try again.');
-                });
-            } else {
-                displayErrorMessage('The participant is not online. Try inviting someone else.');
-            }
-        })
-        .catch(error => {
-            console.error('Error checking user status:', error);
-            displayErrorMessage('Failed to check participant status.');
-        });
-}
-
-function checkUserOnlineStatus(username) {
-    return fetch(`/api/users/${username}/status`, {
-        headers: {'Authorization': `Bearer ${getToken()}`}
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.isOnline) {
-            sendInvitation(username);
-        } else {
-            console.error('User is not online');
-        }
-    })
-    .catch(error => {
-        console.error('Error checking user online status:', error);
     });
+    if (response.ok) {
+        const data = await response.json();
+        document.getElementById('tournamentDetails').textContent = `Tournament Name: ${data.name}`;
+        data.participants.forEach(participant => {
+            updateParticipantsList(participant.username, participant.status);
+        });
+    }
 }
 
-function sendInvitation(participantId) {
-    fetch(`/api/participants/${participantId}/invite-participant`, {
+// Using websocket for real time updates
+function monitorInvitationStatus(tournamentId) {
+    const socket = new WebSocket(`ws://localhost:8000/ws/tournament/${tournamentId}/`);
+
+    socket.onmessage = function(event) {
+        const data = JSON.parse(event.data);
+        const participants = data.participants;
+        participants.forEach(participant => {
+            updateParticipantsList(participant.username, participant.status);
+        });
+    };
+
+    socket.onclose = function(event) {
+        console.error('WebSocket closed unexpectedly');
+    };
+}
+
+*/  
+
+// Function to check user online status via API
+/*async function checkUserOnlineStatus(username) {
+    try {
+        const response = await fetch(`${BACKEND_URL}/api/users/${username}/status`, {
+            headers: {
+                'Authorization': `Bearer ${getToken()}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            if (response.status === 404) {
+                console.warn(`User ${username} not found.`);
+                displayErrorMessage("User not found. Please double-check their nickname.");
+                return false; // Assuming a non-existent user is not online
+            }
+            throw new Error(`Error: ${response.status} ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        return data.isOnline;
+    } catch (error) {
+        console.error('Error checking user online status:', error);
+        displayErrorMessage("Error checking user online status. Please try again later.");
+        return false; // Assuming an error means the user is not online or status cannot be determined
+    }
+}*/
+
+/*async function checkUserOnlineStatus(username) {
+    console.log(`Checking online status for user: ${username}`);
+    try {
+        const response = await fetch(`${BACKEND_URL}/api/users/${username}/status/`, {
+            headers: {
+                'Authorization': `Bearer ${getToken()}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        console.log(`Response status: ${response.status}`); 
+
+        if (!response.ok) {
+            if (response.status === 404) {
+                console.warn(`User ${username} not found.`);
+                displayErrorMessage("User not found. Please double-check their nickname.");
+                return false; // Assuming a non-existent user is not online
+            }
+            throw new Error(`Error: ${response.status} ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        console.log(`User online status: ${data.isOnline}`);
+        return data.isOnline;
+    } catch (error) {
+        console.error('Error checking user online status:', error);
+        displayErrorMessage("An error occurred while checking the user's online status.");
+        return false; // Assuming an error means the user is not online or status cannot be determined
+    }
+}*/
+
+/*async function checkUserOnlineStatus(username) {
+    console.log(`Checking online status for user: ${username}`);
+    try {
+        // Step 1: Check if the user exists
+        const userResponse = await fetch(`${BACKEND_URL}/api/users/${username}/`, {
+            headers: {
+                'Authorization': `Bearer ${getToken()}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!userResponse.ok) {
+            if (userResponse.status === 404) {
+                console.warn(`User ${username} not found.`);
+                displayErrorMessage("User not found. Please double-check their nickname."); // rachel - this is not popping out
+                return false; // User does not exist
+            }
+            throw new Error(`Error: ${userResponse.status} ${userResponse.statusText}`);
+        }
+
+        // Step 2: User exists, check their online status
+        const statusResponse = await fetch(`${BACKEND_URL}/api/users/${username}/status/`, {
+            headers: {
+                'Authorization': `Bearer ${getToken()}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        console.log(`Response status: ${statusResponse.status}`); 
+
+        if (!statusResponse.ok) {
+            throw new Error(`Error: ${statusResponse.status} ${statusResponse.statusText}`);
+        }
+
+        const data = await statusResponse.json();
+        console.log(`User online status: ${data.isOnline}`);
+        return data.isOnline;
+    } catch (error) {
+        console.error('Error checking user online status:', error);
+        displayErrorMessage("An error occurred while checking the user's online status.");
+        return false; // Assuming an error means the user is not online or status cannot be determined
+    }
+}*/
+
+async function userExists(username) {
+    console.log(`Checking if user exists: ${username}`);
+    try {
+        const response = await fetch(`${BACKEND_URL}/api/users/${username}/`, {
+            headers: {
+                'Authorization': `Bearer ${getToken()}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        console.log(`Response status: ${response.status}`);
+
+        if (response.status === 404) {
+            console.warn(`User ${username} not found.`);
+            return { exists: false, message: "User not found. Please double-check their nickname." };
+        }
+
+        if (!response.ok) {
+            throw new Error(`Error: ${response.status} ${response.statusText}`);
+        }
+
+        return { exists: true };
+    } catch (error) {
+        console.error('Error checking if user exists:', error);
+        return { exists: false, message: "An error occurred while checking if the user exists." };
+    }
+}
+
+async function checkUserOnlineStatus(username) {
+    console.log(`Checking online status for user: ${username}`);
+    try {
+        // Check if the user exists first
+        const userCheck = await userExists(username);
+        if (!userCheck.exists) {
+            displayErrorMessage(userCheck.message);
+            return { isOnline: false, message: userCheck.message };
+        }
+
+        const response = await fetch(`${BACKEND_URL}/api/users/${username}/status/`, {
+            headers: {
+                'Authorization': `Bearer ${getToken()}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        console.log(`Response status: ${response.status}`);
+
+        if (!response.ok) {
+            throw new Error(`Error: ${response.status} ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        console.log(`User online status: ${data.isOnline}`);
+        return data.isOnline;
+    } catch (error) {
+        console.error('Error checking user online status:', error);
+        displayErrorMessage("An error occurred while checking the user's online status.");
+        return { isOnline: false, message: "An error occurred while checking the user's online status." };
+    }
+}
+
+
+// Function to send an invitation to a user
+/*async function sendInvitation(username) {
+    console.log("Sending invitation to", username);
+    const response = await fetch(`${BACKEND_URL}/api/participants/${username}/invite-participant`, {
         method: 'POST',
         headers: {
             'Authorization': `Bearer ${getToken()}`,
             'Content-Type': 'application/json'
         }
-    })
-    .then(response => {
-        if (response.ok) {
-            console.log('Invitation sent successfully');
-        } else {
-            console.error('Failed to send invitation');
-        }
-    })
-    .catch(error => console.error('Error sending invitation:', error));
-}
-
-
-function createTournament(tournamentName) {
-    fetch(`/api/tournaments/`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${getToken()}`
-        },
-        body: JSON.stringify({ name: tournamentName }),
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-        return response.json();
-    })
-    .then(data => {
-        console.log('Tournament created:', data);
-        sessionStorage.setItem('currentTournamentId', data.id);
-        window.location.href = `/tournamentPage?tournamentId=${data.id}`;
-    })
-    .catch(error => {
-        console.error('Error creating tournament:', error);
-        displayErrorMessage('Failed to create tournament. Please try again.');
     });
+    if (response.ok) {
+        console.log('Invitation sent successfully');
+        displayNotification('Invitation sent successfully to ' + username);
+    } else {
+        throw new Error('Failed to send invitation');
+    }
 }
 
-function fetchTournamentData(tournamentId) {
-    fetch(`/api/tournaments/${tournamentId}/`)
-        .then(response => response.json())
-        .then(data => {
-            document.getElementById('tournamentName').textContent = data.name;
-            displayMatches(data.matches);
-        })
-        .catch(error => {
-            console.error('Error fetching tournament data:', error);
-            displayErrorMessage('Failed to load tournament data. Please try again.');
-        });
+/*document.addEventListener('DOMContentLoaded', function() {
+    TournamentInit();
+});*/
+
+// Initialization function to setup event listeners when the page is ready
+/*export function TournamentInit() {
+    console.log("Initializing Tournament Page");
+    const tournamentForm = document.getElementById('tournamentForm');
+    if (tournamentForm) {
+        tournamentForm.addEventListener('submit', handleCreateTournament);
+        console.log("Event listener added to tournament form");
+    }
+
+    const addParticipantButton = document.getElementById('addParticipantButton');
+    if (addParticipantButton) {
+        addParticipantButton.addEventListener('click', handleAddParticipant);
+        console.log("Event listener added to add participant button");
+    }
+
+    const startTournamentButton = document.getElementById('startTournamentButton');
+    if (startTournamentButton) {
+        startTournamentButton.addEventListener('click', startTournament);
+        console.log("Event listener added to start tournament button");
+    }
 }
 
-function displayMatches(matches) {
-    const matchesContainer = document.getElementById('matches');
-    matches.forEach(match => {
-        const matchElement = document.createElement('div');
-        matchElement.classList.add('col-md-4', 'mb-3');
-        matchElement.innerHTML = `
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">${match.participant1.user.username} vs ${match.participant2.user.username}</h5>
-                    <p class="card-text">Winner: ${match.winner ? match.winner.user.username : 'TBD'}</p>
-                </div>
-            </div>
-        `;
-        matchesContainer.appendChild(matchElement);
-    });
-    setupMatchButtons();
-}
-
-function setupMatchButtons() {
-    const matchesContainer = document.getElementById('matches');
-    const beginMatchButton = document.createElement('button');
-    beginMatchButton.innerText = 'Begin Match';
-    beginMatchButton.className = 'btn btn-success'; // Bootstrap button class
-    beginMatchButton.onclick = function() {
-        playGoatSoundAndDisplayImage();
-        startMatch(); //or whatever is the function that starts it
-    };
-    matchesContainer.appendChild(beginMatchButton); //double check
-}
-
-function playGoatSoundAndDisplayImage() {
-    const goatSoundUrl = '../../assets/goat_noise.mp3';
-    const goatImageUrl = '../../assets/bleating_goat.png';
-
-    const audio = new Audio(goatSoundUrl);
-    audio.play();
-
-    const goatImage = document.createElement('img');
-    goatImage.src = goatImageUrl;
-    goatImage.alt = 'Goat Bleating';
-    goatImage.style.maxWidth = '100px'; // Adjust as needed
-    goatImage.style.position = 'fixed';
-    goatImage.style.bottom = '20px';
-    goatImage.style.right = '20px';
-    document.body.appendChild(goatImage);
-
-    //removes the image after the sound finishes or after a set timeout
-    // audio.onended = () => {
-    //     document.body.removeChild(goatImage);
-    // };
-
-    // ensuring it's shown for a certain period:
-    setTimeout(() => {
-        if (document.body.contains(goatImage)) {
-            document.body.removeChild(goatImage);
-        }
-    }, 5000);
-}
-
-function displayErrorMessage(message) {
-    const errorMessageContainer = document.getElementById('errorMessage');
-    if (!errorMessageContainer) {
-        console.error('Error message container not found');
+// Function to start the tournament
+async function startTournament() {
+    const tournamentId = sessionStorage.getItem('currentTournamentId');
+    if (!tournamentId) {
+        displayErrorMessage("No tournament ID found. Please create a tournament first.");
         return;
     }
-    errorMessageContainer.textContent = message;
-    errorMessageContainer.style.display = 'block';
-}
-
-function fetchTournamentResults(tournamentId) {
-    fetch(`/api/tournaments/${tournamentId}/results`)
-      .then(response => response.json())
-      .then(data => {
-        if (data.winner) {
-          awardWinner(`Congratulations ${data.winner.name}, you've won the ${data.tournamentName}, making you the illustrious recipient of the Chèvre Verte Award! In other words, you are the GOAT!`);
+    try {
+        const response = await fetch(`${BACKEND_URL}/api/tournaments/${tournamentId}/start`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${getToken()}`
+            }
+        });
+        if (response.ok) {
+            console.log('Tournament started:', response);
+            displayNotification("Tournament is starting!");
+            window.location.href = `/tournament/waiting?tournamentId=${tournamentId}`; // Redirect to the waiting area
+        } else {
+            throw new Error('Failed to start the tournament');
         }
-      })
-      .catch(error => {
-        console.error('Error fetching tournament results:', error);
-      });
+    } catch (error) {
+        console.error('Error starting the tournament:', error);
+        displayErrorMessage('Failed to start the tournament. Please try again.');
+    }
+}*/
+
+export function TournamentInit() {
+    console.log("Initializing Tournament Page");
+  
+    const tournamentForm = document.getElementById('tournamentForm');
+    if (tournamentForm) {
+      tournamentForm.addEventListener('submit', handleCreateTournament);
+      console.log("Event listener added to tournament form");
+    }
+  
+    const addParticipantButton = document.getElementById('addParticipantButton');
+    if (addParticipantButton) {
+      addParticipantButton.addEventListener('click', handleAddParticipant);
+      console.log("Event listener added to add participant button");
+    }
+  
+    const startTournamentButton = document.getElementById('startTournamentButton');
+    if (startTournamentButton) {
+      startTournamentButton.addEventListener('click', startTournament);
+      console.log("Event listener added to start tournament button");
+    }
   }
   
-function awardWinner(message) {
-    document.getElementById('winnerMessage').textContent = message;
-    document.getElementById('winnerModal').style.display = "block";
+async function handleCreateTournament(e) {
+    e.preventDefault();
+    console.log("Create Tournament form submitted");
+    const tournamentName = document.getElementById('tournamentNameInput').value.trim();
+    if (!tournamentName) {
+        displayErrorMessage('Tournament name cannot be empty.');
+        return;
+    }
+    try {
+        const response = await createTournament(tournamentName);
+        console.log('Response status:', response.status);
+        if (response.ok) {
+            const data = await response.json();
+            showNotification("Tournament created successfuly", "success");
+            document.getElementById('tournamentNameInput').value = '';
+            sessionStorage.setItem('currentTournamentId', data.id);
+            updateParticipantsList('You (Creator)', true); // Automatically adds the creator as a participant
+        } else {
+            const errorMessage = await response.text(); // Log the error message from the response
+            console.error('Error from server:', errorMessage); 
+            throw new Error('Failed to create tournament. Server responded with an error.');
+        }
+    } catch (error) {
+        console.error('Caught error:', error);
+        displayErrorMessage(error.message);
+    }
+}
+
+async function createTournament(tournamentName) {
+    try {
+        const response = await fetch(`${BACKEND_URL}/api/tournaments/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${getToken()}`
+            },
+            body: JSON.stringify({ name: tournamentName })
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text(); // Log the response text if it's not OK
+            console.error('Response text:', errorText); // Log the response text
+            throw new Error('Network response was not ok');
+        }
+        
+        return response;
+    } catch (error) {
+        console.error('Network error:', error); // Log network errors
+        throw error;
+    }
+}
+  
+// Function to update the list of participants in the UI
+function updateParticipantsList(participantName, status) {
+    const participantsList = document.getElementById('participantsList');
+    if (participantsList) {
+        // Check if the participant is already in the list to avoid duplication
+        const existingParticipant = Array.from(participantsList.children).find(item => item.textContent.includes(participantName));
+        if (existingParticipant) {
+            existingParticipant.textContent = participantName + ' - ' + status;
+        } else {
+            const listItem = document.createElement('li');
+            listItem.textContent = participantName + ' - ' + status;
+            participantsList.appendChild(listItem);
+        }
+        checkAllParticipantsAccepted();
+    } else {
+        displayErrorMessage("Participant list unavailable.");
+    }
+}
+
+function checkAllParticipantsAccepted() {
+    const participants = document.getElementById('participantsList').getElementsByTagName('li');
+    let allAccepted = true;
+    for (let participant of participants) {
+        if (!participant.textContent.includes('accepted')) {
+            allAccepted = false;
+        }
+    }
+    document.getElementById('startTournamentButton').disabled = !allAccepted;
+}
+
+
+// Function to handle adding a participant
+async function handleAddParticipant(e) {
+    e.preventDefault();
+    const participantName = document.getElementById('participantNameInput').value.trim();
+    if (!participantName) {
+        displayErrorMessage('Participant name cannot be empty.');
+        return;
+    }
+    const userStatus = await checkUserOnlineStatus(participantName);
+    if (userStatus.isOnline) {
+        sendInvitation(participantName);
+        updateParticipantsList(participantName, true);
+    } else {
+        displayErrorMessage(userStatus.message || "Participant is not online or does not exist.");
+        console.log(userStatus.message || "Participant is not online or does not exist.");
+    }
+    document.getElementById('participantNameInput').value = ''; // Clear input after adding
+}
+  
+  function startTournament(event) {
+    event.preventDefault();
+    console.log("Start Tournament button clicked");
   }
   
-function closeModal(modalId) {
-    const modal = document.getElementById(modalId);
-    if (modal) {
-        modal.style.display = "none";
-    }
-}
+  //export { TournamentInit };
+  
 
-function displayInvitationModal(message) {
-    const modal = document.getElementById('invitationModal');
-    const modalContent = document.getElementById('modal-content');
-    modalContent.textContent = message;
-    modal.style.display = 'block';
-}
-
-function getToken() {
-    const token = localStorage.getItem('jwt');
-    if (!token) {
-        console.error('No token found, user might not be logged in');
-        window.location.href = '/login';
-        return null;
-    }
-    return token;
-}
-
-// Assuming userID is available in your environment, perhaps passed from the server on page load
-const userWebSocket = new WebSocket(
-    'ws://' + window.location.host + '/ws/user/' + userId + '/'
-);
-
-userWebSocket.onmessage = function(e) {
-    const data = JSON.parse(e.data);
-    if (data.type === 'tournament_invitation') {
-        displayInvitationModal(data.message);
-    }
-};
+/*export {
+    createTournament,
+    handleCreateTournament,
+    handleAddParticipant,
+    displayNotification,
+    displayErrorMessage,
+    checkUserOnlineStatus,
+    sendInvitation,
+    startTournament
+};*/
 
 
-export { handleCreateTournament, handleRegisterParticipant, fetchTournamentData };

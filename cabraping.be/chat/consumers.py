@@ -2,6 +2,8 @@ import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.layers import get_channel_layer
 
+# rachel - check if the tournament config messes up Diego's chat
+
 class MyWebSocketConsumerChat(AsyncWebsocketConsumer):
     async def connect(self):
         #self.room_name = self.scope['url_route']['kwargs']['room_name']  # Obtener el nombre del canal de la URL

@@ -1,8 +1,7 @@
 from django.contrib.auth import authenticate, login, logout
 from rest_framework.generics import RetrieveUpdateAPIView
 from rest_framework.permissions import IsAuthenticated
-from rest_framework import viewsets
-from rest_framework import status
+from rest_framework import viewsets, status
 from .models import CustomUser, FriendRequest
 from .serializers import (
     UserSerializer,
@@ -12,13 +11,12 @@ from .serializers import (
     FriendRequestSerializer,
     UserSerializerUpdate,
 )
-from rest_framework.decorators import action, api_view
+from rest_framework.decorators import action, api_view, permission_classes
 from game.serializers import GameSerializer
 from rest_framework.response import Response
 from django.db.models import Q
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from django.shortcuts import get_object_or_404
 from rest_framework.parsers import JSONParser
 from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
 from rest_framework.views import APIView
@@ -205,14 +203,38 @@ def custom_login(request):
 
 @api_view(['POST'])
 def custom_logout(request):
+    print("Logout request received") 
+    print(f"Request method: {request.method}")
+    print(f"Request user: {request.user}")
     if request.user.is_authenticated:
-        request.user.is_online = False
-        request.user.save()
-        logout(request)
-        return Response({'message': 'Logged out successfully'})
-    return Response({'error': 'Not logged in'}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            request.user.is_online = False
+            request.user.save()
+            logout(request)
+            print("Logout successful")
+            return Response({'message': 'Logged out successfully'})
+        except Exception as e:
+            print(f"Error during logout: {str(e)}")
+            return Response({'error': 'Error logging out'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    else:
+        print("User not authenticated")
+        return Response({'error': 'Not logged in'}, status=status.HTTP_400_BAD_REQUEST)
+
+#@api_view(['GET'])
+#def check_user_status(request, username):
+#    user = get_object_or_404(CustomUser, username=username)
+#    return Response({'isOnline': user.is_online})
 
 @api_view(['GET'])
 def check_user_status(request, username):
-    user = get_object_or_404(CustomUser, username=username)
-    return Response({'isOnline': user.is_online})
+    print(f"Checking status for user: {username}")  # Add logging  
+    try:
+        user = CustomUser.objects.get(username=username)
+        print(f"User {username} found with online status: {user.is_online}")
+        return Response({'isOnline': user.is_online})
+    except CustomUser.DoesNotExist:
+        print(f"User {username} does not exist")  # Log if user does not exist
+        return Response({'error': 'User not found'}, status=404)
+    except Exception as e:
+        print(f"An unexpected error occurred: {str(e)}")
+        return Response({'error': 'An unexpected error occurred'}, status=500)

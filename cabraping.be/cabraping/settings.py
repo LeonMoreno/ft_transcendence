@@ -52,8 +52,27 @@ INSTALLED_APPS = [
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:8080",  # Agrega los dominios de tu frontend
+    "http://127.0.0.1:8000",
 ]
 
+# For development purposes, you can also use
+CORS_ALLOW_ALL_ORIGINS = True
+
+# Allow specific methods
+#CORS_ALLOW_METHODS = [
+#    'GET',
+#    'POST',
+#    'PUT',
+#    'PATCH',
+#    'DELETE',
+#    'OPTIONS'
+#]
+
+# Allow specific headers
+#CORS_ALLOW_HEADERS = [
+#    'Authorization',
+#    'Content-Type',
+#]
 
 AUTH_USER_MODEL = 'users.CustomUser'
 
@@ -105,18 +124,6 @@ DATABASES = {
         'PORT': '5432',
     }
 }
-
-#DATABASES = {
-#    'default': {
-#        'ENGINE': 'django.db.backends.postgresql',
-#        'NAME': os.getenv('POSTGRES_DB', 'transcendence_db'),
-#        'USER': os.getenv('POSTGRES_USER', 'transcendence_user'),
-#        'PASSWORD': os.getenv('POSTGRES_PASSWORD', 'transcendence_password'),
-#        'HOST': 'database',  # Docker service name for PostgreSQL
-#        'PORT': '5432',       # Default PostgreSQL port
-#    }
-#}
-
 
 #Local
 #CHANNEL_LAYERS = {
@@ -215,4 +222,4 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MEDIA_URL = '/media/'
 
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media') #rachel - check if correct

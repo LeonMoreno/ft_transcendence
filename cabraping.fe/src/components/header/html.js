@@ -1,5 +1,4 @@
 //import image from "../../assets/logo.svg";
-
 let image = 'assets/logo.svg';
 
 const BACKEND_URL = "http://localhost:8000";
@@ -47,7 +46,8 @@ export async function Header_html() {
       ${isAuthenticated ? `
         <div>
           <a href="/#user" class="me-3 text-decoration-none text-dark">${myUser.username}</a>
-          <a href="/#logout" class="btn btn-primary">Logout</a>
+          <button id="logoutButton" class="btn btn-primary">Logout</button>
+
         </div>
       ` : `<a href="/#auth" class="btn btn-primary">Login</a>`}
     </div>
