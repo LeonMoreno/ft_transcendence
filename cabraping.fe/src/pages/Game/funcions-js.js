@@ -212,6 +212,7 @@ export async function Game_js() {
 
         const result = response.json;
         console.log({ result });
+        window.location = "/#friends";
 
         return;
       }
