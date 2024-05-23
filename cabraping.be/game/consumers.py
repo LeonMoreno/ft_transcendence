@@ -2,12 +2,20 @@ import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.layers import get_channel_layer
 
-class MyWebSocketConsumerGame(AsyncWebsocketConsumer):
+class GameConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        await self.channel_layer.group_add("game", self.channel_name)
+        self.game_id = self.scope['url_route']['kwargs']['game_id']
+        self.game_group_name = f'game_{self.game_id}'
+
+        # Join game group
+        await self.channel_layer.group_add(
+            self.game_group_name,
+            self.channel_name
+        )
+
         await self.accept()
         await self.channel_layer.group_send(
-            "game",
+            self.game_group_name,
             {
                 "type": "game_state_message",
                 "message": "Hello from the server",
@@ -16,18 +24,32 @@ class MyWebSocketConsumerGame(AsyncWebsocketConsumer):
         )
 
     async def disconnect(self, close_code):
-        await self.channel_layer.group_discard("game", self.channel_name)
+        # Leave game group
+        await self.channel_layer.group_discard(
+            self.game_group_name,
+            self.channel_name
+        )
 
+    # Receive message from game group
+    async def game_state_message(self, event):
+        message = event['message']
+
+        # Send message to WebSocket
+        await self.send(text_data=json.dumps({
+            'message': message
+        }))
+
+    # Receive message from WebSocket
     async def receive(self, text_data):
         try:
-            text_data_json = json.loads(text_data)
-            print("-> text_data_json : {}".format(text_data_json))
-            if text_data_json:
+            data_json = json.loads(text_data)
+            # print("-> data_json : {}".format(data_json))
+            if data_json:
                 await self.channel_layer.group_send(
-                    "game",
+                    self.game_group_name,
                     {
                         "type": "game_state_message",
-                        "message": text_data_json,
+                        "message": data_json,
                         "sender_channel_name": self.channel_name
                     }
                 )
@@ -36,11 +58,11 @@ class MyWebSocketConsumerGame(AsyncWebsocketConsumer):
             print(json.JSONDecodeError)
             pass
 
-    async def game_state_message(self, event):
-        message = event['message']
-        sender_channel_name = event['sender_channel_name']
+    # async def game_state_message(self, event):
+    #     message = event['message']
+    #     sender_channel_name = event['sender_channel_name']
 
-        if self.channel_name != sender_channel_name:
-            await self.send(text_data=json.dumps({
-                'message': message
-            }))
+    #     if self.channel_name != sender_channel_name:
+    #         await self.send(text_data=json.dumps({
+    #             'message': message
+    #         }))
