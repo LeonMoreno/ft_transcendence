@@ -18,31 +18,24 @@ class GameViewSet(viewsets.ModelViewSet):
         return Response(status=204)
 
     # Accept game as the invitee
+    # /api/games/:gameId/accept_game/`
     @action(detail=True, methods=["put"])
     def accept_game(self, request, pk=None):
         game = self.get_object()
-
-        # FIXME
-        # user_id = get_user_id(request)
-        # if request.user == game.invitee.id
-
         # Check if the user making the request is the invitee
-        # Might have to modify using token later
-        # Or ignore the permission, which can be done by anyone
-        # if request.user == game.invitee:
-        # Accept the game, update the invitation status
-        game.invitationStatus = "ACCEPTED"
-        game.save()
-        serializer = self.get_serializer(game)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
+        if request.user == game.invitee:
+            game.invitationStatus = "ACCEPTED"
+            game.save()
+            serializer = self.get_serializer(game)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(
             {"error": "You are not the invitee of this game."},
             status=status.HTTP_403_FORBIDDEN,
         )
 
+    # /api/games/:gameId/reject_game/`
     @action(detail=True, methods=["put"])
-    def reject_game(self, request, pk=None):
+    def reject_game(self, request):
         game = self.get_object()
 
         if request.user == game.invitee:
@@ -53,6 +46,28 @@ class GameViewSet(viewsets.ModelViewSet):
 
         return Response(
             {"error": "You are not the invitee of this game."},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
+    # /api/games/:gameId/finish_game/`
+    @action(detail=True, methods=["put"])
+    def finish_game(self, request, pk=None):
+        game = self.get_object()
+
+        # Check if the user making the request is part of the game
+        if request.user in [game.inviter, game.invitee]:
+            data = request.data
+            # Update the game with the provided data
+            game.invitationStatus = "FINISHED"
+            game.winner_id = data.get("winnerId", game.winner_id)
+            game.inviterScore = data.get("inviterScore", game.inviterScore)
+            game.inviteeScore = data.get("inviteeScore", game.inviteeScore)
+            game.save()
+            serializer = self.get_serializer(game)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        return Response(
+            {"error": "You are not a participant of this game."},
             status=status.HTTP_403_FORBIDDEN,
         )
 
