@@ -149,6 +149,7 @@ def callback2(request):
 import json
 from django.conf import settings
 from django.contrib.auth import authenticate, login
+from rest_framework.permissions import IsAuthenticated
 from django.http import JsonResponse
 from django.shortcuts import redirect
 from django.views.decorators.csrf import csrf_exempt
@@ -189,7 +190,7 @@ def callback(request):
     response_data = response.json()
     access_token = response_data.get('access_token')
 
-    logger.debug(f'Token exchange response: {response_data}')
+    #logger.debug(f'Token exchange response: {response_data}')
     if not access_token:
         return JsonResponse({'error': 'Failed to retrieve access token', 'details': response_data}, status=400)
 
@@ -205,41 +206,51 @@ def callback(request):
     user_info = user_info_response.json()
 
     username = user_info.get("login")
-    user_id = user_info.get("id")
+    ftId = user_info.get("id")
     first_name = user_info.get("first_name")
     last_name = user_info.get("last_name")
     avatar_image_url = user_info.get("image_url")  # Verify this key
     email = user_info.get("email")
-    password = str(user_id)  # Using user_id as the password (for example purposes)
+    password = str(ftId)  # Using ftId as the password for example purposes
 
-    if not user_id or not username:
+    #logger.debug(f'User info received: {user_info}')
+
+    if not ftId or not username:
         return JsonResponse({'error': 'Incomplete user info from Auth42'}, status=400)
 
     user, created = CustomUser.objects.get_or_create(
         username=username,
         defaults={
             'email': email,
-            'first_name': first_name,
-            'last_name': last_name,
-            'avatar': avatar_image_url,
-            'password': password  # Set a default password if creating a new user
+            'ftId': ftId,
+            'firstName': first_name,
+            'lastName': last_name,
+            'avatarImageURL': avatar_image_url,
+            'password': CustomUser.objects.make_random_password()  # Set a temporary password
         }
     )
 
-    if not created:
-        # Update the user details if the user already exists
-        user.email = email
-        user.first_name = first_name
-        user.last_name = last_name
-        user.avatar = avatar_image_url
-        user.set_password(password) 
+    if created:
+        user.set_password(password)  # Set the real password
         user.save()
+        logger.debug(f'User {username} created successfully.')
+    else:
+        user.email = email
+        user.ftId = ftId
+        user.firstName = first_name
+        user.lastName = last_name
+        user.avatarImageURL = avatar_image_url
+        user.set_password(password)  # Update password if needed
+        user.save()
+        logger.debug(f'User {username} updated successfully.')
 
-    # Authenticate and log in the user
+    # Authenticate the user using username and password
     user = authenticate(username=username, password=password)
     if user is not None:
         login(request, user)
+        logger.debug(f'User {username} authenticated successfully.')
     else:
+        logger.error(f'Authentication failed for user: {username}')
         return JsonResponse({'error': 'Authentication failed'}, status=401)
 
     # Generate JWT tokens for the user
@@ -247,8 +258,10 @@ def callback(request):
     access_token = str(refresh.access_token)
     refresh_token = str(refresh)
 
-    logger.debug(f'User info: {user_info}')
+    logger.debug(f'JWT tokens generated for user: {username}')
 
     # Redirect to the frontend with the tokens
     frontend_redirect_url = f"http://localhost:8080?access_token={access_token}&refresh_token={refresh_token}"
     return redirect(frontend_redirect_url)
+    # For debugging purposes, return the user_info JSON response directly
+    #return JsonResponse(user_info)
