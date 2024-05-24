@@ -101,6 +101,11 @@ export async function Chat_js() {
     if (channels.length > 0) {
       updateChannelList(channels); // Call the new function to update the channels dropdown
       channel = channels[0].id; // Sets the first channel as the current channel
+
+      // Subscribe to all channels
+      channels.forEach(channel => {
+        createWebSocketConnection(channel.id);
+    });
     }
 
     // const channelsDropdown = document.getElementById('channelsDropdown');
@@ -268,6 +273,8 @@ function handleSendClick() {
 
 function addMessageToChat(message) {
 
+  saveMessageToLocalStorage(message);
+
   // console.log("--> 🎉message.channel:", message.channel);
   // console.log("--> 🎉channel:", channel_now);
   // console.log("--> 🎉condicion:",message.channel === channel_now)
@@ -303,10 +310,16 @@ function addMessageToChat(message) {
       messageList.scrollTop = messageList.scrollHeight;
 
     }
-    else{
-      showNotificationPopup(message.UserName, message.message);
-    }
   }
+  else{
+    showNotificationPopup(message.UserName, message.message);
+  }
+}
+
+function saveMessageToLocalStorage(message) {
+  let messages = JSON.parse(localStorage.getItem(`messages_channel_${message.channel}`)) || [];
+  messages.push(message);
+  localStorage.setItem(`messages_channel_${message.channel}`, JSON.stringify(messages));
 }
 
 function handleButtonClick() {
@@ -500,7 +513,45 @@ function switchChannel(newChannelId) {
         changeNameChanel(array_channels[index]);
       }
     }
+
+    // Load messages from local storage
+    loadMessagesFromLocalStorage(newChannelId);
   }
+}
+
+function loadMessagesFromLocalStorage(channelId) {
+  const messages = JSON.parse(localStorage.getItem(`messages_channel_${channelId}`)) || [];
+  const messageList = document.getElementById('messageList');
+
+  messages.forEach(message => {
+      const messageDiv = document.createElement('div');
+      messageDiv.className = 'mb-3 d-flex align-items-start';
+
+      const userImage = document.createElement('img');
+      userImage.src = `${message.userDetails.avatarImageURL}`;
+      userImage.alt = 'User Image';
+      userImage.className = 'rounded-circle mr-2';
+      userImage.width = 40;
+      userImage.height = 40;
+
+      const messageContent = document.createElement('div');
+
+      const messageUsername = document.createElement('strong');
+      messageUsername.textContent = message.UserName;
+      const messageText = document.createElement('p');
+      messageText.textContent = message.message;
+
+      messageContent.appendChild(messageUsername);
+      messageContent.appendChild(messageText);
+
+      messageDiv.appendChild(userImage);
+      messageDiv.appendChild(messageContent);
+
+      messageList.appendChild(messageDiv);
+  });
+
+  // Scroll to the bottom of the message list
+  messageList.scrollTop = messageList.scrollHeight;
 }
 
 // Function to obtain the JWT user ID
