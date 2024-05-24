@@ -43,43 +43,6 @@ async function redirect42() {
     }
 }
 
-
-async function getAccessToken(authorization_code) {
-  const redirectURI = encodeURIComponent('http://localhost:8000/callback/');
-
-  try {
-    // Fetch configuration from backend
-    const response = await fetch(`${BACKEND_URL}/auth42/config`);
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-    const config = await response.json();
-
-    if (config) {
-      const UID = config.UID;
-      const SECRET = config.SECRET;
-
-      // Construct the URL
-      const url = 'https://api.intra.42.fr/oauth/token';
-      const data = `?grant_type=authorization_code` +
-               `&client_id=${UID}` +
-               `&client_secret=${SECRET}` +
-               `&code=${authorization_code}` +
-               `&redirect_uri=${redirectURI}`;
-
-      return url + data;
-
-      // Redirect the browser to the constructed API URL
-      window.location.href = api_url;
-    } else {
-      console.error('Failed to fetch config.');
-    }
-  } catch (error) {
-    console.error('Error fetching config:', error);
-    // Handle error (e.g., show error message or fallback behavior)
-  }
-}
-
 function getQueryParams() {
   const params = new URLSearchParams(window.location.search);
   const access_token = params.get('access_token');
@@ -104,28 +67,7 @@ async function handleLogin() {
 
 handleLogin();
 
-function authenticatedFetch(url, options = {}) {
-  const access_token = localStorage.getItem('access_token');
-  if (!access_token) {
-    throw new Error("No access token found. User might not be logged in.");
-  }
-
-  const headers = {
-    ...options.headers,
-    'Authorization': `Bearer ${access_token}`,
-    'Content-Type': 'application/json'
-  };
-
-  return fetch(url, { ...options, headers });
-}
-
 async function handleButtonClick() {
-  
-  console.log("😂😂😂 info 😂😂😂");
-  console.log(getHash());
-
   redirect42()
-
-
 }
 

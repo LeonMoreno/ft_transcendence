@@ -20,34 +20,5 @@ export function Home_html() {
       </div>
     </div>
   </div>
-
-  <script>
-    function getQueryParams() {
-      const params = new URLSearchParams(window.location.search);
-      const access_token = params.get('access_token');
-      const refresh_token = params.get('refresh_token');
-      return { access_token, refresh_token };
-    }
-
-    function storeTokens(access_token, refresh_token) {
-      localStorage.setItem('access_token', access_token);
-      localStorage.setItem('refresh_token', refresh_token);
-    }
-
-    function handleLogin() {
-      const { access_token, refresh_token } = getQueryParams();
-      if (access_token && refresh_token) {
-        storeTokens(access_token, refresh_token);
-        window.history.replaceState({}, document.title, "/"); // Clean URL
-        showNotification("Login successful", "success");
-        // Optionally, update UI or state to reflect login status
-      } else {
-        showNotification("Login failed: No tokens found", "error");
-      }
-    }
-
-    // Run the handleLogin function after the page content is loaded
-    document.addEventListener("DOMContentLoaded", handleLogin);
-  </script>
   `;
 }

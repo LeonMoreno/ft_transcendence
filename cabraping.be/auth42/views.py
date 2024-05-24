@@ -3,12 +3,10 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
-import requests
+import requests, os, json, requests
 from dotenv import load_dotenv
-import os
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
-import logging
 from users.models import CustomUser, FriendRequest
 from users.serializers import (
     UserSerializer,
@@ -18,15 +16,13 @@ from users.serializers import (
     FriendRequestSerializer,
 )
 from django.contrib.auth.models import User
-from rest_framework_simplejwt.views import TokenObtainPairView
+from django.conf import settings
+
 
 load_dotenv()
 
 UID = os.getenv("UID")
 SECRET = os.getenv("SECRET")
-
-
-logger = logging.getLogger(__name__)
 
 @api_view(['GET'])
 def get_config(request):
@@ -38,55 +34,6 @@ def get_config(request):
     }
     
     return JsonResponse(config)
-
-
-
-#  Create a url will return the access autorisation_code
-def redirect42(request):
-    api_url =   'https://api.intra.42.fr/oauth/authorize' + \
-                '?client_id=' + UID + \
-                '&redirect_uri=' + "http%3A%2F%2Flocalhost%3A8080" + \
-                '&response_type=code'
-    return (redirect(api_url))
-
-#  Create a url will return the access token link
-def get_access_token(request, authorization_code):
-    url   = "https://api.intra.42.fr/oauth/token"
-                
-    client_id     = UID
-    client_secret = SECRET
-    
-    data          = '?grant_type=authorization_code' + \
-                    '&client_id=' + client_id + \
-                    '&client_secret=' + client_secret + \
-                    '&code=' + authorization_code + \
-                    '&redirect_uri=' + "http%3A%2F%2Flocalhost%3A8080"
-            
-    return (url + data)
-
-    
-#  Create a url will return the public data of the user from the api
-def get_api_data():
-    url = "https://api.intra.42.fr/v2/me/"
-    return (url)
-
-import json
-from django.conf import settings
-from django.contrib.auth import authenticate, login
-from rest_framework.permissions import IsAuthenticated
-from django.http import JsonResponse
-from django.shortcuts import redirect
-from django.views.decorators.csrf import csrf_exempt
-from rest_framework_simplejwt.tokens import RefreshToken
-import requests
-import logging
-from users.models import CustomUser
-from users.serializers import UserSerializer
-import time
-
-logger = logging.getLogger(__name__)
-
-
 
 @csrf_exempt
 def callback(request):
@@ -111,13 +58,11 @@ def callback(request):
         response = requests.post(token_url, data=data)
         response.raise_for_status()
     except requests.RequestException as e:
-        logger.error(f"Token request failed: {e}")
         return JsonResponse({'error': 'Failed to retrieve access token', 'details': str(e)}, status=500)
 
     response_data = response.json()
     access_token = response_data.get('access_token')
 
-    #logger.debug(f'Token exchange response: {response_data}')
     if not access_token:
         return JsonResponse({'error': 'Failed to retrieve access token', 'details': response_data}, status=400)
 
@@ -127,7 +72,6 @@ def callback(request):
         })
         user_info_response.raise_for_status()
     except requests.RequestException as e:
-        logger.error(f"User info request failed: {e}")
         return JsonResponse({'error': 'Failed to retrieve user info', 'details': str(e)}, status=500)
 
     user_info = user_info_response.json()
@@ -140,20 +84,18 @@ def callback(request):
     email = user_info.get("email")
     password = str(ftId)  # Using ftId as the password for example purposes
 
-    #logger.debug(f'User info received: {user_info}')
-
     if not ftId or not username:
         return JsonResponse({'error': 'Incomplete user info from Auth42'}, status=400)
 
     user_data = {
         'username': username,
         'email': email,
-        'password': password
+        'password': password,
+        'firstName': first_name,
+        'lastName': last_name,
+        'avatarImageURL': avatar_image_url
     }
 
-    logger.debug(username)
-    logger.debug(email)
-    logger.debug(password)
     # Make a POST request to create the user in the Django backend
     try:
         user_create_response = requests.post(
@@ -163,12 +105,7 @@ def callback(request):
         )
         user_create_response.raise_for_status()
     except requests.RequestException as e:
-        logger.error(f"User creation failed: {e}")
-
-    user_create_response_data = user_create_response.json()
-    logger.debug(password)
-    logger.debug(f'User creation response: {user_create_response_data}')
-    
+        print(f"User creation failed: {e}")   
 
     token_data = {
         "username": username,
