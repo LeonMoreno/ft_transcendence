@@ -201,34 +201,37 @@ export async function Chat_js() {
     usersList = await responseUsers.json();
 
     const listBlockContainer = document.getElementById('list-block');
-    listBlockContainer.innerHTML = '';
 
-    blockUsersList.forEach((blockedUser) => {
-      const userDiv = document.createElement('div');
-      userDiv.className = 'd-flex align-items-center mb-2';
+    if (listBlockContainer){
+      listBlockContainer.innerHTML = '';
 
-      const userImage = document.createElement('img');
-      userImage.src = blockedUser.avatarImageURL;
-      userImage.alt = 'User Image';
-      userImage.className = 'rounded-circle mr-2';
-      userImage.width = 40;
-      userImage.height = 40;
+      blockUsersList.forEach((blockedUser) => {
+        const userDiv = document.createElement('div');
+        userDiv.className = 'd-flex align-items-center mb-2';
 
-      const userName = document.createElement('strong');
+        const userImage = document.createElement('img');
+        userImage.src = blockedUser.avatarImageURL;
+        userImage.alt = 'User Image';
+        userImage.className = 'rounded-circle mr-2';
+        userImage.width = 40;
+        userImage.height = 40;
 
-      userName.textContent = blockedUser.username;
+        const userName = document.createElement('strong');
 
-      const unlockButton = document.createElement('button');
-      unlockButton.className = 'btn btn-primary btn-sm ml-auto';
-      unlockButton.textContent = 'to unlock';
-      unlockButton.addEventListener('click', () => unlockUser(blockedUser.id));
+        userName.textContent = blockedUser.username;
 
-      userDiv.appendChild(userImage);
-      userDiv.appendChild(userName);
-      userDiv.appendChild(unlockButton);
+        const unlockButton = document.createElement('button');
+        unlockButton.className = 'btn btn-primary btn-sm ml-auto';
+        unlockButton.textContent = 'to unlock';
+        unlockButton.addEventListener('click', () => unlockUser(blockedUser.id));
 
-      listBlockContainer.appendChild(userDiv);
-  });
+        userDiv.appendChild(userImage);
+        userDiv.appendChild(userName);
+        userDiv.appendChild(unlockButton);
+
+        listBlockContainer.appendChild(userDiv);
+    });
+  }
 }
 
 async function unlockUser(userId) {
@@ -312,8 +315,15 @@ function addMessageToChat(message) {
     }
   }
   else{
-    showNotificationPopup(message.UserName, message.message);
+    if (!isUserBlocked(message.userDetails.id)) {
+      showNotificationPopup(message.UserName, message.message);
+    }
+    // showNotificationPopup(message.UserName, message.message);
   }
+}
+
+function isUserBlocked(userId) {
+  return blockUsersList.some(blockedUser => blockedUser.id === userId);
 }
 
 function saveMessageToLocalStorage(message) {
@@ -365,80 +375,83 @@ function updateChannelList(channels) {
   // Get the channels dropdown element
   // const channelsDropdown = document.getElementById('channelsDropdown');
   const channelsDiv = document.getElementById('chanelsLists');
-  // Clear previous options
-  // channelsDropdown.innerHTML = '';
-  channelsDiv.innerHTML = '';
+  if (channelsDiv){
+    // Clear previous options
+    // channelsDropdown.innerHTML = '';
+    channelsDiv.innerHTML = '';
 
-  const defaultValue = document.createElement('option');
-  defaultValue.value = -1;
-  defaultValue.textContent = "Select a person for messages";
-  // channelsDropdown.appendChild(defaultValue);
-  channelsDiv.appendChild(defaultValue);
+    const defaultValue = document.createElement('option');
+    defaultValue.value = -1;
+    defaultValue.textContent = "Select a person for messages";
+    // channelsDropdown.appendChild(defaultValue);
+    channelsDiv.appendChild(defaultValue);
 
-  // Add an option for each channel
-  array_channels = channels;
-  channels.forEach(channel => {
+    // Add an option for each channel
+    array_channels = channels;
+    channels.forEach(channel => {
 
-    const isBlocked = channel.members.some(member =>
-      blockUsersList.some(blockedUser => blockedUser.id === member.id)
-   );
+      const isBlocked = channel.members.some(member =>
+        blockUsersList.some(blockedUser => blockedUser.id === member.id)
+    );
 
 
-    console.log("💡 isBlocked:");
-    console.log(isBlocked);
+      console.log("💡 isBlocked:");
+      console.log(isBlocked);
 
-    if (!isBlocked){
-      // const option = document.createElement('option');
-      // option.value = channel.id;
-      // const option_component = document.createElement('button');
-      const option_component = document.createElement('div');
-      option_component.className = 'd-flex align-items-center p-2 border-bottom chat-item';
-      option_component.style.cursor = 'pointer';
+      if (!isBlocked){
+        // const option = document.createElement('option');
+        // option.value = channel.id;
+        // const option_component = document.createElement('button');
+        const option_component = document.createElement('div');
+        option_component.className = 'd-flex align-items-center p-2 border-bottom chat-item';
+        option_component.style.cursor = 'pointer';
 
-      const option_img = document.createElement('img');
-      option_img.className = 'rounded-circle me-3';
-      option_img.height = 40;
-      option_img.width = 40;
-
-      const option_name = document.createElement('p');
-      option_name.className = 'mb-0';
-
-      option_component.value = channel.id;
-
-      // Encuentra un miembro cuyo username sea diferente de UserName
-      const differentMember = channel.members.find(member => member.username !== UserName);
-      // Verifica si se encontró un miembro diferente
-      if (differentMember) {
-        // option.textContent = differentMember.username;
-        option_name.textContent = differentMember.username;
+        const option_img = document.createElement('img');
+        option_img.className = 'rounded-circle me-3';
         option_img.height = 40;
-        option_img.src = differentMember.avatarImageURL;
+        option_img.width = 40;
 
-      } else {
-        // option.textContent = "No disponible";
-        option_name.textContent = "No disponible";
-      }
-      // channelsDropdown.appendChild(option);
-      option_component.appendChild(option_img);
-      option_component.appendChild(option_name);
-      channelsDiv.appendChild(option_component);
+        const option_name = document.createElement('p');
+        option_name.className = 'mb-0';
+
+        option_component.value = channel.id;
+
+        // Encuentra un miembro cuyo username sea diferente de UserName
+        const differentMember = channel.members.find(member => member.username !== UserName);
+        // Verifica si se encontró un miembro diferente
+        if (differentMember) {
+          // option.textContent = differentMember.username;
+          option_name.textContent = differentMember.username;
+          option_img.height = 40;
+          option_img.src = differentMember.avatarImageURL;
+
+        } else {
+          // option.textContent = "No disponible";
+          option_name.textContent = "No disponible";
+        }
+        // channelsDropdown.appendChild(option);
+        option_component.appendChild(option_img);
+        option_component.appendChild(option_name);
+        channelsDiv.appendChild(option_component);
 
 
-      option_component.addEventListener('click', () => switchChannel(channel.id));
+        option_component.addEventListener('click', () => switchChannel(channel.id));
 
-      // Add hover effect using Bootstrap utility classes
-      option_component.addEventListener('mouseover', () => {
-          option_component.classList.add('bg-primary');
-          option_name.classList.add("text-white");
+        // Add hover effect using Bootstrap utility classes
+        option_component.addEventListener('mouseover', () => {
+            option_component.classList.add('bg-primary');
+            option_name.classList.add("text-white");
+          });
+
+        option_component.addEventListener('mouseout', () => {
+            option_component.classList.remove('bg-primary');
+            option_name.classList.remove("text-white");
         });
+      }
 
-      option_component.addEventListener('mouseout', () => {
-          option_component.classList.remove('bg-primary');
-          option_name.classList.remove("text-white");
-      });
-    }
+    });
 
-  });
+  }
 
 
   // Set up an event listener to handle channel changes
@@ -594,13 +607,21 @@ function changeNameChanel(channel) {
 }
 
 // Function to create a WebSocket connection
+// Function to create a WebSocket connection
 function createWebSocketConnection(channelId) {
+  if (sockets[channelId]) {
+    console.log(`Already connected to channel ${channelId}`);
+    return; // Already connected
+  }
+
   const ws = new WebSocket(`ws://127.0.0.1:8000/ws/chat/${channelId}/`);
   ws.addEventListener("message", (event) => {
-      // const message = JSON.parse(event.data).message;
       const message = JSON.parse(event.data);
       console.log("--> Mensaje ❤️: ", message);
       addMessageToChat(message);
+  });
+  ws.addEventListener("close", () => {
+    delete sockets[channelId];
   });
   sockets[channelId] = ws; // Store WebSocket connection
 }
