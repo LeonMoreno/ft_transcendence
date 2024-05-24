@@ -20,9 +20,9 @@ export  function Chat_html() {
           Messages with all
           <button id="addChannel" class="btn btn-primary btn-sm">Add Channel</button>
         </h4>
-        <select id="channelsDropdown" class="form-control">
-          <option value="-1">Select a person for messages</option>
-        </select>
+        <div id="chanelsLists" class="chat-messages">
+            <!-- Aquí se agregarán los mensajes -->
+        </div>
       </div>
       <div class="mt-4">
         <h3>Block users</h3>

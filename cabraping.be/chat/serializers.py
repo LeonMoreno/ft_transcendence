@@ -7,7 +7,8 @@ from django.contrib.auth import get_user_model
 class CustomUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ['id', 'username', 'email', 'firstName', 'lastName']
+        fields = ['id', 'username', 'email', 'firstName', 'lastName', 'avatarImageURL']
+        # fields = ['id', 'username', 'email', 'firstName']
 
 class ChannelSerializer(serializers.ModelSerializer):
     owner = CustomUserSerializer(read_only=True)

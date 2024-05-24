@@ -1,6 +1,6 @@
 // import image from '../../assets/logo.svg';
 import getHash from "../../utils/getHash.js";
-import { showNotification } from '../../components/showNotification.js';
+import { showNotification, showNotificationPopup } from '../../components/showNotification.js';
 
 let image = 'assets/logo.svg';
 
@@ -103,14 +103,14 @@ export async function Chat_js() {
       channel = channels[0].id; // Sets the first channel as the current channel
     }
 
-    const channelsDropdown = document.getElementById('channelsDropdown');
-    if (channelsDropdown) {
-      channelsDropdown.addEventListener('click', async () => {
-        let userId = getUserIdFromJWT(localStorage.getItem('jwt'));
-        const channels = await getUserChannels(userId);
-        updateChannelList(channels);
-      });
-    }
+    // const channelsDropdown = document.getElementById('channelsDropdown');
+    // if (channelsDropdown) {
+    //   channelsDropdown.addEventListener('click', async () => {
+    //     let userId = getUserIdFromJWT(localStorage.getItem('jwt'));
+    //     const channels = await getUserChannels(userId);
+    //     updateChannelList(channels);
+    //   });
+    // }
 
   }
 
@@ -298,6 +298,13 @@ function addMessageToChat(message) {
       messageDiv.appendChild(messageContent);
 
       messageList.appendChild(messageDiv);
+
+      // Scroll to the bottom of the message list
+      messageList.scrollTop = messageList.scrollHeight;
+
+    }
+    else{
+      showNotificationPopup(message.UserName, message.message);
     }
   }
 }
@@ -343,14 +350,17 @@ function updateChannelList(channels) {
   console.log("---> 🎉 channels");
   console.log(channels);
   // Get the channels dropdown element
-  const channelsDropdown = document.getElementById('channelsDropdown');
+  // const channelsDropdown = document.getElementById('channelsDropdown');
+  const channelsDiv = document.getElementById('chanelsLists');
   // Clear previous options
-  channelsDropdown.innerHTML = '';
+  // channelsDropdown.innerHTML = '';
+  channelsDiv.innerHTML = '';
 
   const defaultValue = document.createElement('option');
   defaultValue.value = -1;
   defaultValue.textContent = "Select a person for messages";
-  channelsDropdown.appendChild(defaultValue);
+  // channelsDropdown.appendChild(defaultValue);
+  channelsDiv.appendChild(defaultValue);
 
   // Add an option for each channel
   array_channels = channels;
@@ -365,27 +375,64 @@ function updateChannelList(channels) {
     console.log(isBlocked);
 
     if (!isBlocked){
-      const option = document.createElement('option');
-      option.value = channel.id;
+      // const option = document.createElement('option');
+      // option.value = channel.id;
+      // const option_component = document.createElement('button');
+      const option_component = document.createElement('div');
+      option_component.className = 'd-flex align-items-center p-2 border-bottom chat-item';
+      option_component.style.cursor = 'pointer';
+
+      const option_img = document.createElement('img');
+      option_img.className = 'rounded-circle me-3';
+      option_img.height = 40;
+      option_img.width = 40;
+
+      const option_name = document.createElement('p');
+      option_name.className = 'mb-0';
+
+      option_component.value = channel.id;
 
       // Encuentra un miembro cuyo username sea diferente de UserName
       const differentMember = channel.members.find(member => member.username !== UserName);
       // Verifica si se encontró un miembro diferente
       if (differentMember) {
-        option.textContent = differentMember.username;
+        // option.textContent = differentMember.username;
+        option_name.textContent = differentMember.username;
+        option_img.height = 40;
+        option_img.src = differentMember.avatarImageURL;
+
       } else {
-        option.textContent = "No disponible";
+        // option.textContent = "No disponible";
+        option_name.textContent = "No disponible";
       }
-      channelsDropdown.appendChild(option);
+      // channelsDropdown.appendChild(option);
+      option_component.appendChild(option_img);
+      option_component.appendChild(option_name);
+      channelsDiv.appendChild(option_component);
+
+
+      option_component.addEventListener('click', () => switchChannel(channel.id));
+
+      // Add hover effect using Bootstrap utility classes
+      option_component.addEventListener('mouseover', () => {
+          option_component.classList.add('bg-primary');
+          option_name.classList.add("text-white");
+        });
+
+      option_component.addEventListener('mouseout', () => {
+          option_component.classList.remove('bg-primary');
+          option_name.classList.remove("text-white");
+      });
     }
 
   });
 
+
   // Set up an event listener to handle channel changes
-  channelsDropdown.addEventListener('change', (event) => {
-    const selectedChannelId = event.target.value;
-    switchChannel(selectedChannelId); // Function to handle channel switch
-  });
+  // channelsDropdown.addEventListener('change', (event) => {
+  //   const selectedChannelId = event.target.value;
+  //   switchChannel(selectedChannelId); // Function to handle channel switch
+  // });
 }
 
 function switchChannel(newChannelId) {
