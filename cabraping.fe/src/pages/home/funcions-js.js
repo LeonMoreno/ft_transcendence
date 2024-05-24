@@ -78,45 +78,46 @@ async function getAccessToken(authorization_code) {
     console.error('Error fetching config:', error);
     // Handle error (e.g., show error message or fallback behavior)
   }
-  // Fetch configuration from backend
-  //const response = await fetch(`${BACKEND_URL}/auth42/config`);
-  //const config = await response.json();
-  
-  //const client_id = config.UID;
-  //const client_secret = config.SECRET;
-  //const redirectURI = encodeURIComponent('http://localhost:8080');
-
-  // Construct the URL
-  //const url = 'https://api.intra.42.fr/oauth/token';
-  //const data = `?grant_type=authorization_code` +
-  //             `&client_id=${client_id}` +
-  //             `&client_secret=${client_secret}` +
-  //             `&code=${authorization_code}` +
-  //             `&redirect_uri=${redirectURI}`;
-
-  //return url + data;
 }
-/*
-// Example usage:
-const authorizationCode = 'your_authorization_code';  // Replace with actual authorization code
 
-getAccessToken(authorizationCode).then(accessTokenURL => {
-  console.log('Access Token URL:', accessTokenURL);
-}).catch(error => {
-  console.error('Error:', error);
-});
+function getQueryParams() {
+  const params = new URLSearchParams(window.location.search);
+  const access_token = params.get('access_token');
+  return { access_token};
+}
 
+function storeTokens(access_token) {
+  localStorage.setItem('jwt', access_token);
+}
 
-const urlParams = new URLSearchParams(window.location.search);
-const authorizationCode = urlParams.get('code');
-console.log(authorizationCode);
+async function handleLogin() {
+  const { access_token} = getQueryParams();
+  if (access_token) {
+    storeTokens(access_token);
+    window.history.replaceState({}, document.title, "/"); // Clean URL
+    // Update UI or state to reflect login
+    showNotification("Login successful", "success");
+  } else {
+    showNotification("Login failed: No tokens found", "error");
+  }
+}
 
-getAccessToken(authorizationCode).then(accessTokenURL => {
-  console.log('Access Token URL:', accessTokenURL);
-}).catch(error => {
-  console.error('Error:', error);
-});
-*/
+handleLogin();
+
+function authenticatedFetch(url, options = {}) {
+  const access_token = localStorage.getItem('access_token');
+  if (!access_token) {
+    throw new Error("No access token found. User might not be logged in.");
+  }
+
+  const headers = {
+    ...options.headers,
+    'Authorization': `Bearer ${access_token}`,
+    'Content-Type': 'application/json'
+  };
+
+  return fetch(url, { ...options, headers });
+}
 
 async function handleButtonClick() {
   
