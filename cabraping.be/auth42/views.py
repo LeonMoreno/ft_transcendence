@@ -161,6 +161,8 @@ from users.serializers import UserSerializer
 
 logger = logging.getLogger(__name__)
 
+
+
 @csrf_exempt
 def callback(request):
     authorization_code = request.GET.get('code')
@@ -237,15 +239,41 @@ def callback(request):
         user_create_response.raise_for_status()
     except requests.RequestException as e:
         logger.error(f"User creation failed: {e}")
-        return JsonResponse({'error': 'Failed to create user', 'details': str(e)}, status=500)
+
+    user_create_response_data = user_create_response.json()
+    logger.debug(f'User creation response: {user_create_response_data}')
+    
+    username = user_info.get("login")
+    ftId = user_info.get("id")
+    first_name = user_info.get("first_name")
+    last_name = user_info.get("last_name")
+    avatar_image_url = user_info.get("image_url")  # Verify this key
+    email = user_info.get("email")
+    password = str(ftId)
+
+    token_data = {
+        "username": username,
+        "password": password
+    }
+
+    try:
+        token_response = requests.post(
+            'http://127.0.0.1:8000/api/token/',
+            json=token_data
+        )
+        token_response.raise_for_status()
+    except requests.RequestException as e:
+        logger.error(f"Token request failed: {e}")
+        return JsonResponse({'error': 'Failed to retrieve JWT tokens', 'details': str(e)}, status=500)
+        #return JsonResponse({'error': 'Failed to login', 'details': str(e)}, status=500)
     # Authenticate the user using username and password
-    user = authenticate(username=username, password=password)
-    if user is not None:
-        login(request, user)
-        logger.debug(f'User {username} authenticated successfully.')
-    else:
-        logger.error(f'Authentication failed for user: {username}')
-        return JsonResponse({'error': 'Authentication failed'}, status=401)
+    #user = authenticate(request, username=username, password=password)
+    #if user is not None:
+    #    login(request, user)
+    #    logger.debug(f'User {username} authenticated successfully.')
+    #else:
+    #    logger.error(f'Authentication failed for user: {username}')
+    #    return JsonResponse({'error': 'Authentication failed'}, status=401)
 
 
     # Redirect to the frontend with the tokens
