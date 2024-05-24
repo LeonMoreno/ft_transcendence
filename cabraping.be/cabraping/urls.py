@@ -37,6 +37,7 @@ from users.views import UserViewSet, FriendRequestViewSet, MeViewSet
 from game.views import GameViewSet
 from auth42.views import get_config, callback
 
+
 from django.urls import path
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
@@ -65,4 +66,5 @@ urlpatterns = [
     path("api/friend_requests/<int:pk>/", FriendRequestViewSet.friend_request_detail),
     path("auth42/config", get_config),
     path("callback/", callback),
+
 ]

@@ -16,8 +16,6 @@ from users.serializers import (
     FriendRequestSerializer,
 )
 from django.contrib.auth.models import User
-from django.conf import settings
-
 
 load_dotenv()
 
@@ -31,8 +29,7 @@ def get_config(request):
         'UID': UID,
         'SECRET': SECRET,
         # Add more variables as needed
-    }
-    
+    } 
     return JsonResponse(config)
 
 @csrf_exempt
@@ -120,7 +117,6 @@ def callback(request):
         token_response.raise_for_status()
     except requests.RequestException as e:
         return JsonResponse({'error': 'Failed to retrieve JWT tokens', 'details': str(e)}, status=500)
-    
 
     token_response_data = token_response.json()
     access_token = token_response_data.get('access')
@@ -129,3 +125,4 @@ def callback(request):
     # Redirect to the frontend with the tokens
     frontend_redirect_url = f"http://localhost:8080?access_token={access_token}&refresh_token={refresh_token}"
     return redirect(frontend_redirect_url)
+
