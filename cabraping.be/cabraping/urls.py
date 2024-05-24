@@ -1,6 +1,6 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
-from users.views import UserViewSet, CurrentUserView, FriendRequestViewSet, MeViewSet, custom_login, custom_logout, check_user_status
+from users.views import UserViewSet, CurrentUserView, FriendRequestViewSet, MeViewSet, custom_login, custom_logout, check_user_status, check_user_exists
 from game.views import GameViewSet
 from tournament.views import TournamentViewSet, ParticipantViewSet, MatchViewSet
 from django.contrib import admin
@@ -34,6 +34,7 @@ urlpatterns = [
     path('api/me-full/', CurrentUserView.as_view(), name='current-user'),
     path('api/user/update/<int:pk>/', UserUpdate.as_view(), name='user-update'),
 
+    path('api/users/<str:username>/exists/', check_user_exists, name='check_user_exists'),
     path('api/users/<str:username>/status/', check_user_status, name='check_user_status'),
    
     path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),

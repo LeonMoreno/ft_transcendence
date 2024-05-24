@@ -83,6 +83,16 @@ class TournamentViewSet(viewsets.ModelViewSet):
         winner_user.trophies += 1
         winner_user.has_chevre_verte_award = True
         winner_user.save()
+    
+    def create(self, request, *args, **kwargs):
+        data = request.data
+        creator = request.user  # Assuming the user is authenticated
+        tournament = Tournament.objects.create(name=data['name'])
+        tournament.participants.add(creator)  # Add the creator as a participant
+        Participant.objects.create(user=creator, tournament=tournament, received_invite=True, accepted_invite=True)  # Add the creator to Participant
+        tournament.save()  # Save the tournament after adding the participant
+        serializer = self.get_serializer(tournament)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 class ParticipantViewSet(viewsets.ModelViewSet):
     queryset = Participant.objects.all()

@@ -10,7 +10,9 @@ const Tournament_html = async () => {
           <div id="participantInvitationSection" class="mt-4">
               <h2>Register Participants</h2>
               <input type="text" id="participantNameInput" class="form-control" placeholder="Enter Participant Nickname" required>
-              <button id="addParticipantButton" class="btn btn-secondary">Add Participant</button>
+              <button id="addParticipantButton" class="btn btn-secondary" disabled>Add Participant</button>
+              <div style="height: 10px;"></div>
+              <h6>Participant list:</h6>
               <ul id="participantsList" class="list-unstyled mt-2"></ul>
           </div>
           <button id="startTournamentButton" class="btn btn-success mt-3" disabled>Start Tournament</button>

@@ -226,14 +226,23 @@ def custom_logout(request):
 #    return Response({'isOnline': user.is_online})
 
 @api_view(['GET'])
+def check_user_exists(request, username):
+    try:
+        user = CustomUser.objects.get(username=username)
+        return Response({'exists': True})
+    except CustomUser.DoesNotExist:
+        return Response({'exists': False})
+
+
+@api_view(['GET'])
 def check_user_status(request, username):
-    print(f"Checking status for user: {username}")  # Add logging  
+    print(f"Checking status for user: {username}") 
     try:
         user = CustomUser.objects.get(username=username)
         print(f"User {username} found with online status: {user.is_online}")
         return Response({'isOnline': user.is_online})
     except CustomUser.DoesNotExist:
-        print(f"User {username} does not exist")  # Log if user does not exist
+        print(f"User {username} does not exist")
         return Response({'error': 'User not found'}, status=404)
     except Exception as e:
         print(f"An unexpected error occurred: {str(e)}")

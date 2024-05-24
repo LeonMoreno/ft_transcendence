@@ -21,12 +21,7 @@ function displayErrorMessage(message) {
     displayNotification(message);
 }
 
-/* 
-
-
-
-
-document.addEventListener('DOMContentLoaded', function() {
+/*document.addEventListener('DOMContentLoaded', function() {
     const tournamentId = sessionStorage.getItem('currentTournamentId');
     if (tournamentId) {
         fetchTournamentDetails(tournamentId);
@@ -67,114 +62,9 @@ function monitorInvitationStatus(tournamentId) {
     socket.onclose = function(event) {
         console.error('WebSocket closed unexpectedly');
     };
-}
+}*/  
 
-*/  
-
-// Function to check user online status via API
-/*async function checkUserOnlineStatus(username) {
-    try {
-        const response = await fetch(`${BACKEND_URL}/api/users/${username}/status`, {
-            headers: {
-                'Authorization': `Bearer ${getToken()}`,
-                'Content-Type': 'application/json'
-            }
-        });
-
-        if (!response.ok) {
-            if (response.status === 404) {
-                console.warn(`User ${username} not found.`);
-                displayErrorMessage("User not found. Please double-check their nickname.");
-                return false; // Assuming a non-existent user is not online
-            }
-            throw new Error(`Error: ${response.status} ${response.statusText}`);
-        }
-
-        const data = await response.json();
-        return data.isOnline;
-    } catch (error) {
-        console.error('Error checking user online status:', error);
-        displayErrorMessage("Error checking user online status. Please try again later.");
-        return false; // Assuming an error means the user is not online or status cannot be determined
-    }
-}*/
-
-/*async function checkUserOnlineStatus(username) {
-    console.log(`Checking online status for user: ${username}`);
-    try {
-        const response = await fetch(`${BACKEND_URL}/api/users/${username}/status/`, {
-            headers: {
-                'Authorization': `Bearer ${getToken()}`,
-                'Content-Type': 'application/json'
-            }
-        });
-        
-        console.log(`Response status: ${response.status}`); 
-
-        if (!response.ok) {
-            if (response.status === 404) {
-                console.warn(`User ${username} not found.`);
-                displayErrorMessage("User not found. Please double-check their nickname.");
-                return false; // Assuming a non-existent user is not online
-            }
-            throw new Error(`Error: ${response.status} ${response.statusText}`);
-        }
-
-        const data = await response.json();
-        console.log(`User online status: ${data.isOnline}`);
-        return data.isOnline;
-    } catch (error) {
-        console.error('Error checking user online status:', error);
-        displayErrorMessage("An error occurred while checking the user's online status.");
-        return false; // Assuming an error means the user is not online or status cannot be determined
-    }
-}*/
-
-/*async function checkUserOnlineStatus(username) {
-    console.log(`Checking online status for user: ${username}`);
-    try {
-        // Step 1: Check if the user exists
-        const userResponse = await fetch(`${BACKEND_URL}/api/users/${username}/`, {
-            headers: {
-                'Authorization': `Bearer ${getToken()}`,
-                'Content-Type': 'application/json'
-            }
-        });
-
-        if (!userResponse.ok) {
-            if (userResponse.status === 404) {
-                console.warn(`User ${username} not found.`);
-                displayErrorMessage("User not found. Please double-check their nickname."); // rachel - this is not popping out
-                return false; // User does not exist
-            }
-            throw new Error(`Error: ${userResponse.status} ${userResponse.statusText}`);
-        }
-
-        // Step 2: User exists, check their online status
-        const statusResponse = await fetch(`${BACKEND_URL}/api/users/${username}/status/`, {
-            headers: {
-                'Authorization': `Bearer ${getToken()}`,
-                'Content-Type': 'application/json'
-            }
-        });
-
-        console.log(`Response status: ${statusResponse.status}`); 
-
-        if (!statusResponse.ok) {
-            throw new Error(`Error: ${statusResponse.status} ${statusResponse.statusText}`);
-        }
-
-        const data = await statusResponse.json();
-        console.log(`User online status: ${data.isOnline}`);
-        return data.isOnline;
-    } catch (error) {
-        console.error('Error checking user online status:', error);
-        displayErrorMessage("An error occurred while checking the user's online status.");
-        return false; // Assuming an error means the user is not online or status cannot be determined
-    }
-}*/
-
-async function userExists(username) {
+/*async function userExists(username) {
     console.log(`Checking if user exists: ${username}`);
     try {
         const response = await fetch(`${BACKEND_URL}/api/users/${username}/`, {
@@ -187,7 +77,7 @@ async function userExists(username) {
         console.log(`Response status: ${response.status}`);
 
         if (response.status === 404) {
-            console.warn(`User ${username} not found.`);
+            console.log(`User ${username} not found.`);
             return { exists: false, message: "User not found. Please double-check their nickname." };
         }
 
@@ -235,10 +125,122 @@ async function checkUserOnlineStatus(username) {
     }
 }
 
+// Function to handle adding a participant
+async function handleAddParticipant(e) {
+    e.preventDefault();
+    const participantName = document.getElementById('participantNameInput').value.trim();
+    if (!participantName) {
+        displayErrorMessage('Participant name cannot be empty.');
+        return;
+    }
+    const userStatus = await checkUserOnlineStatus(participantName);
+    if (userStatus.isOnline) {
+        sendInvitation(participantName);
+        updateParticipantsList(participantName, true);
+    } else {
+        displayErrorMessage(userStatus.message || "Participant is not online or does not exist.");
+        console.log(userStatus.message || "Participant is not online or does not exist.");
+    }
+    document.getElementById('participantNameInput').value = ''; // Clear input after adding
+}*/
+
+async function userExists(username) {
+    console.log(`Checking if user exists: ${username}`);
+    try {
+        const response = await fetch(`${BACKEND_URL}/api/users/${username}/exists/`, {
+            headers: {
+                'Authorization': `Bearer ${getToken()}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        console.log(`Response status: ${response.status}`);
+
+        if (response.status === 404) {
+            console.log(`User ${username} not found.`);
+            return false;
+        }
+
+        if (!response.ok) {
+           // throw new Error(`Error: ${response.status} ${response.statusText}`);
+           console.error(`Error checking user existence: ${response.status} ${response.statusText}`);
+           return false;
+        }
+
+        const data = await response.json();
+        return data.exists;
+        
+    } catch (error) {
+        console.error('Error checking if user exists:', error);
+        return false;
+    }
+}
+
+async function checkUserOnlineStatus(username) {
+    console.log(`Checking online status for user: ${username}`);
+    try {
+        // Check if the user exists first
+        const exists = await userExists(username);
+        if (!exists) {
+            displayErrorMessage("User not found. Please double-check their nickname.");
+            return null; // User does not exist
+        }
+
+        const response = await fetch(`${BACKEND_URL}/api/users/${username}/status/`, {
+            headers: {
+                'Authorization': `Bearer ${getToken()}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        console.log(`Response status: ${response.status}`);
+
+        if (!response.ok) {
+           // throw new Error(`Error: ${response.status} ${response.statusText}`);
+            console.error(`Error checking user online status: ${response.status} ${response.statusText}`);
+            displayErrorMessage("An error occurred while checking the user's online status.");
+            return null;
+        }
+
+        const data = await response.json();
+        console.log(`User online status: ${data.isOnline}`);
+        return data.isOnline;
+
+    } catch (error) {
+        console.error('Error checking user online status:', error);
+        displayErrorMessage("An error occurred while checking the user's online status.");
+        return null;
+    }
+}
+
+async function handleAddParticipant(e) {
+    if (e.type === 'keydown' && e.key !== 'Enter') {
+        return; // Only handle Enter key for keydown events
+    }
+    e.preventDefault();
+    const participantName = document.getElementById('participantNameInput').value.trim();
+    if (!participantName) {
+        displayErrorMessage('Participant name cannot be empty.');
+        return;
+    }
+    const isOnline = await checkUserOnlineStatus(participantName);
+    if (isOnline === null) {
+        // User does not exist
+        displayErrorMessage("User not found. Please double-check their username.");
+    } else if (isOnline) {
+        sendInvitation(participantName);
+        updateParticipantsList(participantName, true);
+    } else {
+        displayErrorMessage("Participant is not online.");
+        console.log("Participant is not online.");
+    }
+    document.getElementById('participantNameInput').value = ''; // Clear input after adding
+}
 
 // Function to send an invitation to a user
-/*async function sendInvitation(username) {
+async function sendInvitation(username) {
     console.log("Sending invitation to", username);
+    //change the api below to Jonathan's friend invitation? create my own with tournament name and trash talk
     const response = await fetch(`${BACKEND_URL}/api/participants/${username}/invite-participant`, {
         method: 'POST',
         headers: {
@@ -250,7 +252,7 @@ async function checkUserOnlineStatus(username) {
         console.log('Invitation sent successfully');
         displayNotification('Invitation sent successfully to ' + username);
     } else {
-        throw new Error('Failed to send invitation');
+        throw new Error('Failed to send invitation'); // rachel
     }
 }
 
@@ -323,6 +325,16 @@ export function TournamentInit() {
       console.log("Event listener added to add participant button");
     }
   
+    const participantNameInput = document.getElementById('participantNameInput');
+    if (participantNameInput) {
+        participantNameInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                handleAddParticipant(event);
+            }
+        });
+        console.log("Event listener added for Enter key on participant name input");
+    }
+
     const startTournamentButton = document.getElementById('startTournamentButton');
     if (startTournamentButton) {
       startTournamentButton.addEventListener('click', startTournament);
@@ -346,11 +358,14 @@ async function handleCreateTournament(e) {
             showNotification("Tournament created successfuly", "success");
             document.getElementById('tournamentNameInput').value = '';
             sessionStorage.setItem('currentTournamentId', data.id);
-            updateParticipantsList('You (Creator)', true); // Automatically adds the creator as a participant
+            updateParticipantsList('You (Creator)', 'invited', true); // Automatically adds the creator as a participant
+            const addParticipantButton = document.getElementById('addParticipantButton');
+            addParticipantButton.disabled = false;
+        
         } else {
             const errorMessage = await response.text(); // Log the error message from the response
             console.error('Error from server:', errorMessage); 
-            throw new Error('Failed to create tournament. Server responded with an error.');
+            throw new Error('Failed to create tournament. Server responded with an error.'); // rachel - rework this so no errors on console?
         }
     } catch (error) {
         console.error('Caught error:', error);
@@ -370,9 +385,9 @@ async function createTournament(tournamentName) {
         });
 
         if (!response.ok) {
-            const errorText = await response.text(); // Log the response text if it's not OK
-            console.error('Response text:', errorText); // Log the response text
-            throw new Error('Network response was not ok');
+            const errorText = await response.text(); 
+            console.error('Response text:', errorText); 
+            throw new Error('Network response was not ok'); // rachel
         }
         
         return response;
@@ -383,7 +398,7 @@ async function createTournament(tournamentName) {
 }
   
 // Function to update the list of participants in the UI
-function updateParticipantsList(participantName, status) {
+function updateParticipantsList(participantName, status, isCreator = false) {
     const participantsList = document.getElementById('participantsList');
     if (participantsList) {
         // Check if the participant is already in the list to avoid duplication
@@ -392,7 +407,7 @@ function updateParticipantsList(participantName, status) {
             existingParticipant.textContent = participantName + ' - ' + status;
         } else {
             const listItem = document.createElement('li');
-            listItem.textContent = participantName + ' - ' + status;
+            listItem.textContent = isCreator ? participantName : participantName + ' - ' + "invited";
             participantsList.appendChild(listItem);
         }
         checkAllParticipantsAccepted();
@@ -411,28 +426,8 @@ function checkAllParticipantsAccepted() {
     }
     document.getElementById('startTournamentButton').disabled = !allAccepted;
 }
-
-
-// Function to handle adding a participant
-async function handleAddParticipant(e) {
-    e.preventDefault();
-    const participantName = document.getElementById('participantNameInput').value.trim();
-    if (!participantName) {
-        displayErrorMessage('Participant name cannot be empty.');
-        return;
-    }
-    const userStatus = await checkUserOnlineStatus(participantName);
-    if (userStatus.isOnline) {
-        sendInvitation(participantName);
-        updateParticipantsList(participantName, true);
-    } else {
-        displayErrorMessage(userStatus.message || "Participant is not online or does not exist.");
-        console.log(userStatus.message || "Participant is not online or does not exist.");
-    }
-    document.getElementById('participantNameInput').value = ''; // Clear input after adding
-}
   
-  function startTournament(event) {
+function startTournament(event) {
     event.preventDefault();
     console.log("Start Tournament button clicked");
   }
