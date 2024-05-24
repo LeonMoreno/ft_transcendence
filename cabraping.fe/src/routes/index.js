@@ -29,6 +29,7 @@ const routes = {
   "/auth": [AuthPage_html, AuthPage_js],
   "/logout": [LogoutPage_js],
   "/game": [Game_html, Game_js],
+  "/game/:id": [Game_html, Game_js],
   "/chat": [Chat_html, Chat_js],
   "/chat/:id": [Chat_html, Chat_js],
   "/user": [User_html, User_js],
@@ -60,6 +61,11 @@ const router = async () => {
   content.innerHTML = await render[0]();
   for (let index = 1; index < render.length; index++) {
     await render[index]();
+  }
+
+  // Suscribirse a los canales si estamos en la ruta de chat
+  if (user_location[0] !== 'chat') {
+    await Chat_js(); // Asegúrate de que esta función suscriba a todos los canales y gestione los mensajes
   }
 };
 

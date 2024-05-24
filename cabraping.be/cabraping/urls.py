@@ -1,6 +1,6 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
-from users.views import UserViewSet, FriendRequestViewSet, MeViewSet
+from users.views import UserViewSet, FriendRequestViewSet, MeViewSet, CustomUserBlockViewSet
 from game.views import GameViewSet
 
 from users.views import CurrentUserView
@@ -13,6 +13,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 router = DefaultRouter()
 router.register(r"users", UserViewSet)
+router.register(r'users-blocks', CustomUserBlockViewSet, basename='users-blocks')
 router.register(r"games", GameViewSet)
 
 from django.urls import path
@@ -31,7 +32,9 @@ urlpatterns = [
     path('user-channels/<int:user_id>/', UserChannelsView.as_view(), name='user-channels'),
 
     # path("api/me/", MeViewSet.as_view(), name="my-profile"),
-    path('api/me/', CurrentUserView.as_view(), name='current-user'),
+    # # path('api/me/', CurrentUserView.as_view(), name='current-user'),
+    path("api/me/", MeViewSet.as_view(), name="my-profile"),
+    path('api/me-full/', CurrentUserView.as_view(), name='current-user'),
 
     path('api/user/update/<int:pk>/', UserUpdate.as_view(), name='user-update'),
 

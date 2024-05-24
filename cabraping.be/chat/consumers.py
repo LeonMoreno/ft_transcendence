@@ -20,6 +20,7 @@ class MyWebSocketConsumerChat(AsyncWebsocketConsumer):
         message = text_data_json['message']
         channel_name = text_data_json['channel']
         username = text_data_json.get('UserName', 'Anónimo')  # Obtener el nombre de usuario
+        user_details = text_data_json['userDetails']
 
 
         # Imprimir el mensaje y el nombre del usuario en la terminal del backend
@@ -33,7 +34,8 @@ class MyWebSocketConsumerChat(AsyncWebsocketConsumer):
             'message': message,
             'UserName': username,
             'channel': channel_name,
-            'sender_channel_name': self.channel_name,  # Añadir el nombre del canal del emisor
+            'sender_channel_name': self.channel_name,  # Añadir el nombre del canal del emisor,
+            'userDetails': user_details,
         }
         )
 
@@ -42,6 +44,7 @@ class MyWebSocketConsumerChat(AsyncWebsocketConsumer):
         message = event['message']
         username = event['UserName']
         channel_name = event['channel']
+        user_details = event['userDetails']
 
         # Enviar mensaje al WebSocket solo si el nombre de usuario no coincide con el emisor
         if self.channel_name != event.get('sender_channel_name', None):
@@ -49,64 +52,5 @@ class MyWebSocketConsumerChat(AsyncWebsocketConsumer):
                 'message': message,
                 'UserName': username,
                 'channel': channel_name,
+                'userDetails': user_details,
             }))
-    # async def chat_message(self, event):
-    #     message = event['message']
-    #     name = event['UserName']
-    #     chanel_name = event['channel']
-
-
-    #     # Enviar mensaje al WebSocket
-    #     await self.send(text_data=json.dumps({
-    #         'message': message,
-    #         'UserName': name,
-    #         'channel': chanel_name,
-    #     }))
-
-# class MyWebSocketConsumerChat(AsyncWebsocketConsumer):
-# 	async def connect(self):
-# 		await self.channel_layer.group_add("chat", self.channel_name)
-# 		await self.accept()
-
-# 	async def disconnect(self, close_code):
-# 		await self.channel_layer.group_discard("chat", self.channel_name)
-
-# 	async def receive(self, text_data):
-# 		try:
-# 				text_data_json = json.loads(text_data)
-# 				print("-> text_data_json : {}".format(text_data_json))
-# 				print("-> username: {}".format(text_data_json['UserName']))
-# 				message = text_data_json.get('message')
-# 				print("-> message : {}".format(message))
-# 				if message:
-# 						# Envía el mensaje a todos menos al remitente
-# 						await self.channel_layer.group_send(
-# 								"chat",
-# 								{
-# 										"type": "chat_message",
-# 										"message": message,
-# 										"sender_channel_name": self.channel_name,
-# 										"UserName": text_data_json['UserName'],
-# 								}
-# 						)
-# 		except json.JSONDecodeError:
-# 			print("Error 🤖")
-# 			print(json.JSONDecodeError)
-# 			# Manejar el error o ignorarlo
-# 			pass
-
-# 	# Handler for messages from the group
-# 	async def chat_message(self, event):
-# 		message = event['message']
-# 		sender_channel_name = event['sender_channel_name']
-
-# 		print("--> event")
-# 		print(event)
-# 		print("--> event")
-# 		print(event)
-
-# 			# Send the message to WebSocket if the user is not the sender
-# 		if self.channel_name != sender_channel_name:
-# 				await self.send(text_data=json.dumps({
-# 						'message': event
-# 		}))
