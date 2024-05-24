@@ -218,32 +218,26 @@ def callback(request):
     if not ftId or not username:
         return JsonResponse({'error': 'Incomplete user info from Auth42'}, status=400)
 
-    user, created = CustomUser.objects.get_or_create(
-        username=username,
-        defaults={
-            'email': email,
-            'ftId': ftId,
-            'firstName': first_name,
-            'lastName': last_name,
-            'avatarImageURL': avatar_image_url,
-            'password': CustomUser.objects.make_random_password()  # Set a temporary password
-        }
-    )
+    user_data = {
+        'username': username,
+        'email': email,
+        'password': password
+    }
 
-    if created:
-        user.set_password(password)  # Set the real password
-        user.save()
-        logger.debug(f'User {username} created successfully.')
-    else:
-        user.email = email
-        user.ftId = ftId
-        user.firstName = first_name
-        user.lastName = last_name
-        user.avatarImageURL = avatar_image_url
-        user.set_password(password)  # Update password if needed
-        user.save()
-        logger.debug(f'User {username} updated successfully.')
-
+    logger.debug(username)
+    logger.debug(email)
+    logger.debug(password)
+    # Make a POST request to create the user in the Django backend
+    try:
+        user_create_response = requests.post(
+            'http://127.0.0.1:8000/api/users/',
+            headers={'Content-Type': 'application/json'},
+            data=json.dumps(user_data)
+        )
+        user_create_response.raise_for_status()
+    except requests.RequestException as e:
+        logger.error(f"User creation failed: {e}")
+        return JsonResponse({'error': 'Failed to create user', 'details': str(e)}, status=500)
     # Authenticate the user using username and password
     user = authenticate(username=username, password=password)
     if user is not None:
@@ -253,15 +247,9 @@ def callback(request):
         logger.error(f'Authentication failed for user: {username}')
         return JsonResponse({'error': 'Authentication failed'}, status=401)
 
-    # Generate JWT tokens for the user
-    refresh = RefreshToken.for_user(user)
-    access_token = str(refresh.access_token)
-    refresh_token = str(refresh)
-
-    logger.debug(f'JWT tokens generated for user: {username}')
 
     # Redirect to the frontend with the tokens
-    frontend_redirect_url = f"http://localhost:8080?access_token={access_token}&refresh_token={refresh_token}"
+    frontend_redirect_url = f"http://localhost:8080"
     return redirect(frontend_redirect_url)
     # For debugging purposes, return the user_info JSON response directly
     #return JsonResponse(user_info)
