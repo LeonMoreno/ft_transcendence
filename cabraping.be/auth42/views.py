@@ -124,6 +124,8 @@ def callback(request):
 
     token_response_data = token_response.json()
     access_token = token_response_data.get('access')
+    refresh_token = token_response_data.get('refresh')
 
-    frontend_redirect_url = f"http://localhost:8080?access_token={access_token}"
+    # Redirect to the frontend with the tokens
+    frontend_redirect_url = f"http://localhost:8080?access_token={access_token}&refresh_token={refresh_token}"
     return redirect(frontend_redirect_url)

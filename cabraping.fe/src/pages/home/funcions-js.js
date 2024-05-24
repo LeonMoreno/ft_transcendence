@@ -46,17 +46,20 @@ async function redirect42() {
 function getQueryParams() {
   const params = new URLSearchParams(window.location.search);
   const access_token = params.get('access_token');
-  return { access_token};
+  const refresh_token = params.get('refresh_token');
+  return { access_token, refresh_token };
 }
 
 function storeTokens(access_token) {
   localStorage.setItem('jwt', access_token);
+  localStorage.setItem('access_token', access_token);
+  localStorage.setItem('refresh_token', refresh_token);
 }
 
 async function handleLogin() {
-  const { access_token} = getQueryParams();
-  if (access_token) {
-    storeTokens(access_token);
+  const { access_token, refresh_token } = getQueryParams();
+  if (access_token && refresh_token) {
+    storeTokens(access_token, refresh_token);
     window.history.replaceState({}, document.title, "/"); // Clean URL
     // Update UI or state to reflect login
     showNotification("Login successful", "success");
