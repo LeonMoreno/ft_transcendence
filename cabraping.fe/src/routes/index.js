@@ -18,8 +18,6 @@ import { Game_js } from "../pages/Game/funcions-js.js";
 import { Game_html } from "../pages/Game/html.js";
 import { Friends_html } from "../pages/Friends/html.js";
 import {
-  FriendsRender,
-  FriendRequestsRender,
   Friends_js,
 } from "../pages/Friends/funcions-js.js";
 import { Chat_js } from "../pages/Chat/funcions-js.js";
@@ -33,12 +31,13 @@ import resolveRoutes from "../utils/resolveRoutes.js";
 const routes = {
   "/": [Home_html, Home_js],
   "/auth": [AuthPage_html, AuthPage_js],
-  "/user": [User_html, User_js],
-  "/users": [Users_html, Users_js],
   "/game": [Game_html, Game_js],
-  "/friends": [Friends_html, Friends_js, FriendsRender, FriendRequestsRender],
+  "/game/:id": [Game_html, Game_js],
   "/chat": [Chat_html, Chat_js],
   "/chat/:id": [Chat_html, Chat_js],
+  "/user": [User_html, User_js],
+  "/users": [Users_html, Users_js],
+  "/friends": [Friends_html, Friends_js, FriendsRender, FriendRequestsRender],
   "/tournament": [Tournament_html, TournamentInit],
   "/logout": [LogoutPage_js],
   "/404": [Error404_html, Error404_js],
