@@ -6,7 +6,8 @@ from tournament.views import TournamentViewSet, ParticipantViewSet, MatchViewSet
 from django.contrib import admin
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from chat.views import ChannelListView, ChannelCreateView, UserChannelsView
-
+from django.conf.urls import handler404
+from cabraping.views import custom_404
 from django.conf import settings
 from django.conf.urls.static import static
 from users.views import UserUpdate
@@ -27,7 +28,7 @@ urlpatterns = [
     path('channels/', ChannelListView.as_view(), name='channel-list'),
     path('channels/create/', ChannelCreateView.as_view(), name='channel-create'),
     path('user-channels/<int:user_id>/', UserChannelsView.as_view(), name='user-channels'),
-
+    path('custom_404/', custom_404, name='custom_404'), # rachel debugging - remove
     #path("api/me/", MeViewSet.as_view(), name="my-profile"),
     # # path('api/me/', CurrentUserView.as_view(), name='current-user'),
     path("api/me/", MeViewSet.as_view(), name="my-profile"),
@@ -43,3 +44,5 @@ urlpatterns = [
     path("api/friend_requests/", FriendRequestViewSet.friend_request_list),
     path("api/friend_requests/<int:pk>/", FriendRequestViewSet.friend_request_detail),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+handler404 = 'cabraping.views.custom_404'

@@ -16,7 +16,6 @@ from datetime import timedelta
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
@@ -26,8 +25,8 @@ SECRET_KEY = 'django-insecure-*)1aavai#%e5)83n)o9)@xwx&67gx=^#w&op3kxyqe&5w*x7e*
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
+#ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 # Application definition
 
@@ -164,6 +163,7 @@ ROOT_URLCONF = 'cabraping.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        #'DIRS': [BASE_DIR / 'cabraping.fe/src/template'], # rachel - for custom 404 and 500 pages (need to fix it still)
         'DIRS': [],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -215,6 +215,9 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+# Custom error handlers
+handler404 = 'cabraping.views.custom_404'
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
@@ -223,3 +226,5 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 MEDIA_URL = '/media/'
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media') #rachel - check if correct
+
+

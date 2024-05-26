@@ -64,86 +64,6 @@ function monitorInvitationStatus(tournamentId) {
     };
 }*/  
 
-/*async function userExists(username) {
-    console.log(`Checking if user exists: ${username}`);
-    try {
-        const response = await fetch(`${BACKEND_URL}/api/users/${username}/`, {
-            headers: {
-                'Authorization': `Bearer ${getToken()}`,
-                'Content-Type': 'application/json'
-            }
-        });
-
-        console.log(`Response status: ${response.status}`);
-
-        if (response.status === 404) {
-            console.log(`User ${username} not found.`);
-            return { exists: false, message: "User not found. Please double-check their nickname." };
-        }
-
-        if (!response.ok) {
-            throw new Error(`Error: ${response.status} ${response.statusText}`);
-        }
-
-        return { exists: true };
-    } catch (error) {
-        console.error('Error checking if user exists:', error);
-        return { exists: false, message: "An error occurred while checking if the user exists." };
-    }
-}
-
-async function checkUserOnlineStatus(username) {
-    console.log(`Checking online status for user: ${username}`);
-    try {
-        // Check if the user exists first
-        const userCheck = await userExists(username);
-        if (!userCheck.exists) {
-            displayErrorMessage(userCheck.message);
-            return { isOnline: false, message: userCheck.message };
-        }
-
-        const response = await fetch(`${BACKEND_URL}/api/users/${username}/status/`, {
-            headers: {
-                'Authorization': `Bearer ${getToken()}`,
-                'Content-Type': 'application/json'
-            }
-        });
-
-        console.log(`Response status: ${response.status}`);
-
-        if (!response.ok) {
-            throw new Error(`Error: ${response.status} ${response.statusText}`);
-        }
-
-        const data = await response.json();
-        console.log(`User online status: ${data.isOnline}`);
-        return data.isOnline;
-    } catch (error) {
-        console.error('Error checking user online status:', error);
-        displayErrorMessage("An error occurred while checking the user's online status.");
-        return { isOnline: false, message: "An error occurred while checking the user's online status." };
-    }
-}
-
-// Function to handle adding a participant
-async function handleAddParticipant(e) {
-    e.preventDefault();
-    const participantName = document.getElementById('participantNameInput').value.trim();
-    if (!participantName) {
-        displayErrorMessage('Participant name cannot be empty.');
-        return;
-    }
-    const userStatus = await checkUserOnlineStatus(participantName);
-    if (userStatus.isOnline) {
-        sendInvitation(participantName);
-        updateParticipantsList(participantName, true);
-    } else {
-        displayErrorMessage(userStatus.message || "Participant is not online or does not exist.");
-        console.log(userStatus.message || "Participant is not online or does not exist.");
-    }
-    document.getElementById('participantNameInput').value = ''; // Clear input after adding
-}*/
-
 async function userExists(username) {
     console.log(`Checking if user exists: ${username}`);
     try {
@@ -214,10 +134,11 @@ async function checkUserOnlineStatus(username) {
 }
 
 async function handleAddParticipant(e) {
-    if (e.type === 'keydown' && e.key !== 'Enter') {
+   /* if (e.type === 'keydown' && e.key !== 'Enter') {
         return; // Only handle Enter key for keydown events
-    }
+    }*/
     e.preventDefault();
+
     const participantName = document.getElementById('participantNameInput').value.trim();
     if (!participantName) {
         displayErrorMessage('Participant name cannot be empty.');
@@ -228,8 +149,10 @@ async function handleAddParticipant(e) {
         // User does not exist
         displayErrorMessage("User not found. Please double-check their username.");
     } else if (isOnline) {
-        sendInvitation(participantName);
-        updateParticipantsList(participantName, true);
+        const invitationSent = await sendInvitation(participantName);
+        if (invitationSent) {
+            updateParticipantsList(participantName, 'invited');
+        }
     } else {
         displayErrorMessage("Participant is not online.");
         console.log("Participant is not online.");
@@ -237,22 +160,47 @@ async function handleAddParticipant(e) {
     document.getElementById('participantNameInput').value = ''; // Clear input after adding
 }
 
+function checkAddParticipantButton(e) {
+    if (e.type === 'keydown' && e.key !== 'Enter') {
+        return; // Only handle Enter key for keydown events
+    }
+
+    const addParticipantButton = document.getElementById('addParticipantButton');
+    if (addParticipantButton.disabled) {
+        e.preventDefault();
+        displayErrorMessage('Please create the tournament first before adding participants.');
+        return;
+    }
+    handleAddParticipant(e);
+}
+
 // Function to send an invitation to a user
 async function sendInvitation(username) {
     console.log("Sending invitation to", username);
-    //change the api below to Jonathan's friend invitation? create my own with tournament name and trash talk
-    const response = await fetch(`${BACKEND_URL}/api/participants/${username}/invite-participant`, {
-        method: 'POST',
-        headers: {
-            'Authorization': `Bearer ${getToken()}`,
-            'Content-Type': 'application/json'
+    //change the api below to Jonathan's friend invitation? or create my own with tournament name and trash talk
+    try {
+        const response = await fetch(`${BACKEND_URL}/api/participants/${username}/invite-participant`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${getToken()}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (response.ok) {
+            console.log('Invitation sent successfully');
+            displayNotification('Invitation sent successfully to ' + username);
+            return true; // Indicate successful invitation
+        } else {
+            const errorData = await response.json();
+            console.error('Failed to send invitation:', errorData);
+            displayErrorMessage('Failed to send invitation: ' + errorData.message);
+            return false; // Indicate failed invitation
         }
-    });
-    if (response.ok) {
-        console.log('Invitation sent successfully');
-        displayNotification('Invitation sent successfully to ' + username);
-    } else {
-        throw new Error('Failed to send invitation'); // rachel
+    } catch (error) {
+        console.error('Error sending invitation:', error);
+        displayErrorMessage('Error sending invitation.');
+        return false; // Indicate failed invitation
     }
 }
 
@@ -321,15 +269,16 @@ export function TournamentInit() {
   
     const addParticipantButton = document.getElementById('addParticipantButton');
     if (addParticipantButton) {
-      addParticipantButton.addEventListener('click', handleAddParticipant);
-      console.log("Event listener added to add participant button");
+        addParticipantButton.addEventListener('click', checkAddParticipantButton);
+        console.log("Event listener added to add participant button");
     }
   
     const participantNameInput = document.getElementById('participantNameInput');
     if (participantNameInput) {
         participantNameInput.addEventListener('keydown', (event) => {
             if (event.key === 'Enter') {
-                handleAddParticipant(event);
+                //handleAddParticipant(event);
+                checkAddParticipantButton(event);
             }
         });
         console.log("Event listener added for Enter key on participant name input");
