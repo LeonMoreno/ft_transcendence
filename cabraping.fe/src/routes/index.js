@@ -16,8 +16,6 @@ import { Game_js } from "../pages/Game/funcions-js.js";
 import { Game_html } from "../pages/Game/html.js";
 import { Friends_html } from "../pages/Friends/html.js";
 import {
-  FriendsRender,
-  FriendRequestsRender,
   Friends_js,
 } from "../pages/Friends/funcions-js.js";
 import { Chat_js } from "../pages/Chat/funcions-js.js";

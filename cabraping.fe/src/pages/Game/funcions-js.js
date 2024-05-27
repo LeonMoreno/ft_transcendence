@@ -1,33 +1,64 @@
+import { getToken } from "../../utils/get-token.js";
+import { getHash } from "../../utils/getHash.js";
+const BACKEND_URL = "http://localhost:8000";
 
-export function Game_js() {
-  console.log("Start code in Game");
+export async function Game_js() {
+  const jwt = getToken();
+  let gameId = getHash();
 
-  const socket = new WebSocket("ws://127.0.0.1:8000/ws/game/");
+  if (gameId === "/") {
+    return;
+  }
 
-  socket.onopen = function(e) {
+  // Get my user
+
+  const responseGame = await fetch(`${BACKEND_URL}/api/games/${gameId}/`, {
+    headers: { Authorization: `Bearer ${jwt}` },
+  });
+  let game = await responseGame.json();
+
+  // console.log({ game });
+
+  // Check if the game status is not ACCEPTED, redirect to somewhere
+  // PENDING, FINISHED
+
+  // Check if my user is not one of the inviter/invitee in the game
+  // redirect to somewhere
+
+  if (game.status === "FINISHED") {
+    return;
+  }
+
+  const gameSocket = new WebSocket(`ws://localhost:8000/ws/game/${game.id}/`);
+
+  gameSocket.onopen = function (event) {
     console.log("WebSocket connection established");
   };
 
-  socket.onmessage = function(event) {
+  gameSocket.onmessage = function (event) {
     const data = JSON.parse(event.data);
-    console.log("Message from server ", data);
+    // console.log("Message from server ", data);
     handleGameState(data.message);
   };
 
-  socket.onclose = function(event) {
+  gameSocket.onclose = function (event) {
     if (event.wasClean) {
-      console.log(`Connection closed cleanly, code=${event.code}, reason=${event.reason}`);
+      console.log(
+        `Connection closed cleanly, code=${event.code}, reason=${event.reason}`
+      );
     } else {
-      console.log('Connection died');
+      console.log("Connection died");
     }
   };
 
-  socket.onerror = function(error) {
+  gameSocket.onerror = function (error) {
     console.error(`WebSocket error: ${error.message}`);
   };
 
   const canvasElement = document.getElementById("game");
   const context = canvasElement.getContext("2d");
+  const leftPaddleScoreElement = document.getElementById("left-paddle-score");
+  const rightPaddleScoreElement = document.getElementById("right-paddle-score");
 
   // const grid = 15;
   const grid = 5;
@@ -40,6 +71,16 @@ export function Game_js() {
   var paddleSpeed = 3;
   var ballSpeed = 0.5;
 
+  let leftPlayer = {
+    ...game.inviter,
+    score: 0,
+  };
+
+  let rightPlayer = {
+    ...game.invitee,
+    score: 0,
+  };
+
   let leftPaddle = {
     x: grid * 2,
     y: canvasElement.height / 2 - paddleHeight / 2,
@@ -47,6 +88,7 @@ export function Game_js() {
     height: paddleHeight,
     dy: 0,
   };
+
   let rightPaddle = {
     x: canvasElement.width - grid * 3,
     y: canvasElement.height / 2 - paddleHeight / 2,
@@ -54,6 +96,7 @@ export function Game_js() {
     height: paddleHeight,
     dy: 0,
   };
+
   let ball = {
     x: canvasElement.width / 2,
     y: canvasElement.height / 2,
@@ -73,7 +116,7 @@ export function Game_js() {
     );
   }
 
-  function loop() {
+  async function loop() {
     requestAnimationFrame(loop);
     context.clearRect(0, 0, canvasElement.width, canvasElement.height);
 
@@ -117,8 +160,62 @@ export function Game_js() {
       ball.dy *= -1;
     }
 
-    if ((ball.x < 0 || ball.x > canvasElement.width) && !ball.resetting) {
+    // If the ball is not resetting, and out of bounds
+    if (!ball.resetting && (ball.x < 0 || ball.x > canvasElement.width)) {
       ball.resetting = true;
+
+      // Goal in the right = right player score
+      if (ball.x > canvasElement.width) {
+        leftPlayer.score++;
+      }
+
+      // Goal in the left = right player .score
+      if (ball.x < 0) {
+        rightPlayer.score++;
+      }
+
+      // Update the player score
+      leftPaddleScoreElement.innerText = leftPlayer.score;
+      rightPaddleScoreElement.innerText = rightPlayer.score;
+
+      // Handle the winner
+      if (leftPlayer.score === 3) {
+        game.winner = structuredClone(leftPlayer);
+      }
+      if (rightPlayer.score === 3) {
+        game.winner = structuredClone(rightPlayer);
+      }
+      if (game.winner.id) {
+        // Stop the game = stop the ball moving
+        game.status = "FINISHED";
+
+        const requestBody = {
+          winnerId: game.winner.id,
+          inviterScore: leftPlayer.score,
+          inviteeScore: rightPlayer.score,
+        };
+
+        console.log({ requestBody });
+        // Stop the game loop later
+
+        const response = await fetch(
+          `${BACKEND_URL}/api/games/${gameId}/finish_game/`,
+          {
+            method: "PUT",
+            headers: {
+              Authorization: `Bearer ${jwt}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(requestBody),
+          }
+        );
+
+        const result = response.json;
+        console.log({ result });
+        window.location = "/#friends";
+
+        return;
+      }
 
       setTimeout(() => {
         ball.resetting = false;
@@ -183,24 +280,30 @@ export function Game_js() {
       ballPosition: { x: ball.x, y: ball.y },
     };
 
-    socket.send(JSON.stringify(gameState));
+    gameSocket.send(JSON.stringify(gameState));
   }
 
   function handleGameState(data) {
-    if (data && data.rightPaddlePosition !== undefined && data.leftPaddlePosition !== undefined && data.ballPosition) {
+    if (
+      data &&
+      data.rightPaddlePosition !== undefined &&
+      data.leftPaddlePosition !== undefined &&
+      data.ballPosition
+    ) {
       rightPaddle.y = data.rightPaddlePosition;
       leftPaddle.y = data.leftPaddlePosition;
-      if (data.ballPosition.x !== undefined && data.ballPosition.y !== undefined) {
+      if (
+        data.ballPosition.x !== undefined &&
+        data.ballPosition.y !== undefined
+      ) {
         ball.x = data.ballPosition.x;
         ball.y = data.ballPosition.y;
       }
     }
   }
-  
 
   document.addEventListener("keydown", handleKeyDown);
   document.addEventListener("keyup", handleKeyUp);
 
   requestAnimationFrame(loop);
-
 }

@@ -2,7 +2,7 @@
 import getHash from "../../utils/getHash.js";
 import { showNotification, showNotificationPopup } from '../../components/showNotification.js';
 
-let image = 'assets/logo.svg';
+let image = "assets/logo.svg";
 
 const BACKEND_URL = "http://localhost:8000";
 
@@ -273,10 +273,10 @@ function addMessageToChat(message) {
   // console.log("--> 🎉channel:", channel_now);
   // console.log("--> 🎉condicion:",message.channel === channel_now)
   if (message.channel === channel_now) {
-    const messageList = document.getElementById('messageList');
+    const messageList = document.getElementById("messageList");
     if (messageList) {
-      const messageDiv = document.createElement('div');
-      messageDiv.className = 'mb-3 d-flex align-items-start';
+      const messageDiv = document.createElement("div");
+      messageDiv.className = "mb-3 d-flex align-items-start";
 
       const userImage = document.createElement('img');
       userImage.src = `${message.userDetails.avatarImageURL}`;
@@ -285,11 +285,11 @@ function addMessageToChat(message) {
       userImage.width = 40;
       userImage.height = 40;
 
-      const messageContent = document.createElement('div');
+      const messageContent = document.createElement("div");
 
-      const messageUsername = document.createElement('strong');
+      const messageUsername = document.createElement("strong");
       messageUsername.textContent = message.UserName;
-      const messageText = document.createElement('p');
+      const messageText = document.createElement("p");
       messageText.textContent = message.message;
 
       messageContent.appendChild(messageUsername);
@@ -328,10 +328,10 @@ function handleButtonClick() {
   const membersList = document.getElementById("channelMembers");
 
   if (modal) {
-    modal.style.display = 'block'; // Display the modal
+    modal.style.display = "block"; // Display the modal
     fetch(`${BACKEND_URL}/api/users/`)
-      .then(response => response.json())
-      .then(users => {
+      .then((response) => response.json())
+      .then((users) => {
         usersList = users;
         // console.log("--> users:");
         // console.log(users);
@@ -345,22 +345,21 @@ function handleButtonClick() {
             }
         });
       })
-      .catch(error => {
-          console.error('Error fetching users:', error);
+      .catch((error) => {
+        console.error("Error fetching users:", error);
       });
   }
 
-  const closeModalButton = document.getElementById('closeModalButton');
+  const closeModalButton = document.getElementById("closeModalButton");
   if (closeModalButton) {
-      closeModalButton.addEventListener('click', () => {
-          modal.style.display = 'none'; // Hide the modal
-      });
+    closeModalButton.addEventListener("click", () => {
+      modal.style.display = "none"; // Hide the modal
+    });
   }
 }
 
 // Function to update the channels list UI with a selector
 function updateChannelList(channels) {
-
   console.log("---> 🎉 channels");
   console.log(channels);
   // Get the channels dropdown element
@@ -560,14 +559,16 @@ function loadMessagesFromLocalStorage(channelId) {
 
 // Function to obtain the JWT user ID
 function getUserIdFromJWT(jwt) {
-  const payload = jwt.split('.')[1];
+  const payload = jwt.split(".")[1];
   const decodedPayload = JSON.parse(atob(payload));
   return decodedPayload.user_id;
 }
 
 // Function to obtain the user's channels
 async function getUserChannels(userId) {
-  const response = await fetch(`${BACKEND_URL}/user-channels/${userId}/?format=json`);
+  const response = await fetch(
+    `${BACKEND_URL}/user-channels/${userId}/?format=json`
+  );
   const data = await response.json();
   return data;
 }
@@ -576,7 +577,9 @@ async function getUserChannels(userId) {
 function changeNameChanel(channel) {
   if (channel.name === UserName) {
     // Encuentra un miembro cuyo username sea diferente de UserName
-    const differentMember = channel.members.find(member => member.username !== UserName);
+    const differentMember = channel.members.find(
+      (member) => member.username !== UserName
+    );
     channel_title = differentMember.username;
     communication_user_id = differentMember.id;
   }
@@ -590,7 +593,7 @@ function changeNameChanel(channel) {
   console.log("----> change communication_user_id:");
   console.log(communication_user_id);
   // Update the header with the selected channel's name
-  const channelHeader = document.getElementById('channel-title');
+  const channelHeader = document.getElementById("channel-title");
   if (channelHeader) {
     channelHeader.textContent = `${channel_title}`;
   }
@@ -617,18 +620,22 @@ function createWebSocketConnection(channelId) {
 }
 
 function handleSaveChannelClick() {
-
   console.log("--> 🦾 Click 🦾");
 
-  let selectedOptions = document.getElementById('channelMembers').selectedOptions;
-  let selectedUsersMember = Array.from(selectedOptions).map(option => parseInt(option.value, 10));
+  let selectedOptions =
+    document.getElementById("channelMembers").selectedOptions;
+  let selectedUsersMember = Array.from(selectedOptions).map((option) =>
+    parseInt(option.value, 10)
+  );
 
   selectedUsersMember.push(user_id);
 
   console.log("selectedUsersMember: ", selectedUsersMember);
 
   // Extract the user name using user_id
-  const userName = usersList.find(user => user.id == selectedUsersMember[0])?.username || 'Unknown User';
+  const userName =
+    usersList.find((user) => user.id == selectedUsersMember[0])?.username ||
+    "Unknown User";
 
   const channelData = {
     // owner: UserName,
@@ -644,40 +651,38 @@ function handleSaveChannelClick() {
 
   // Options for fetch request
   const requestOptions = {
-      method: 'POST',
-      headers: {
-          'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(channelData)
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(channelData),
   };
-
 
   // Displays the information in the console
   console.log("channelData: ", channelData);
 
   // Perform POST request
   fetch(url, requestOptions)
-  .then(response => response.json())
-  .then(data => {
-    console.log("--> response");
-    console.log(data.name);
-    if (data.name) { // Verify that the response status is 200 or 201.
-      showNotification("Channel successfully created", "success");
-      // Actualiza la lista de canales
-      getUserChannels(user_id).then(updateChannelList); // Asume que user_id es global
-    }
-    else{
-      showNotification("Error there is already a chat", "error");
-    }
+    .then((response) => response.json())
+    .then((data) => {
+      console.log("--> response");
+      console.log(data.name);
+      if (data.name) {
+        // Verify that the response status is 200 or 201.
+        showNotification("Channel successfully created", "success");
+        // Actualiza la lista de canales
+        getUserChannels(user_id).then(updateChannelList); // Asume que user_id es global
+      } else {
+        showNotification("Error there is already a chat", "error");
+      }
 
-     // Cierra el modal
-     const modal = document.getElementById("channelModal");
-     if (modal) {
-       modal.style.display = 'none';
-     }
-  })
-  .catch(error => {
+      // Cierra el modal
+      const modal = document.getElementById("channelModal");
+      if (modal) {
+        modal.style.display = "none";
+      }
+    })
+    .catch((error) => {
       showNotification("Error there is already a chat", "error");
-  });
-
+    });
 }

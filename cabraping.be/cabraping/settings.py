@@ -115,6 +115,7 @@ DATABASES = {
 #         'BACKEND': 'channels_redis.core.RedisChannelLayer',
 #         'CONFIG': {
 #             "hosts": [('127.0.0.1', 6379)],  # Cambia si tu servidor Redis está en una ubicación diferente
+#             "hosts": [('127.0.0.1', 6379)],  # Cambia si tu servidor Redis está en una ubicación diferente
 #         },
 #     },
 # }
@@ -124,6 +125,7 @@ DATABASES = {
 #         'NAME': 'transcendence_db',
 #         'USER': 'transcendence_user',
 #         'PASSWORD': 'transcendence_password',
+#         'HOST': 'localhost',
 #         'HOST': 'localhost',
 #         'PORT': '5432',
 #     }
