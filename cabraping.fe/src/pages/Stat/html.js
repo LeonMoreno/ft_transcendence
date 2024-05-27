@@ -7,10 +7,10 @@ export async function Stat_html() {
       <table id="users-table" class="table" style="width: 100%; border-collapse: collapse;">
         <thead>
           <tr>
-            <th style="border: 1px solid #ccc; padding: 8px;">Username</th>
-            <th style="border: 1px solid #ccc; padding: 8px;">Wins</th>
-            <th style="border: 1px solid #ccc; padding: 8px;">Losses</th>
-            <th style="border: 1px solid #ccc; padding: 8px;">Friend Status</th>
+            <th style="border: 1px solid #ccc; padding: 8px; background-color: #4CAF50; color: red;">Username</th>
+            <th style="border: 1px solid #ccc; padding: 8px; background-color: #FFA500; color: pink;">Wins</th>
+            <th style="border: 1px solid #ccc; padding: 8px; background-color: #FFC0CB; color: white;">Losses</th>
+            <th style="border: 1px solid #ccc; padding: 8px; background-color: #FFA07A; color: purple;">Tournament Wins</th>
           </tr>
         </thead>
         <tbody id="users-list">

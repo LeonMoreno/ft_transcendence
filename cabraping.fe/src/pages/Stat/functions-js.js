@@ -39,15 +39,14 @@ export async function Stat_js() {
   if (usersListElement) {
     usersListElement.innerHTML = users
       .map((user) => {
-        const isOurFriend = user.friends.includes(myUser.id);
         const stats = user_stat[user.id] || { wins: 0, losses: 0 };
 
         return `
           <tr>
-            <th style="border: 1px solid #ccc; padding: 8px;">${user.username}</td>
-            <th style="border: 1px solid #ccc; padding: 8px;">${stats.wins}</td>
-            <th style="border: 1px solid #ccc; padding: 8px;">${stats.losses}</td>
-            <th style="border: 1px solid #ccc; padding: 8px;">${isOurFriend ? 'Your friend' : ''}</td>
+            <th style="border: 1px solid #ccc; padding: 8px; background-color: #90EE90; color: #8B0000;">${user.username}</td>
+            <th style="border: 1px solid #ccc; padding: 8px; background-color: #90EE90; color: #8B0000;">${stats.wins}</td>
+            <th style="border: 1px solid #ccc; padding: 8px; background-color: #90EE90; color: #8B0000;">${stats.losses}</td>
+            <th style="border: 1px solid #ccc; padding: 8px; background-color: #90EE90; color: #8B0000;">"Waiting for Rachel"</td>
           </tr>
         `;
       })
