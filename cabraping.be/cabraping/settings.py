@@ -13,6 +13,16 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 from pathlib import Path
 from datetime import timedelta
 
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
+
+# Access environment variables
+UID = os.getenv("UID")
+SECRET = os.getenv("SECRET")
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -39,6 +49,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
     'rest_framework',
     'rest_framework.authtoken',
     'corsheaders',
@@ -47,13 +58,14 @@ INSTALLED_APPS = [
     'chat',
     'game',
     'users',
+    'auth42',
 ]
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:8080",
+    "https://api.intra.42.fr",
     "http://127.0.0.1:8080",
     "http://127.0.0.1",
-    'http://localhost:8080',
 ]
 
 
@@ -92,7 +104,7 @@ CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
-            "hosts": [('redis', 6379)],  # Cambia si tu servidor Redis está en una ubicación diferente
+            "hosts": [('redis', 6379)],
         },
     },
 }
@@ -130,6 +142,7 @@ DATABASES = {
 #         'PORT': '5432',
 #     }
 # }
+
 # < Local ----------------------------------------------------------------------------------------------------------------------------
 
 MIDDLEWARE = [

@@ -9,6 +9,7 @@ export async function Users_js() {
   const jwt = localStorage.getItem("jwt");
   if (!jwt) return null;
 
+
   const responseMyUser = await fetch(`${BACKEND_URL}/api/me/`, {
     headers: { Authorization: `Bearer ${jwt}` },
   });
