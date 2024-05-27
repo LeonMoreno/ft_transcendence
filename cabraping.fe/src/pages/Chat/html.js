@@ -36,6 +36,7 @@ export  function Chat_html() {
       <button id="blockUserButton" class="btn btn-danger btn-sm ml-2">Block User</button>
       <button id="usersRouteButton" class="btn btn-secondary btn-sm ml-2">User info</button>
       <button id="inviteGameButton" class="btn btn-secondary btn-sm ml-2">Invite to a game</button>
+      <button id="acceptGameButton" class="btn btn-secondary btn-sm ml-2">Accept to join the game</button>
       <!-- Messages go here -->
       <ul id="messageList" class="list-unstyled overflow-auto v-75 " style="max-height: 48vh; min-height: 200px; ">
         <!-- Aquí se agregarán los mensajes -->

@@ -74,6 +74,12 @@ export async function Chat_js() {
       // usersRouteButton.addEventListener('click', () => window.location.href = '#users');
       usersRouteButton.addEventListener('click', () => window.location.href = `#user/${communication_user_id}`);
     }
+    
+    const acceptGameButton = document.getElementById('acceptGameButton');
+    if (acceptGameButton) {
+      acceptGameButton.disabled = true;
+      // usersRouteButton.addEventListener('click', () => window.location.href = `#user/${communication_user_id}`);
+    }
 
     const button = document.getElementById('addChannel');
     console.log(button);
