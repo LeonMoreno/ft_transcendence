@@ -99,8 +99,7 @@ async function userExists(username) {
 async function checkUserOnlineStatus(username) {
     console.log(`Checking online status for user: ${username}`);
     try {
-        // Check if the user exists first
-        const exists = await userExists(username);
+        const exists = await userExists(username); //checks if the user exists first
         if (!exists) {
             displayErrorMessage("User not found. Please double-check their nickname.");
             return null; // User does not exist
@@ -144,12 +143,18 @@ async function handleAddParticipant(e) {
         displayErrorMessage('Participant name cannot be empty.');
         return;
     }
+
+    const tournamentId = sessionStorage.getItem('currentTournamentId');
+    if (!tournamentId) {
+        displayErrorMessage('No tournament ID found. Please create a tournament first.');
+        return;
+    }
+
     const isOnline = await checkUserOnlineStatus(participantName);
     if (isOnline === null) {
-        // User does not exist
         displayErrorMessage("User not found. Please double-check their username.");
     } else if (isOnline) {
-        const invitationSent = await sendInvitation(participantName);
+        const invitationSent = await sendInvitation(participantName, tournamentId);
         if (invitationSent) {
             updateParticipantsList(participantName, 'invited');
         }
@@ -162,7 +167,7 @@ async function handleAddParticipant(e) {
 
 function checkAddParticipantButton(e) {
     if (e.type === 'keydown' && e.key !== 'Enter') {
-        return; // Only handle Enter key for keydown events
+        return; //handles only enter key for keydown events
     }
 
     const addParticipantButton = document.getElementById('addParticipantButton');
@@ -175,32 +180,33 @@ function checkAddParticipantButton(e) {
 }
 
 // Function to send an invitation to a user
-async function sendInvitation(username) {
+async function sendInvitation(username, tournamentId) {
     console.log("Sending invitation to", username);
-    //change the api below to Jonathan's friend invitation? or create my own with tournament name and trash talk
     try {
-        const response = await fetch(`${BACKEND_URL}/api/participants/${username}/invite-participant`, {
+        //const response = await fetch(`${BACKEND_URL}/api/participants/${username}/invite`, {
+        const response = await fetch(`${BACKEND_URL}/api/participants/invite`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${getToken()}`,
                 'Content-Type': 'application/json'
-            }
+            },
+            body: JSON.stringify({ username: username, tournament: tournamentId })
         });
 
         if (response.ok) {
             console.log('Invitation sent successfully');
             displayNotification('Invitation sent successfully to ' + username);
-            return true; // Indicate successful invitation
+            return true;
         } else {
             const errorData = await response.json();
             console.error('Failed to send invitation:', errorData);
             displayErrorMessage('Failed to send invitation: ' + errorData.message);
-            return false; // Indicate failed invitation
+            return false;
         }
     } catch (error) {
         console.error('Error sending invitation:', error);
         displayErrorMessage('Error sending invitation.');
-        return false; // Indicate failed invitation
+        return false;
     }
 }
 
@@ -338,10 +344,10 @@ async function createTournament(tournamentName) {
             console.error('Response text:', errorText); 
             throw new Error('Network response was not ok'); // rachel
         }
-        
         return response;
+
     } catch (error) {
-        console.error('Network error:', error); // Log network errors
+        console.error('Network error:', error);
         throw error;
     }
 }
@@ -376,6 +382,14 @@ function checkAllParticipantsAccepted() {
     document.getElementById('startTournamentButton').disabled = !allAccepted;
 }
   
+// Event listener for adding participant - rachel revise
+//document.getElementById('addParticipantButton').addEventListener('click', handleAddParticipant);
+//document.getElementById('participantNameInput').addEventListener('keydown', (event) => {
+//    if (event.key === 'Enter') {
+ //       handleAddParticipant(event);
+//    }
+//});
+
 function startTournament(event) {
     event.preventDefault();
     console.log("Start Tournament button clicked");

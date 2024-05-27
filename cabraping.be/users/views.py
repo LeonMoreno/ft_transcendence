@@ -1,4 +1,5 @@
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import User
 from rest_framework.generics import RetrieveUpdateAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import viewsets, status
@@ -247,3 +248,12 @@ def check_user_status(request, username):
     except Exception as e:
         print(f"An unexpected error occurred: {str(e)}")
         return Response({'error': 'An unexpected error occurred'}, status=500)
+
+@api_view(['DELETE'])
+def delete_user(request, username):
+    try:
+        user = User.objects.get(username=username)
+        user.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    except User.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)

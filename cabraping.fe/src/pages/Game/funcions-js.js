@@ -1,5 +1,6 @@
 import { getToken } from "../../utils/get-token.js";
 import { getHash } from "../../utils/getHash.js";
+
 const BACKEND_URL = "http://localhost:8000";
 
 export async function Game_js() {

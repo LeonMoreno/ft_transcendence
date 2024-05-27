@@ -53,19 +53,19 @@ export function initializeLogoutButtons() {
 }
 
 // Function to render the header and set up the logout button
-export async function renderHeaderAndSetupLogout() {
+/*export async function renderHeaderAndSetupLogout() {
     const headerContent = await Header_html();
     const headerElement = document.getElementById('header');
     headerElement.innerHTML = headerContent;
 
     initializeLogoutButtons(); // Initialize logout buttons after rendering the header
-}
+}*/
 
 // Function to initialize logout page
 export function LogoutPage_js() {
     console.log("LogoutPage_js initialized"); 
     document.addEventListener('DOMContentLoaded', (event) => {
-        renderHeaderAndSetupLogout();
+        //renderHeaderAndSetupLogout();
         initializeLogoutButtons(); // Initialize them globally
     });
 }

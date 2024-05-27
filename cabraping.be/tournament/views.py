@@ -107,7 +107,7 @@ class ParticipantViewSet(viewsets.ModelViewSet):
         
         return super(ParticipantViewSet, self).create(request, *args, **kwargs)
 
-    @action(detail=True, methods=['post'], url_path='invite-participant')
+    @action(detail=True, methods=['post'], url_path='invite')
     def invite_participant(self, request, pk=None):
         participant = self.get_object()
         channel_layer = get_channel_layer()
@@ -115,7 +115,8 @@ class ParticipantViewSet(viewsets.ModelViewSet):
             f'chat_{participant.user.id}',
             {
                 'type': 'send_tournament_invitation',
-                'tournament_name': participant.tournament.name
+                'tournament_name': participant.tournament.name,
+                'message': f"You have been invited to join the tournament {participant.tournament.name}! Do you think you have what it takes to win the prestigious Chèvre Verte Award?"
             }
         )
         participant.received_invite = True

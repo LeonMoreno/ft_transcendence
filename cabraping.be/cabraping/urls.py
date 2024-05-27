@@ -10,7 +10,7 @@ from django.conf.urls import handler404
 from cabraping.views import custom_404
 from django.conf import settings
 from django.conf.urls.static import static
-from users.views import UserUpdate
+from users.views import UserUpdate, delete_user
 
 
 router = DefaultRouter()
@@ -37,7 +37,7 @@ urlpatterns = [
 
     path('api/users/<str:username>/exists/', check_user_exists, name='check_user_exists'),
     path('api/users/<str:username>/status/', check_user_status, name='check_user_status'),
-   
+    path('delete/<str:username>/', delete_user, name='delete_user'),
     path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("api/friend_requests/me", FriendRequestViewSet.friend_request_me),
