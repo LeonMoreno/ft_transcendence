@@ -4,32 +4,133 @@ const BACKEND_URL = "http://localhost:8000";
 let myUserData = {};
 let friendRequests = [];
 
+// export async function FriendsInit() {
+
+export async function Friends_js() {
+  const jwt = getToken();
+
+  await fetchMyUserData();
+  FriendsRender();
+  FriendRequestsRender();
+}
+
+export async function fetchMyUserData() {
+  const jwt = getToken();
+
+  const responseMe = await fetch(`${BACKEND_URL}/api/me/`, {
+    headers: { Authorization: `Bearer ${jwt}` },
+  });
+  myUserData = await responseMe.json();
+  if (!myUserData) {
+    return null;
+  }
+}
 
 export async function FriendsRender() {
   const jwt = getToken();
+  await fetchMyUserData();
 
   const friendsListElement = document.getElementById("friends-list");
   friendsListElement.innerHTML = "";
 
-  friendRequests = myUserData.friends;
-  if (!Array.isArray(friendRequests)) {
+  const friends = myUserData.friends || []; // Define friends here
+
+  // friends = myUserData.friends;
+  if (!Array.isArray(friends)) {
     return null;
   }
 
-  if (friendRequests.length <= 0) {
+  if (friends.length <= 0) {
     friendsListElement.innerHTML = "<p>No friends yet</p>";
     return null;
   }
 
-  friendsListElement.innerHTML = friendRequests
-    .map(
-      (
-        user
-      ) => `<li id="${user.id}" class="list-group-item d-flex gap-4 align-items-center">
-  <h3>${user.username}</h3>
-</li>`
-    )
+  const responseGames = await fetch(`${BACKEND_URL}/api/games/`, {
+    headers: { Authorization: `Bearer ${jwt}` },
+  });
+  const games = await responseGames.json();
+
+  friendsListElement.innerHTML = friends
+    .map((friend) => {
+      const game = games.find(
+        (game) =>
+          game.invitee.id === myUserData.id &&
+          game.inviter.id === friend.id &&
+          game.invitationStatus === "PENDING"
+      );
+      return `<li id="${
+        friend.id
+      }" class="list-group-item d-flex gap-4 align-items-center">
+    <h3>${friend.username}</h3>
+      <button type="button" class="btn btn-sm btn-primary" data-action="invite-game"
+      data-id="${friend.id}">Invite to a game</button>
+    ${
+      game
+        ? ` <button type="button"
+      class="btn btn-sm btn-secondary"
+      data-action="accept-game"
+      data-id="${game.id}">Accept to join the game</button>`
+        : ""
+    }
+    </li>`;
+    })
     .join("");
+
+  const inviteGameButtonElements = document.querySelectorAll(
+    '[data-action="invite-game"]'
+  );
+
+  const acceptGameButtonElements = document.querySelectorAll(
+    '[data-action="accept-game"]'
+  );
+
+  inviteGameButtonElements.forEach((button) => {
+    button.addEventListener("click", async (event) => {
+      const friendId = Number(event.target.getAttribute("data-id"));
+
+      const result = await fetch(`${BACKEND_URL}/api/games/`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${jwt}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          invitationStatus: "PENDING",
+          inviter: myUserData.id,
+          invitee: friendId,
+        }),
+      });
+
+      console.log({ result: await result.json() });
+
+      FriendsRender();
+      FriendRequestsRender();
+    });
+  });
+
+  acceptGameButtonElements.forEach((button) => {
+    button.addEventListener("click", async (event) => {
+      const gameId = Number(event.target.getAttribute("data-id"));
+
+      const result = await fetch(
+        `${BACKEND_URL}/api/games/${gameId}/accept_game/`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${jwt}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      console.log({ result: await result.json() });
+      // /game
+      window.location.href = `/#game/${gameId}`;
+
+      FriendsRender();
+      FriendRequestsRender();
+    });
+  });
 }
 
 export async function FriendRequestsRender() {
@@ -78,13 +179,10 @@ export async function FriendRequestsRender() {
     })
     .join("");
 
+  // render all the friend requests first
   friendRequestsListElement.innerHTML = friendRequestsDataString;
-}
 
-// export async function FriendsInit() {
-export async function Friends_js() {
-  const jwt = getToken();
-
+  // add the event listeners
   const confirmButtonElements = document.querySelectorAll(
     '[data-action="confirm"]'
   );
@@ -105,7 +203,6 @@ export async function Friends_js() {
         body: JSON.stringify({ intent: "confirm" }),
       });
 
-      Friends();
       FriendsRender();
       FriendRequestsRender();
     });
@@ -123,7 +220,6 @@ export async function Friends_js() {
         }
       );
 
-      Friends();
       FriendsRender();
       FriendRequestsRender();
     });

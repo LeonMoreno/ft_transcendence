@@ -3,12 +3,14 @@ import { showNotification } from "../../components/showNotification.js"
 export function createUser(email, password) {
   const username = email.split('@')[0];
 
+  const img = "https://i.pinimg.com/736x/22/d8/71/22d8716223532ec51ea7b0ea471bbe67.jpg"
+
   fetch('http://127.0.0.1:8000/api/users/', {
       method: 'POST',
       headers: {
           'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ username, email: email, password })
+      body: JSON.stringify({ username, email: email, password, avatarImageURL: img })
   })
   .then(response => {
       if(response.status === 200 || response.status === 201) {
@@ -28,18 +30,3 @@ export function createUser(email, password) {
       showNotification("Error creating user! " + error.message, "error");
   });
 }
-
-
-// function showNotification(message, type) {
-//   const container = document.getElementById('notification-container');
-//   const notification = document.createElement('div');
-//   notification.classList.add('notification', type);
-//   notification.textContent = message;
-
-//   container.appendChild(notification);
-
-//   // Automatically remove the notification after 5 seconds
-//   setTimeout(() => {
-//       container.removeChild(notification);
-//   }, 5000);
-// }
