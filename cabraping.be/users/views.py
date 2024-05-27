@@ -139,7 +139,8 @@ class MeViewSet(APIView):
 
     def get(self, request):
         # Utiliza el serializador para devolver los datos del usuario incluyendo 'avatarImageURL'
-        serializer = CustomUserSerializer(request.user)
+        # serializer = CustomUserSerializer(request.user)
+        serializer = MeDataSerializer(request.user)
         return Response(serializer.data)
 
 class FriendRequestViewSet(viewsets.ModelViewSet):
