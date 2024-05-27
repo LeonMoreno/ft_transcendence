@@ -19,8 +19,11 @@ from django.contrib.auth.models import User
 
 load_dotenv()
 
+img = "https://i.pinimg.com/736x/22/d8/71/22d8716223532ec51ea7b0ea471bbe67.jpg"
+
 UID = os.getenv("UID")
 SECRET = os.getenv("SECRET")
+PW42 = os.getenv("PASSWORD_42")
 
 @api_view(['GET'])
 def get_config(request):
@@ -77,20 +80,20 @@ def callback(request):
     ftId = user_info.get("id")
     first_name = user_info.get("first_name")
     last_name = user_info.get("last_name")
-    avatar_image_url = user_info.get("image_url")  # Verify this key
+    avatar_image_url = user_info.get("image", {}).get("link")
     email = user_info.get("email")
-    password = str(ftId)  # Using ftId as the password for example purposes
+    password = PW42  # Using ftId as the password for example purposes
 
     if not ftId or not username:
         return JsonResponse({'error': 'Incomplete user info from Auth42'}, status=400)
 
     user_data = {
-        'username': username,
-        'email': email,
-        'password': password,
-        'firstName': first_name,
-        'lastName': last_name,
-        'avatarImageURL': avatar_image_url
+        "username": username,
+        "email": email,
+        "password": password,
+        "firstName": first_name,
+        "lastName": last_name,
+        "avatarImageURL": avatar_image_url,
     }
 
     # Make a POST request to create the user in the Django backend
@@ -98,7 +101,7 @@ def callback(request):
         user_create_response = requests.post(
             'http://127.0.0.1:8000/api/users/',
             headers={'Content-Type': 'application/json'},
-            data=json.dumps(user_data)
+            json=user_data
         )
         user_create_response.raise_for_status()
     except requests.RequestException as e:
@@ -122,7 +125,11 @@ def callback(request):
     access_token = token_response_data.get('access')
     refresh_token = token_response_data.get('refresh')
 
+    
+    # For debugging purposes, return the user_info JSON response directly
+    #return JsonResponse(user_info)
     # Redirect to the frontend with the tokens
     frontend_redirect_url = f"http://localhost:8080?access_token={access_token}&refresh_token={refresh_token}"
     return redirect(frontend_redirect_url)
+
 

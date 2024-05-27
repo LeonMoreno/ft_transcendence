@@ -1,5 +1,3 @@
-import getHash from "../../utils/getHash.js";
-
 const BACKEND_URL = "http://localhost:8000";
 
 export function Home_js() {
@@ -50,7 +48,7 @@ function getQueryParams() {
   return { access_token, refresh_token };
 }
 
-function storeTokens(access_token) {
+function storeTokens(access_token, refresh_token) {
   localStorage.setItem('jwt', access_token);
   localStorage.setItem('access_token', access_token);
   localStorage.setItem('refresh_token', refresh_token);
@@ -62,9 +60,6 @@ async function handleLogin() {
     storeTokens(access_token, refresh_token);
     window.history.replaceState({}, document.title, "/"); // Clean URL
     // Update UI or state to reflect login
-    showNotification("Login successful", "success");
-  } else {
-    showNotification("Login failed: No tokens found", "error");
   }
 }
 
