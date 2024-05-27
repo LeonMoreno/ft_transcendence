@@ -76,7 +76,7 @@ def callback(request):
 
     user_info = user_info_response.json()
 
-    username = user_info.get("email")
+    username = user_info.get("login")
     ftId = user_info.get("id")
     first_name = user_info.get("first_name")
     last_name = user_info.get("last_name")
@@ -91,8 +91,8 @@ def callback(request):
         "username": username,
         "email": email,
         "password": password,
-        "firstName": first_name,
-        "lastName": last_name,
+        "first_name": first_name,
+        "last_name": last_name,
         "avatarImageURL": avatar_image_url,
     }
 
@@ -108,7 +108,7 @@ def callback(request):
         print(f"User creation failed: {e}")   
 
     token_data = {
-        "username": username,
+        "username": email,
         "password": password
     }
 

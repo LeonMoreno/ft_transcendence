@@ -5,72 +5,85 @@ const BACKEND_URL = "http://localhost:8000";
 let users = [];
 let friendRequests = [];
 
-// export async function UsersInit() {
+// Function to fetch and display user statistics
 export async function Stat_js() {
+  const jwt = localStorage.getItem("jwt");
+  if (!jwt) return null;
 
-    injectStyles();
-    const jwt = localStorage.getItem("jwt");
-    if (!jwt) return null;
+  const responseMyUser = await fetch(`${BACKEND_URL}/api/me/`, {
+    headers: { Authorization: `Bearer ${jwt}` },
+  });
+  const myUser = await responseMyUser.json();
+  if (!myUser) return null;
 
-    const responseMyUser = await fetch(`${BACKEND_URL}/api/me/`, {
-        headers: { Authorization: `Bearer ${jwt}` },
-    });
-    const myUser = await responseMyUser.json();
-    if (!myUser) return null;
+  const responseUsers = await fetch(`${BACKEND_URL}/api/users/`);
+  users = await responseUsers.json();
+  if (!users) return null;
+  
+  const responseGames = await fetch(`${BACKEND_URL}/api/games/`, {
+    headers: { Authorization: `Bearer ${jwt}` },
+  });
+  const games = await responseGames.json();
+  if (!games) return null;
 
-    const responseUsers = await fetch(`${BACKEND_URL}/api/users/`);
-    users = await responseUsers.json();
-    if (!users) return null;
+  const user_stat = calculateWinsAndLosses(games);
 
-    const usersListElement = document.getElementById("users-list");
-    if (usersListElement) {
-        usersListElement.innerHTML = users
-        .map((user) => {
-            const isSameUser = user.id === myUser.id;
-            const isOurFriend = user.friends.includes(myUser.id);
+  users = users.map(user => ({
+    ...user,
+    wins: user_stat[user.id] ? user_stat[user.id].wins : 0,
+    losses: user_stat[user.id] ? user_stat[user.id].losses : 0
+  }));
+  users.sort((a, b) => b.wins - a.wins);
 
-            return `
-            <li>
-                <span>${user.username}</span>
-                <span>${user.email}</span>
-                <span>${user.status}</span>
-                <span>${isOurFriend ? 'Your friend' : ''}</span>
-            </li>
-            `;
-        })
+  const usersListElement = document.getElementById("users-list");
+  if (usersListElement) {
+    usersListElement.innerHTML = users
+      .map((user) => {
+        const isOurFriend = user.friends.includes(myUser.id);
+        const stats = user_stat[user.id] || { wins: 0, losses: 0 };
+
+        return `
+          <tr>
+            <th style="border: 1px solid #ccc; padding: 8px;">${user.username}</td>
+            <th style="border: 1px solid #ccc; padding: 8px;">${stats.wins}</td>
+            <th style="border: 1px solid #ccc; padding: 8px;">${stats.losses}</td>
+            <th style="border: 1px solid #ccc; padding: 8px;">${isOurFriend ? 'Your friend' : ''}</td>
+          </tr>
+        `;
+      })
       .join("");
   }
 }
 
-function injectStyles() {
-    const style = document.createElement('style');
-    style.innerHTML = `
-      .users-list {
-        display: grid;
-        grid-template-columns: 150px 200px 150px auto;
-        gap: 0;
-        border-collapse: collapse;
+// Call the Stat_js function to display user statistics
+Stat_js();
+
+function calculateWinsAndLosses(gameResults) {
+  const userStats = {};
+
+  gameResults.forEach(game => {
+      const { inviter, invitee, winner } = game;
+
+      // Initialize stats for inviter and invitee if not already present
+      if (!userStats[inviter.id]) {
+          userStats[inviter.id] = { wins: 0, losses: 0, username: inviter.username };
       }
-  
-      .users-list li {
-        display: contents;
+      if (!userStats[invitee.id]) {
+          userStats[invitee.id] = { wins: 0, losses: 0, username: invitee.username };
       }
-  
-      .users-list li span {
-        border: 1px solid #ccc;
-        padding: 8px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+
+      // Update stats
+      if (winner.id === inviter.id) {
+          userStats[inviter.id].wins += 1;
+          userStats[invitee.id].losses += 1;
+      } else if (winner.id === invitee.id) {
+          userStats[invitee.id].wins += 1;
+          userStats[inviter.id].losses += 1;
       }
-  
-      .users-list li span:last-child {
-        border-right: none;
-      }
-  
-      .users-list li:nth-child(odd) span {
-        background-color: #f9f9f9;
-      }
-    `;
-    document.head.appendChild(style);
-  }
+  });
+
+  return userStats;
+}
+
+
+

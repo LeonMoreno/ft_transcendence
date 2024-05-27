@@ -36,6 +36,7 @@ export async function Header_html() {
             <li class="nav-item"><a class="nav-link" href="#friends">Friends</a></li>
             <li class="nav-item"><a class="nav-link" href="#chat">Chats</a></li>
             <li class="nav-item"><a class="nav-link" href="#game">Games</a></li>
+            <li class="nav-item"><a class="nav-link" href="#stats">Stats</a></li>
           ` : ""}
         </ul>
       </div>
