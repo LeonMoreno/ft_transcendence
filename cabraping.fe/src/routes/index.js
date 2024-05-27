@@ -62,9 +62,8 @@ const router = async () => {
     await render[index]();
   }
 
-  // Suscribirse a los canales si estamos en la ruta de chat
   if (user_location[0] !== 'chat') {
-    await Chat_js(); // Asegúrate de que esta función suscriba a todos los canales y gestione los mensajes
+    await Chat_js();
   }
 };
 

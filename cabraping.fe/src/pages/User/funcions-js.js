@@ -1,5 +1,5 @@
 import { showNotification } from '../../components/showNotification.js';
-import getHash from '../../utils/getHash.js';
+import { getHash } from '../../utils/getHash.js';
 
 const BACKEND_URL = "http://localhost:8000";
 let jwt;

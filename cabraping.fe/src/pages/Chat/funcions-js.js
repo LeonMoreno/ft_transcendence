@@ -1,5 +1,5 @@
 // import image from '../../assets/logo.svg';
-import getHash from "../../utils/getHash.js";
+import { getHash } from "../../utils/getHash.js";
 import { showNotification, showNotificationPopup } from '../../components/showNotification.js';
 
 let image = "assets/logo.svg";
