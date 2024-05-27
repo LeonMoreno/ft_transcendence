@@ -28,7 +28,7 @@ export  function Chat_html() {
         <img src="${image}" alt="User Image" class="rounded-circle mr-2" width="40">
         <div>
           <strong>username</strong>
-          <button class="btn btn-link p-0">Logout</button>
+          <button id="logoutButton" class="btn btn-link p-0">Logout</button>
         </div>
       </div>
     </div>
@@ -43,7 +43,7 @@ export  function Chat_html() {
       <!-- Textarea for new messages -->
       <div class="mt-3">
         <textarea id="messageTextarea" class="form-control" rows="3"></textarea>
-        <button id="sendButton" class="btn btn-primary mt-2">Enviar</button>
+        <button id="sendButton" class="btn btn-primary mt-2">Send</button>
       </div>
     </div>
   </div>

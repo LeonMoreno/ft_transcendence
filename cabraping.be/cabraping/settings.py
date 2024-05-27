@@ -9,13 +9,12 @@ https://docs.djangoproject.com/en/4.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
-
+import os
 from pathlib import Path
 from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
@@ -26,8 +25,8 @@ SECRET_KEY = 'django-insecure-*)1aavai#%e5)83n)o9)@xwx&67gx=^#w&op3kxyqe&5w*x7e*
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
+#ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 # Application definition
 
@@ -47,12 +46,32 @@ INSTALLED_APPS = [
     'chat',
     'game',
     'users',
+    'tournament',
 ]
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:8080",  # Agrega los dominios de tu frontend
+    "http://127.0.0.1:8000",
 ]
 
+# For development purposes, you can also use
+CORS_ALLOW_ALL_ORIGINS = True
+
+# Allow specific methods
+#CORS_ALLOW_METHODS = [
+#    'GET',
+#    'POST',
+#    'PUT',
+#    'PATCH',
+#    'DELETE',
+#    'OPTIONS'
+#]
+
+# Allow specific headers
+#CORS_ALLOW_HEADERS = [
+#    'Authorization',
+#    'Content-Type',
+#]
 
 AUTH_USER_MODEL = 'users.CustomUser'
 
@@ -106,24 +125,25 @@ DATABASES = {
 }
 
 #Local
-# CHANNEL_LAYERS = {
-#     'default': {
-#         'BACKEND': 'channels_redis.core.RedisChannelLayer',
-#         'CONFIG': {
-#             "hosts": [('127.0.0.1', 6379)],  # Cambia si tu servidor Redis está en una ubicación diferente
-#         },
-#     },
-# }
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': 'transcendence_db',
-#         'USER': 'transcendence_user',
-#         'PASSWORD': 'transcendence_password',
-#         'HOST': 'localhost',
-#         'PORT': '5432',
-#     }
-# }
+#CHANNEL_LAYERS = {
+#    'default': {
+#        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+#        'CONFIG': {
+#            "hosts": [('127.0.0.1', 6379)],  # Cambia si tu servidor Redis está en una ubicación diferente
+#        },
+#    },
+#}
+
+#DATABASES = {
+#    'default': {
+#        'ENGINE': 'django.db.backends.postgresql',
+#        'NAME': 'transcendence_db',
+#        'USER': 'transcendence_user',
+#        'PASSWORD': 'transcendence_password',
+#        'HOST': 'localhost',
+#        'PORT': '5432',
+#    }
+#}
 
 
 MIDDLEWARE = [
@@ -143,6 +163,7 @@ ROOT_URLCONF = 'cabraping.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        #'DIRS': [BASE_DIR / 'cabraping.fe/src/template'], # rachel - for custom 404 and 500 pages (need to fix it still)
         'DIRS': [],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -194,7 +215,16 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+# Custom error handlers
+handler404 = 'cabraping.views.custom_404'
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+MEDIA_URL = '/media/'
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media') #rachel - check if correct
+
+
