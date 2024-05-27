@@ -50,7 +50,10 @@ INSTALLED_APPS = [
 ]
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:8080",  # Agrega los dominios de tu frontend
+    "http://localhost:8080",
+    "http://127.0.0.1:8080",
+    "http://127.0.0.1",
+    'http://localhost:8080',
 ]
 
 
@@ -84,7 +87,7 @@ SIMPLE_JWT = {
 
 ASGI_APPLICATION = 'cabraping.asgi.application'
 
-# Docker
+#--->  Docker
 CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
@@ -104,12 +107,14 @@ DATABASES = {
         'PORT': '5432',
     }
 }
+# < Docker ----------------------------------------------------------------------------------------------------------------------------
 
-#Local
+#---> Local
 # CHANNEL_LAYERS = {
 #     'default': {
 #         'BACKEND': 'channels_redis.core.RedisChannelLayer',
 #         'CONFIG': {
+#             "hosts": [('127.0.0.1', 6379)],  # Cambia si tu servidor Redis está en una ubicación diferente
 #             "hosts": [('127.0.0.1', 6379)],  # Cambia si tu servidor Redis está en una ubicación diferente
 #         },
 #     },
@@ -121,10 +126,11 @@ DATABASES = {
 #         'USER': 'transcendence_user',
 #         'PASSWORD': 'transcendence_password',
 #         'HOST': 'localhost',
+#         'HOST': 'localhost',
 #         'PORT': '5432',
 #     }
 # }
-
+# < Local ----------------------------------------------------------------------------------------------------------------------------
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -135,7 +141,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.common.CommonMiddleware',
 ]
 
 ROOT_URLCONF = 'cabraping.urls'
