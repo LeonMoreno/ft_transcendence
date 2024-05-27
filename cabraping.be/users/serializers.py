@@ -53,7 +53,11 @@ class UserSerializer(serializers.ModelSerializer):
 class UserDataSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ["id", "username", "email", "friends"]
+        fields = ["id", "username", "email", "friends", "avatarImageURL", "first_name", "last_name"]
+# class UserDataSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = User
+#         fields = ["id", "username", "email", "friends"]
 
 
 class MeDataSerializer(serializers.ModelSerializer):

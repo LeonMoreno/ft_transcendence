@@ -71,7 +71,8 @@ export async function Chat_js() {
     const usersRouteButton = document.getElementById('usersRouteButton');
     if (usersRouteButton) {
       usersRouteButton.disabled = true;
-      usersRouteButton.addEventListener('click', () => window.location.href = '#users');
+      // usersRouteButton.addEventListener('click', () => window.location.href = '#users');
+      usersRouteButton.addEventListener('click', () => window.location.href = `#user/${communication_user_id}`);
     }
 
     const button = document.getElementById('addChannel');
