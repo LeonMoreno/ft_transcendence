@@ -1,6 +1,6 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
-from users.views import UserViewSet, FriendRequestViewSet, MeViewSet
+from users.views import UserViewSet, FriendRequestViewSet, MeViewSet, CustomUserBlockViewSet
 from game.views import GameViewSet
 from auth42.views import get_config, callback
 
@@ -15,6 +15,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 router = DefaultRouter()
 router.register(r"users", UserViewSet)
+router.register(r'users-blocks', CustomUserBlockViewSet, basename='users-blocks')
 router.register(r"games", GameViewSet)
 
 from django.urls import path

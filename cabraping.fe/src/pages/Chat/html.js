@@ -1,6 +1,3 @@
-// import image from '../../assets/logo.svg';
-
-let image = 'assets/logo.svg';
 
 export  function Chat_html() {
 
@@ -20,24 +17,27 @@ export  function Chat_html() {
           Messages with all
           <button id="addChannel" class="btn btn-primary btn-sm">Add Channel</button>
         </h4>
-        <select id="channelsDropdown" class="form-control">
-          <option value="-1">Select a person for messages</option>
-        </select>
+        <div id="chanelsLists" class="chat-messages">
+            <!-- Aquí se agregarán los mensajes -->
+        </div>
       </div>
-      <div class="mt-4 d-flex align-items-center">
-        <img src="${image}" alt="User Image" class="rounded-circle mr-2" width="40">
-        <div>
-          <strong>username</strong>
-          <button class="btn btn-link p-0">Logout</button>
+      <div class="mt-4">
+        <h3>Block users</h3>
+        <div id="list-block" class="">
         </div>
       </div>
     </div>
 
     <!-- Panel Medio: Chat Messages -->
     <div class="bg-white p-3 overflow-auto" style="flex-grow: 1;">
-      <h3 id="channel-title" class="mb-4">#channel-alpha</h3>
+      <h3 id="channel-title" class="mb-4">
+        Channel Title
+      </h3>
+      <button id="blockUserButton" class="btn btn-danger btn-sm ml-2">Block User</button>
+      <button id="usersRouteButton" class="btn btn-secondary btn-sm ml-2">User info</button>
+      <button id="inviteGameButton" class="btn btn-secondary btn-sm ml-2">Invite to a game</button>
       <!-- Messages go here -->
-      <ul id="messageList" class="list-unstyled">
+      <ul id="messageList" class="list-unstyled overflow-auto v-75 " style="max-height: 48vh; min-height: 200px; ">
         <!-- Aquí se agregarán los mensajes -->
       </ul>
       <!-- Textarea for new messages -->
@@ -46,8 +46,8 @@ export  function Chat_html() {
         <button id="sendButton" class="btn btn-primary mt-2">Enviar</button>
       </div>
     </div>
-  </div>
 
+  </div>
 
     <!-- Modal para crear un nuevo canal -->
     <div class="modal" tabindex="-1" role="dialog" id="channelModal">

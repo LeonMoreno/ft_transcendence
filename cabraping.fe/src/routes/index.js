@@ -31,6 +31,7 @@ const routes = {
   "/chat": [Chat_html, Chat_js],
   "/chat/:id": [Chat_html, Chat_js],
   "/user": [User_html, User_js],
+  "/user/:id": [User_html, User_js],
   "/users": [Users_html, Users_js],
   "/friends": [Friends_html, Friends_js],
   "/404": [Error404_html, Error404_js],
@@ -60,6 +61,10 @@ const router = async () => {
   content.innerHTML = await render[0]();
   for (let index = 1; index < render.length; index++) {
     await render[index]();
+  }
+
+  if (user_location[0] !== 'chat') {
+    await Chat_js();
   }
 };
 

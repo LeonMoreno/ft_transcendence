@@ -8,6 +8,24 @@ from django.core.exceptions import ValidationError
 
 User = get_user_model()
 
+class CustomUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ('id', 'username', 'email', 'first_name', 'last_name', 'avatarImageURL', 'friends')
+
+class BlockUserSerializer(serializers.Serializer):
+    blocked_user_id = serializers.IntegerField()
+
+    def validate_blocked_user_id(self, value):
+        from .models import CustomUser
+
+        try:
+            CustomUser.objects.get(id=value)
+        except CustomUser.DoesNotExist:
+            raise serializers.ValidationError("El usuario bloqueado no existe.")
+        
+        return value
+
 class UserSerializerUpdate(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
@@ -35,7 +53,11 @@ class UserSerializer(serializers.ModelSerializer):
 class UserDataSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ["id", "username", "email", "friends"]
+        fields = ["id", "username", "email", "friends", "avatarImageURL", "first_name", "last_name"]
+# class UserDataSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = User
+#         fields = ["id", "username", "email", "friends"]
 
 
 class MeDataSerializer(serializers.ModelSerializer):
@@ -43,7 +65,8 @@ class MeDataSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ["id", "username", "email", "friends"]
+        fields = ["id", "username", "email", "friends", "nickname", "first_name", "last_name", "avatarImageURL"]
+        # fields = ["id", "username", "avatarImageURL", "nickname", "first_name", "last_name", "avatarImageURL"]
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)

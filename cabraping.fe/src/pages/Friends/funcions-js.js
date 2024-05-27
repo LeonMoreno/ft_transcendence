@@ -21,6 +21,8 @@ export async function fetchMyUserData() {
     headers: { Authorization: `Bearer ${jwt}` },
   });
   myUserData = await responseMe.json();
+  console.log("--> myUserData");
+  console.log(myUserData);
   if (!myUserData) {
     return null;
   }

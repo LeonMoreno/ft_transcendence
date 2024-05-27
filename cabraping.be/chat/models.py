@@ -13,6 +13,3 @@ class Channel(models.Model):
     status = models.CharField(max_length=255)
     hash = models.CharField(max_length=255, null=True, blank=True)
     members = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='channels')
-    createdAt = models.DateTimeField(auto_now_add=True)
-    updatedAt = models.DateTimeField(auto_now=True)
-    password = models.CharField(max_length=255, null=True, blank=True)
