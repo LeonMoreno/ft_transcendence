@@ -35,7 +35,7 @@ export function showNotificationPopup(userName, message) {
 
   const notificationContent = document.createElement('div');
   notificationContent.className = 'toast-body';
-  notificationContent.textContent = `${userName} has sent you a message`;
+  notificationContent.textContent = `${userName} has sent you a message 🛜`;
   // notificationContent.textContent = `${userName} te ha enviado un mensaje: ${message}`;
 
   const closeButton = document.createElement('button');

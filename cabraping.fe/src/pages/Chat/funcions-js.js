@@ -25,7 +25,6 @@ export async function Chat_js() {
 
     const jwt = localStorage.getItem('jwt');
     if (!jwt) {
-        window.location.href = '/#';
         return;
     }
 
@@ -107,15 +106,6 @@ export async function Chat_js() {
         createWebSocketConnection(channel.id);
     });
     }
-
-    // const channelsDropdown = document.getElementById('channelsDropdown');
-    // if (channelsDropdown) {
-    //   channelsDropdown.addEventListener('click', async () => {
-    //     let userId = getUserIdFromJWT(localStorage.getItem('jwt'));
-    //     const channels = await getUserChannels(userId);
-    //     updateChannelList(channels);
-    //   });
-    // }
 
   }
 
@@ -606,7 +596,6 @@ function changeNameChanel(channel) {
   console.log("---> 🤖🤖🤖 change name :", channel_title);
 }
 
-// Function to create a WebSocket connection
 // Function to create a WebSocket connection
 function createWebSocketConnection(channelId) {
   if (sockets[channelId]) {

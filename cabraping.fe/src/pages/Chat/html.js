@@ -1,6 +1,3 @@
-// import image from '../../assets/logo.svg';
-
-// let image = 'assets/logo.svg';
 
 export  function Chat_html() {
 
@@ -40,7 +37,7 @@ export  function Chat_html() {
       <button id="usersRouteButton" class="btn btn-secondary btn-sm ml-2">User info</button>
       <button id="inviteGameButton" class="btn btn-secondary btn-sm ml-2">Invite to a game</button>
       <!-- Messages go here -->
-      <ul id="messageList" class="list-unstyled">
+      <ul id="messageList" class="list-unstyled overflow-auto v-75 " style="max-height: 48vh; min-height: 200px; ">
         <!-- Aquí se agregarán los mensajes -->
       </ul>
       <!-- Textarea for new messages -->
@@ -50,9 +47,7 @@ export  function Chat_html() {
       </div>
     </div>
 
-
   </div>
-
 
     <!-- Modal para crear un nuevo canal -->
     <div class="modal" tabindex="-1" role="dialog" id="channelModal">
