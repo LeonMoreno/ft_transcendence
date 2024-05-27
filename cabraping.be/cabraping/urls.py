@@ -2,6 +2,8 @@ from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 from users.views import UserViewSet, FriendRequestViewSet, MeViewSet, CustomUserBlockViewSet
 from game.views import GameViewSet
+from auth42.views import get_config, callback
+
 
 from users.views import CurrentUserView
 
@@ -44,4 +46,7 @@ urlpatterns = [
     path("api/friend_requests/me", FriendRequestViewSet.friend_request_me),
     path("api/friend_requests/", FriendRequestViewSet.friend_request_list),
     path("api/friend_requests/<int:pk>/", FriendRequestViewSet.friend_request_detail),
+    path("auth42/config", get_config),
+    path("callback/", callback),
+
 ]
