@@ -13,6 +13,16 @@ import os
 from pathlib import Path
 from datetime import timedelta
 
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
+
+# Access environment variables
+UID = os.getenv("UID")
+SECRET = os.getenv("SECRET")
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -38,6 +48,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
     'rest_framework',
     'rest_framework.authtoken',
     'corsheaders',
@@ -50,8 +61,10 @@ INSTALLED_APPS = [
 ]
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:8080",  # Agrega los dominios de tu frontend
-    "http://127.0.0.1:8000",
+    "http://localhost:8080",
+    "https://api.intra.42.fr",
+    "http://127.0.0.1:8080",
+    "http://127.0.0.1",
 ]
 
 # For development purposes, you can also use
@@ -103,12 +116,12 @@ SIMPLE_JWT = {
 
 ASGI_APPLICATION = 'cabraping.asgi.application'
 
-# Docker
+#--->  Docker
 CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
-            "hosts": [('redis', 6379)],  # Cambia si tu servidor Redis está en una ubicación diferente
+            "hosts": [('redis', 6379)],
         },
     },
 }
@@ -123,28 +136,31 @@ DATABASES = {
         'PORT': '5432',
     }
 }
+# < Docker ----------------------------------------------------------------------------------------------------------------------------
 
-#Local
-#CHANNEL_LAYERS = {
-#    'default': {
-#        'BACKEND': 'channels_redis.core.RedisChannelLayer',
-#        'CONFIG': {
-#            "hosts": [('127.0.0.1', 6379)],  # Cambia si tu servidor Redis está en una ubicación diferente
-#        },
-#    },
-#}
+#---> Local
+# CHANNEL_LAYERS = {
+#     'default': {
+#         'BACKEND': 'channels_redis.core.RedisChannelLayer',
+#         'CONFIG': {
+#             "hosts": [('127.0.0.1', 6379)],  # Cambia si tu servidor Redis está en una ubicación diferente
+#             "hosts": [('127.0.0.1', 6379)],  # Cambia si tu servidor Redis está en una ubicación diferente
+#         },
+#     },
+# }
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'transcendence_db',
+#         'USER': 'transcendence_user',
+#         'PASSWORD': 'transcendence_password',
+#         'HOST': 'localhost',
+#         'HOST': 'localhost',
+#         'PORT': '5432',
+#     }
+# }
 
-#DATABASES = {
-#    'default': {
-#        'ENGINE': 'django.db.backends.postgresql',
-#        'NAME': 'transcendence_db',
-#        'USER': 'transcendence_user',
-#        'PASSWORD': 'transcendence_password',
-#        'HOST': 'localhost',
-#        'PORT': '5432',
-#    }
-#}
-
+# < Local ----------------------------------------------------------------------------------------------------------------------------
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -155,7 +171,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.common.CommonMiddleware',
 ]
 
 ROOT_URLCONF = 'cabraping.urls'

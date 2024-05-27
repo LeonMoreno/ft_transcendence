@@ -1,8 +1,9 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
-from users.views import UserViewSet, CurrentUserView, FriendRequestViewSet, MeViewSet, custom_login, custom_logout, check_user_status, check_user_exists
+from users.views import UserViewSet, CurrentUserView, CustomUserBlockViewSet, FriendRequestViewSet, MeViewSet, custom_login, custom_logout, check_user_status, check_user_exists
 from game.views import GameViewSet
 from tournament.views import TournamentViewSet, ParticipantViewSet, MatchViewSet
+from auth42.views import get_config, callback
 from django.contrib import admin
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from chat.views import ChannelListView, ChannelCreateView, UserChannelsView
@@ -15,6 +16,7 @@ from users.views import UserUpdate, delete_user
 
 router = DefaultRouter()
 router.register(r"users", UserViewSet)
+router.register(r'users-blocks', CustomUserBlockViewSet, basename='users-blocks')
 router.register(r"games", GameViewSet)
 router.register(r"tournaments", TournamentViewSet)
 router.register(r'participants', ParticipantViewSet)
@@ -38,11 +40,14 @@ urlpatterns = [
     path('api/users/<str:username>/exists/', check_user_exists, name='check_user_exists'),
     path('api/users/<str:username>/status/', check_user_status, name='check_user_status'),
     path('delete/<str:username>/', delete_user, name='delete_user'),
+    
     path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("api/friend_requests/me", FriendRequestViewSet.friend_request_me),
     path("api/friend_requests/", FriendRequestViewSet.friend_request_list),
     path("api/friend_requests/<int:pk>/", FriendRequestViewSet.friend_request_detail),
+    path("auth42/config", get_config),
+    path("callback/", callback),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 handler404 = 'cabraping.views.custom_404'

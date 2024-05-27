@@ -5,10 +5,10 @@ FROM node:16-alpine
 WORKDIR /app
 
 # Copy the file 'package.json' and 'package-lock.json' (if available)
-COPY ./cabraping.fe/package*.json ./
+# COPY ./cabraping.fe/package*.json ./
 
 # Install project dependencies
-RUN npm install
+RUN npm install -g serve
 
 # Install `serve` globally
 RUN npm install -g serve
@@ -17,7 +17,7 @@ RUN npm install -g serve
 COPY ./cabraping.fe .
 
 # Build the application for production
-RUN npm run build
+# RUN npm run build
 
 # Expose the port used by your application
 EXPOSE 8080

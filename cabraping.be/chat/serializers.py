@@ -7,16 +7,17 @@ from django.contrib.auth import get_user_model
 class CustomUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ['username', 'email', 'firstName', 'lastName']
+        fields = ['id', 'username', 'email', 'firstName', 'lastName', 'avatarImageURL']
+        # fields = ['id', 'username', 'email', 'firstName']
 
 class ChannelSerializer(serializers.ModelSerializer):
     owner = CustomUserSerializer(read_only=True)
-    admins = CustomUserSerializer(read_only=True, many=True)
+    # admins = CustomUserSerializer(read_only=True, many=True)
     members = CustomUserSerializer(read_only=True, many=True)
 
     class Meta:
         model = Channel
-        fields = ['id', 'name', 'owner', 'admins', 'members', 'status', 'password', 'createdAt', 'updatedAt']
+        fields = ['id', 'name', 'owner', 'members', 'status' ]
 
 User = get_user_model()
 

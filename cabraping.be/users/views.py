@@ -11,6 +11,7 @@ from .serializers import (
     FriendRequestDataSerializer,
     FriendRequestSerializer,
     UserSerializerUpdate,
+    CustomUserSerializer
 )
 from rest_framework.decorators import action, api_view, permission_classes
 from game.serializers import GameSerializer
@@ -22,6 +23,45 @@ from rest_framework.parsers import JSONParser
 from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
 from rest_framework.views import APIView
 from .models import CustomUser
+from .serializers import BlockUserSerializer
+
+class CustomUserBlockViewSet(viewsets.GenericViewSet):
+    permission_classes = [IsAuthenticated]
+    serializer_class = BlockUserSerializer
+
+    @action(detail=False, methods=['post'])
+    def block(self, request):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            try:
+                blocked_user = CustomUser.objects.get(id=serializer.validated_data['blocked_user_id'])
+                request.user.blocked_users.add(blocked_user)
+                return Response({'status': 'User blocked'}, status=status.HTTP_200_OK)
+            except CustomUser.DoesNotExist:
+                return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=False, methods=['post'])
+    def unblock(self, request):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            try:
+                blocked_user = CustomUser.objects.get(id=serializer.validated_data['blocked_user_id'])
+                request.user.blocked_users.remove(blocked_user)
+                return Response({'status': 'User unblocked'}, status=status.HTTP_200_OK)
+            except CustomUser.DoesNotExist:
+                return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=False, methods=['get'])
+    def blocked(self, request):
+        blocked_users = request.user.blocked_users.all()
+        serializer = UserSerializer(blocked_users, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    # @action(detail=False, methods=['get'])
+    # def blocked(self, request):
+    #     blocked_users = request.user.blocked_users.all()
+    #     return Response([user.id for user in blocked_users], status=status.HTTP_200_OK)
 
 class CurrentUserView(APIView):
     permission_classes = [IsAuthenticated]
@@ -89,13 +129,20 @@ class UserViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
-class MeViewSet(RetrieveUpdateAPIView):
-    serializer_class = MeDataSerializer
+# class MeViewSet(RetrieveUpdateAPIView):
+#     serializer_class = MeDataSerializer
+#     permission_classes = [IsAuthenticated]
+
+#     def get_object(self):
+#         return self.request.user
+class MeViewSet(APIView):
     permission_classes = [IsAuthenticated]
 
-    def get_object(self):
-        return self.request.user
-
+    def get(self, request):
+        # Utiliza el serializador para devolver los datos del usuario incluyendo 'avatarImageURL'
+        # serializer = CustomUserSerializer(request.user)
+        serializer = MeDataSerializer(request.user)
+        return Response(serializer.data)
 
 class FriendRequestViewSet(viewsets.ModelViewSet):
     # queryset = FriendRequest.objects.all()
@@ -250,7 +297,7 @@ def check_user_status(request, username):
         return Response({'error': 'An unexpected error occurred'}, status=500)
 
 @api_view(['DELETE'])
-def delete_user(request, username):
+def delete_user(request, username): # rachel
     try:
         user = User.objects.get(username=username)
         user.delete()
