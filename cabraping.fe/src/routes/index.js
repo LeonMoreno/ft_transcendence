@@ -20,6 +20,8 @@ import {
 } from "../pages/Friends/funcions-js.js";
 import { Chat_js } from "../pages/Chat/funcions-js.js";
 import { Chat_html } from "../pages/Chat/html.js";
+import { Stat_js } from "../pages/Stat/functions-js.js";
+import { Stat_html } from "../pages/Stat/html.js";
 import resolveRoutes from "../utils/resolveRoutes.js";
 
 const routes = {
@@ -31,11 +33,10 @@ const routes = {
   "/chat": [Chat_html, Chat_js],
   "/chat/:id": [Chat_html, Chat_js],
   "/user": [User_html, User_js],
-  "/user/:id": [User_html, User_js],
   "/users": [Users_html, Users_js],
   "/friends": [Friends_html, Friends_js],
+  "/stats": [Stat_html, Stat_js],
   "/404": [Error404_html, Error404_js],
-  
 };
 
 const router = async () => {
@@ -61,10 +62,6 @@ const router = async () => {
   content.innerHTML = await render[0]();
   for (let index = 1; index < render.length; index++) {
     await render[index]();
-  }
-
-  if (user_location[0] !== 'chat') {
-    await Chat_js();
   }
 };
 
