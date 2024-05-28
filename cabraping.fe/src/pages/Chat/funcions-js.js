@@ -14,8 +14,8 @@ let channels = []; // Global variable to store the list of channels
 let UserName = "default";
 let channel = -1;
 let user_id = -1;
-// let communication_user_id = -1;
 let communication_user_id = -1;
+let gameId = -1;
 let channel_now = "general";
 let channel_title = "general";
 let array_channels;
@@ -64,7 +64,7 @@ export async function Chat_js() {
     const inviteGameButtonButton = document.getElementById('inviteGameButton');
     if (inviteGameButtonButton) {
       inviteGameButtonButton.disabled = true;
-      inviteGameButtonButton.addEventListener('click', () => inviteGame());
+      inviteGameButtonButton.addEventListener('click', () => inviteGame(jwt));
     }
 
     // Agregar evento para el botón "Users"
@@ -78,7 +78,7 @@ export async function Chat_js() {
     const acceptGameButton = document.getElementById('acceptGameButton');
     if (acceptGameButton) {
       acceptGameButton.disabled = true;
-      // usersRouteButton.addEventListener('click', () => window.location.href = `#user/${communication_user_id}`);
+      acceptGameButton.addEventListener('click', () => acceoptGame());
     }
 
     const button = document.getElementById('addChannel');
@@ -114,11 +114,13 @@ export async function Chat_js() {
     });
     }
 
+    checkRequestGame();
+
   }
 
-  async function inviteGame() {
+  async function inviteGame(jwt) {
 
-    const jwt = localStorage.getItem('jwt');
+    // const jwt = localStorage.getItem('jwt');
 
     const response = await fetch(`${BACKEND_URL}/api/games/`, {
       method: "POST",
@@ -133,6 +135,8 @@ export async function Chat_js() {
       }),
     });
 
+    // I send you an invitation to the game
+
     console.log("-> response");
     console.log(response);
 
@@ -142,8 +146,101 @@ export async function Chat_js() {
       showNotification('Failed to invitation user', 'error');
     }
 
+    const textarea = document.getElementById('messageTextarea');
+    textarea.value = "Sent invitation";
+    handleSendClick();
+
+
     const inviteGameButtonButton = document.getElementById('inviteGameButton');
     if (inviteGameButtonButton) inviteGameButtonButton.disabled = true;
+
+  }
+
+  async function checkRequestGame() {
+
+    const jwt = localStorage.getItem('jwt');
+    if (!jwt) {
+        return;
+    }
+
+    const payload = jwt.split('.')[1];
+    const decodedPayload = JSON.parse(atob(payload));
+    let my_id = decodedPayload.user_id; // Update user_id variable with the user ID extracted from the JWT
+
+    const responseGames = await fetch(`${BACKEND_URL}/api/games/`, {
+      headers: { Authorization: `Bearer ${jwt}` },
+    });
+    const games = await responseGames.json();
+
+    console.log("--> 🎮 games");
+    console.log(games);
+
+    const game = games.find(
+      (game) =>
+        game.invitee.id === my_id &&
+        game.inviter.id === communication_user_id &&
+        game.invitationStatus === "PENDING"
+    );
+
+    if(game){
+      gameId = game.id;
+      const acceptGameButton = document.getElementById('acceptGameButton');
+      if (acceptGameButton) acceptGameButton.disabled = false;
+
+      const inviteGameButtonButton = document.getElementById('inviteGameButton');
+      if (inviteGameButtonButton) inviteGameButtonButton.disabled = true;
+    }
+
+    // ACCEPTED game
+    const game_ACCEPTED = games.find(
+      (game) =>
+        game.invitee.id === my_id &&
+        game.invitationStatus === "ACCEPTED"
+    );
+
+    if (game_ACCEPTED){
+      window.location.href = `/#game/${gameId}`;
+    }
+
+    // send notificacion
+
+    const game_pending = games.find(
+      (game) =>
+        game.invitee.id === my_id &&
+        game.invitationStatus === "PENDING"
+    );
+
+    if(game_pending){
+      showNotificationPopup(inviter.username, "I send you an invitation to the game");
+    }
+
+}
+
+  async function acceoptGame() {
+
+    const jwt = localStorage.getItem('jwt');
+    if (!jwt) {
+        return;
+    }
+
+    const result = await fetch(
+      `${BACKEND_URL}/api/games/${gameId}/accept_game/`,
+      {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${jwt}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    const textarea = document.getElementById('messageTextarea');
+    textarea.value = "Accept Game";
+    handleSendClick();
+
+    console.log({ result: await result.json() });
+    // /game
+    window.location.href = `/#game/${gameId}`;
 
   }
 
@@ -313,10 +410,11 @@ function addMessageToChat(message) {
   }
   else{
     if (!isUserBlocked(message.userDetails.id)) {
-      showNotificationPopup(message.UserName, message.message);
+      // showNotificationPopup(message.UserName, message.message);
+      showNotificationPopup(message.UserName, "has sent you a message");
     }
-    // showNotificationPopup(message.UserName, message.message);
   }
+  checkRequestGame();
 }
 
 function isUserBlocked(userId) {
@@ -525,6 +623,7 @@ function switchChannel(newChannelId) {
 
     // Load messages from local storage
     loadMessagesFromLocalStorage(newChannelId);
+    checkRequestGame();
   }
 }
 
