@@ -86,22 +86,33 @@ export async function Stat_js() {
 function populateLeaderBoard(users, userStats) {
   const usersListElement = document.getElementById("users-list");
   if (usersListElement) {
-    usersListElement.innerHTML = users
-      .map((user) => {
-        const stats = userStats[user.id] || { wins: 0, losses: 0 };
-
-        return `
-          <tr>
-            <td style="border: 1px solid #ccc; padding: 8px; background-color: #90EE90; color: #8B0000;">${user.username}</td>
-            <td style="border: 1px solid #ccc; padding: 8px; background-color: #90EE90; color: #8B0000;">${stats.wins}</td>
-            <td style="border: 1px solid #ccc; padding: 8px; background-color: #90EE90; color: #8B0000;">${stats.losses}</td>
-            <td style="border: 1px solid #ccc; padding: 8px; background-color: #90EE90; color: #8B0000;">waitin for Rachel</td>
+    usersListElement.innerHTML = `
+            <tr class="table-dark">
+              <td class="col-1">Rank</th>
+              <td class="table-dark">Username</th>
+              <td class="table-dark">Wins</th>
+              <td class="table-dark">Losses</th>
+              <td class="table-dark">Tournament Wins</th>
           </tr>
         `;
-      })
-      .join("");
+  
+        users.forEach((user, index) => {
+          const stats = userStats[user.id] || { wins: 0, losses: 0 };
+          const rank = index + 1;
+    
+          usersListElement.innerHTML += `
+          <tr class="table-dark">
+            <td class="col-1"># ${rank}</td>
+            <td class="table-info">${user.username}</td>
+            <td class="table-success">${stats.wins}</td>
+            <td class="table-warning">${stats.losses}</td>
+            <td class="table-danger">waitin for Rachel</td>
+          </tr>
+        `;
+      });
+    }
   }
-}
+
 
 function populateMatch(gameResults) {
   const tableBody = document.getElementById("history-list");
@@ -114,10 +125,10 @@ function populateMatch(gameResults) {
         const time = new Date(game.createdAt).toLocaleTimeString();
         return `
           <tr>
-            <td>${winner}</td>
-            <td>${loser}</td>
-            <td>${date}</td>
-            <td>${time}</td>
+            <td class="table-success">${winner}</th>
+            <td class="table-warning">${loser}</th>
+            <td class="table-light">${time}</th>
+            <td class="table-light">${date}</th>
           </tr>
         `;
       })

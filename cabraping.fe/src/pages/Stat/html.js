@@ -39,14 +39,6 @@ export async function Stat_html() {
       <div class="stat-block" id="wins-losses" style="display: none;">
         <h3>Wins and Losses</h3>
         <table class="table table-bordered" id="wins-losses-table">
-          <thead>
-            <tr>
-              <th style="border: 1px solid #ccc; padding: 8px; background-color: #4CAF50; color: white;">Username</th>
-              <th style="border: 1px solid #ccc; padding: 8px; background-color: #FFA500; color: white;">Wins</th>
-              <th style="border: 1px solid #ccc; padding: 8px; background-color: #FFC0CB; color: white;">Losses</th>
-              <th style="border: 1px solid #ccc; padding: 8px; background-color: #FFA07A; color: white;">Tournament Wins</th>
-            </tr>
-          </thead>
           <tbody id="users-list"></tbody>
         </table>
       </div>
@@ -55,10 +47,10 @@ export async function Stat_html() {
         <table class="table table-bordered" id="match-history-table">
           <thead>
             <tr>
-              <th style="border: 1px solid #ccc; padding: 8px; background-color: #4CAF50; color: white;">Winner</th>
-              <th style="border: 1px solid #ccc; padding: 8px; background-color: #FFA500; color: white;">Loser</th>
-              <th style="border: 1px solid #ccc; padding: 8px; background-color: #FFC0CB; color: white;">Date</th>
-              <th style="border: 1px solid #ccc; padding: 8px; background-color: #FFC0CB; color: white;">Time</th>
+              <td class="table-dark">Winner</th>
+              <td class="table-dark">Loser</th>
+              <td class="table-dark">Time</th>
+              <td class="table-dark">Date</th>
             </tr>
           </thead>
           <tbody id="history-list"></tbody>
