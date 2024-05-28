@@ -12,12 +12,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 import os
 from pathlib import Path
 from datetime import timedelta
-
-import os
 from dotenv import load_dotenv
-
-# Load environment variables from .env file
-load_dotenv()
 
 # Access environment variables
 UID = os.getenv("UID")
@@ -25,6 +20,10 @@ SECRET = os.getenv("SECRET")
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Load environment variables from .env file
+#load_dotenv()
+load_dotenv(os.path.join(BASE_DIR, '.env'))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
@@ -139,26 +138,27 @@ DATABASES = {
 # < Docker ----------------------------------------------------------------------------------------------------------------------------
 
 #---> Local
-# CHANNEL_LAYERS = {
-#     'default': {
-#         'BACKEND': 'channels_redis.core.RedisChannelLayer',
-#         'CONFIG': {
-#             "hosts": [('127.0.0.1', 6379)],  # Cambia si tu servidor Redis está en una ubicación diferente
-#             "hosts": [('127.0.0.1', 6379)],  # Cambia si tu servidor Redis está en una ubicación diferente
-#         },
-#     },
-# }
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': 'transcendence_db',
-#         'USER': 'transcendence_user',
-#         'PASSWORD': 'transcendence_password',
-#         'HOST': 'localhost',
-#         'HOST': 'localhost',
-#         'PORT': '5432',
-#     }
-# }
+#CHANNEL_LAYERS = {
+#    'default': {
+#        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+#        'CONFIG': {
+#            "hosts": [('127.0.0.1', 6379)],  # Cambia si tu servidor Redis está en una ubicación diferente
+#            "hosts": [('127.0.0.1', 6379)],  # Cambia si tu servidor Redis está en una ubicación diferente
+#        },
+#    },
+#}
+
+#DATABASES = {
+#    'default': {
+#        'ENGINE': 'django.db.backends.postgresql',
+#        'NAME': 'transcendence_db',
+#        'USER': 'transcendence_user',
+#        'PASSWORD': 'transcendence_password',
+#        'HOST': 'localhost',
+#        'HOST': 'localhost',
+#        'PORT': '5432',
+#    }
+#}
 
 # < Local ----------------------------------------------------------------------------------------------------------------------------
 

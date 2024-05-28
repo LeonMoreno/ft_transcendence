@@ -1,16 +1,16 @@
 import { getToken } from "../../utils/get-token.js";
-import { showNotification } from "../../components/showNotification.js"
+import { showNotification } from "../../components/showNotification.js";
 
 const BACKEND_URL = "http://localhost:8000";
 
-//Function to display notifications using a modal
+// Function to display notifications using a modal
 function displayNotification(message) {
     const modal = document.getElementById('notificationModal');
     const modalMessage = document.getElementById('modalMessage');
     const closeButton = document.getElementById('closeModalButton');
 
     modalMessage.textContent = message;
-    modal.style.display = 'block'; 
+    modal.style.display = 'block';
 
     closeButton.onclick = function() {
         modal.style.display = 'none';
@@ -20,49 +20,6 @@ function displayNotification(message) {
 function displayErrorMessage(message) {
     displayNotification(message);
 }
-
-/*document.addEventListener('DOMContentLoaded', function() {
-    const tournamentId = sessionStorage.getItem('currentTournamentId');
-    if (tournamentId) {
-        fetchTournamentDetails(tournamentId);
-        monitorInvitationStatus(tournamentId);
-    } else {
-        window.location.href = '/'; // Redirect to home if no ID is found
-    }
-});
-
-async function fetchTournamentDetails(tournamentId) {
-    const response = await fetch(`${BACKEND_URL}/api/tournaments/${tournamentId}`, {
-        headers: {
-            'Authorization': `Bearer ${getToken()}`,
-            'Content-Type': 'application/json'
-        }
-    });
-    if (response.ok) {
-        const data = await response.json();
-        document.getElementById('tournamentDetails').textContent = `Tournament Name: ${data.name}`;
-        data.participants.forEach(participant => {
-            updateParticipantsList(participant.username, participant.status);
-        });
-    }
-}
-
-// Using websocket for real time updates
-function monitorInvitationStatus(tournamentId) {
-    const socket = new WebSocket(`ws://localhost:8000/ws/tournament/${tournamentId}/`);
-
-    socket.onmessage = function(event) {
-        const data = JSON.parse(event.data);
-        const participants = data.participants;
-        participants.forEach(participant => {
-            updateParticipantsList(participant.username, participant.status);
-        });
-    };
-
-    socket.onclose = function(event) {
-        console.error('WebSocket closed unexpectedly');
-    };
-}*/  
 
 async function userExists(username) {
     console.log(`Checking if user exists: ${username}`);
@@ -82,14 +39,13 @@ async function userExists(username) {
         }
 
         if (!response.ok) {
-           // throw new Error(`Error: ${response.status} ${response.statusText}`);
-           console.error(`Error checking user existence: ${response.status} ${response.statusText}`);
-           return false;
+            console.error(`Error checking user existence: ${response.status} ${response.statusText}`);
+            return false;
         }
 
         const data = await response.json();
         return data.exists;
-        
+
     } catch (error) {
         console.error('Error checking if user exists:', error);
         return false;
@@ -99,7 +55,7 @@ async function userExists(username) {
 async function checkUserOnlineStatus(username) {
     console.log(`Checking online status for user: ${username}`);
     try {
-        const exists = await userExists(username); //checks if the user exists first
+        const exists = await userExists(username); // checks if the user exists first
         if (!exists) {
             displayErrorMessage("User not found. Please double-check their nickname.");
             return null; // User does not exist
@@ -115,7 +71,6 @@ async function checkUserOnlineStatus(username) {
         console.log(`Response status: ${response.status}`);
 
         if (!response.ok) {
-           // throw new Error(`Error: ${response.status} ${response.statusText}`);
             console.error(`Error checking user online status: ${response.status} ${response.statusText}`);
             displayErrorMessage("An error occurred while checking the user's online status.");
             return null;
@@ -133,9 +88,6 @@ async function checkUserOnlineStatus(username) {
 }
 
 async function handleAddParticipant(e) {
-   /* if (e.type === 'keydown' && e.key !== 'Enter') {
-        return; // Only handle Enter key for keydown events
-    }*/
     e.preventDefault();
 
     const participantName = document.getElementById('participantNameInput').value.trim();
@@ -154,9 +106,16 @@ async function handleAddParticipant(e) {
     if (isOnline === null) {
         displayErrorMessage("User not found. Please double-check their username.");
     } else if (isOnline) {
-        const invitationSent = await sendInvitation(participantName, tournamentId);
-        if (invitationSent) {
-            updateParticipantsList(participantName, 'invited');
+        const participantId = await getParticipantId(participantName, tournamentId);
+        if (participantId) {
+            const invitationSent = await sendInvitation(participantId, participantName, tournamentId);
+            if (invitationSent) {
+                updateParticipantsList(participantName, 'invited');
+            } else {
+                displayErrorMessage("Failed to send invitation.");
+            }
+        } else {
+            displayErrorMessage("Failed to get participant ID.");
         }
     } else {
         displayErrorMessage("Participant is not online.");
@@ -167,7 +126,7 @@ async function handleAddParticipant(e) {
 
 function checkAddParticipantButton(e) {
     if (e.type === 'keydown' && e.key !== 'Enter') {
-        return; //handles only enter key for keydown events
+        return; // handles only enter key for keydown events
     }
 
     const addParticipantButton = document.getElementById('addParticipantButton');
@@ -180,11 +139,10 @@ function checkAddParticipantButton(e) {
 }
 
 // Function to send an invitation to a user
-async function sendInvitation(username, tournamentId) {
+async function sendInvitation(participantId, username, tournamentId) {
     console.log("Sending invitation to", username);
     try {
-        //const response = await fetch(`${BACKEND_URL}/api/participants/${username}/invite`, {
-        const response = await fetch(`${BACKEND_URL}/api/participants/invite`, {
+        const response = await fetch(`${BACKEND_URL}/api/participants/${participantId}/invite/`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${getToken()}`,
@@ -210,13 +168,33 @@ async function sendInvitation(username, tournamentId) {
     }
 }
 
-/*document.addEventListener('DOMContentLoaded', function() {
-    TournamentInit();
-});*/
+async function getParticipantId(username, tournamentId) {
+    try {
+        const response = await fetch(`${BACKEND_URL}/api/participants/`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${getToken()}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ username: username, tournament: tournamentId })
+        });
 
-// Initialization function to setup event listeners when the page is ready
-/*export function TournamentInit() {
+        if (response.ok) {
+            const data = await response.json();
+            return data.id; // Assuming the API returns the participant's ID
+        } else {
+            console.error('Failed to get participant ID');
+            return null;
+        }
+    } catch (error) {
+        console.error('Error getting participant ID:', error);
+        return null;
+    }
+}
+
+function TournamentInit() {
     console.log("Initializing Tournament Page");
+
     const tournamentForm = document.getElementById('tournamentForm');
     if (tournamentForm) {
         tournamentForm.addEventListener('submit', handleCreateTournament);
@@ -225,8 +203,18 @@ async function sendInvitation(username, tournamentId) {
 
     const addParticipantButton = document.getElementById('addParticipantButton');
     if (addParticipantButton) {
-        addParticipantButton.addEventListener('click', handleAddParticipant);
+        addParticipantButton.addEventListener('click', checkAddParticipantButton);
         console.log("Event listener added to add participant button");
+    }
+
+    const participantNameInput = document.getElementById('participantNameInput');
+    if (participantNameInput) {
+        participantNameInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                checkAddParticipantButton(event);
+            }
+        });
+        console.log("Event listener added for Enter key on participant name input");
     }
 
     const startTournamentButton = document.getElementById('startTournamentButton');
@@ -236,67 +224,6 @@ async function sendInvitation(username, tournamentId) {
     }
 }
 
-// Function to start the tournament
-async function startTournament() {
-    const tournamentId = sessionStorage.getItem('currentTournamentId');
-    if (!tournamentId) {
-        displayErrorMessage("No tournament ID found. Please create a tournament first.");
-        return;
-    }
-    try {
-        const response = await fetch(`${BACKEND_URL}/api/tournaments/${tournamentId}/start`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${getToken()}`
-            }
-        });
-        if (response.ok) {
-            console.log('Tournament started:', response);
-            displayNotification("Tournament is starting!");
-            window.location.href = `/tournament/waiting?tournamentId=${tournamentId}`; // Redirect to the waiting area
-        } else {
-            throw new Error('Failed to start the tournament');
-        }
-    } catch (error) {
-        console.error('Error starting the tournament:', error);
-        displayErrorMessage('Failed to start the tournament. Please try again.');
-    }
-}*/
-
-export function TournamentInit() {
-    console.log("Initializing Tournament Page");
-  
-    const tournamentForm = document.getElementById('tournamentForm');
-    if (tournamentForm) {
-      tournamentForm.addEventListener('submit', handleCreateTournament);
-      console.log("Event listener added to tournament form");
-    }
-  
-    const addParticipantButton = document.getElementById('addParticipantButton');
-    if (addParticipantButton) {
-        addParticipantButton.addEventListener('click', checkAddParticipantButton);
-        console.log("Event listener added to add participant button");
-    }
-  
-    const participantNameInput = document.getElementById('participantNameInput');
-    if (participantNameInput) {
-        participantNameInput.addEventListener('keydown', (event) => {
-            if (event.key === 'Enter') {
-                //handleAddParticipant(event);
-                checkAddParticipantButton(event);
-            }
-        });
-        console.log("Event listener added for Enter key on participant name input");
-    }
-
-    const startTournamentButton = document.getElementById('startTournamentButton');
-    if (startTournamentButton) {
-      startTournamentButton.addEventListener('click', startTournament);
-      console.log("Event listener added to start tournament button");
-    }
-  }
-  
 async function handleCreateTournament(e) {
     e.preventDefault();
     console.log("Create Tournament form submitted");
@@ -310,17 +237,17 @@ async function handleCreateTournament(e) {
         console.log('Response status:', response.status);
         if (response.ok) {
             const data = await response.json();
-            showNotification("Tournament created successfuly", "success");
+            showNotification("Tournament created successfully", "success");
             document.getElementById('tournamentNameInput').value = '';
             sessionStorage.setItem('currentTournamentId', data.id);
             updateParticipantsList('You (Creator)', 'invited', true); // Automatically adds the creator as a participant
             const addParticipantButton = document.getElementById('addParticipantButton');
             addParticipantButton.disabled = false;
-        
+
         } else {
             const errorMessage = await response.text(); // Log the error message from the response
-            console.error('Error from server:', errorMessage); 
-            throw new Error('Failed to create tournament. Server responded with an error.'); // rachel - rework this so no errors on console?
+            console.error('Error from server:', errorMessage);
+            throw new Error('Failed to create tournament. Server responded with an error.');
         }
     } catch (error) {
         console.error('Caught error:', error);
@@ -340,9 +267,9 @@ async function createTournament(tournamentName) {
         });
 
         if (!response.ok) {
-            const errorText = await response.text(); 
-            console.error('Response text:', errorText); 
-            throw new Error('Network response was not ok'); // rachel
+            const errorText = await response.text();
+            console.error('Response text:', errorText);
+            throw new Error('Network response was not ok');
         }
         return response;
 
@@ -351,7 +278,7 @@ async function createTournament(tournamentName) {
         throw error;
     }
 }
-  
+
 // Function to update the list of participants in the UI
 function updateParticipantsList(participantName, status, isCreator = false) {
     const participantsList = document.getElementById('participantsList');
@@ -381,24 +308,13 @@ function checkAllParticipantsAccepted() {
     }
     document.getElementById('startTournamentButton').disabled = !allAccepted;
 }
-  
-// Event listener for adding participant - rachel revise
-//document.getElementById('addParticipantButton').addEventListener('click', handleAddParticipant);
-//document.getElementById('participantNameInput').addEventListener('keydown', (event) => {
-//    if (event.key === 'Enter') {
- //       handleAddParticipant(event);
-//    }
-//});
 
 function startTournament(event) {
     event.preventDefault();
     console.log("Start Tournament button clicked");
-  }
-  
-  //export { TournamentInit };
-  
+}
 
-/*export {
+export {
     createTournament,
     handleCreateTournament,
     handleAddParticipant,
@@ -406,7 +322,6 @@ function startTournament(event) {
     displayErrorMessage,
     checkUserOnlineStatus,
     sendInvitation,
-    startTournament
-};*/
-
-
+    startTournament,
+    TournamentInit
+};

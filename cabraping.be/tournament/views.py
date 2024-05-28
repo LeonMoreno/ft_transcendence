@@ -105,7 +105,9 @@ class ParticipantViewSet(viewsets.ModelViewSet):
         if tournament.participants.count() >= 4:
             return Response({'error': 'Tournament already has 4 participants.'}, status=status.HTTP_400_BAD_REQUEST)
         
-        return super(ParticipantViewSet, self).create(request, *args, **kwargs)
+        participant = Participant.objects.create(user=request.user, tournament=tournament)
+        serializer = self.get_serializer(participant)
+        return Response({'id': participant.id, **serializer.data}, status=status.HTTP_201_CREATED)
 
     @action(detail=True, methods=['post'], url_path='invite')
     def invite_participant(self, request, pk=None):
