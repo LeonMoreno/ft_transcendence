@@ -56,21 +56,25 @@ export async function Stat_html() {
           <tbody id="history-list"></tbody>
         </table>
       </div>
-      <div class="stat-block" id="selfstats" style="display: none;">
-        <h3>Personal Stats</h3>
-        <table class="table table-bordered" id="self-stats-table">
-          <thead>
-            <tr>
-              <th style="border: 1px solid #ccc; padding: 8px; background-color: #4CAF50; color: white;">Username</th>
-              <th style="border: 1px solid #ccc; padding: 8px; background-color: #FFA500; color: white;">Wins</th>
-              <th style="border: 1px solid #ccc; padding: 8px; background-color: #FFC0CB; color: white;">Losses</th>
-              <th style="border: 1px solid #ccc; padding: 8px; background-color: #FFA07A; color: white;">Tournament Wins</th>
-            </tr>
-          </thead>
-          <tbody id="users-list"></tbody>
-        </table>
-      </div>
-    </div>
+  <div class="stat-block" id="selfstats" style="display: none;">
+  <h3>Personal Stats</h3>
+    <table class="table table-bordered" id="self-stats-table">
+      <tbody>
+        <tr>
+          <td class="text-center">
+            <img id="avatarImageURL" src="" class="rounded float-start w-30 h-30" alt="Avatar">
+          </td>
+          <td>
+            <div class="card-body text-center" style="width: 40rem;">
+                <h5 class="card-title">Username:</h5>
+                <p class="card-text" id="username"></p>
+              </div>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
   `;
 }
 

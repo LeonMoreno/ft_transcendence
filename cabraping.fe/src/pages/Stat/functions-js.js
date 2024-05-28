@@ -81,6 +81,10 @@ export async function Stat_js() {
   // Display the default stat block
   document.getElementById('wins-losses').style.display = 'block';
   document.querySelector('.stat-nav-link[data-target="wins-losses"]').classList.add('active');
+  document.getElementById('avatarImageURL').src = myUser.avatarImageURL;
+  document.getElementById('username').innerText = myUser.username;
+  document.getElementById('first_name').innerText = myUser.first_name;
+  document.getElementById('last_name').innerText = myUser.last_name;
 }
 
 function populateLeaderBoard(users, userStats) {
