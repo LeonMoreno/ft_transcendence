@@ -3,7 +3,34 @@ import { Stat_html } from "./html.js";
 
 const BACKEND_URL = "http://localhost:8000";
 let users = [];
-let friendRequests = [];
+
+function calculateWinsAndLosses(gameResults) {
+  const userStats = {};
+
+  gameResults.forEach(game => {
+      const { inviter, invitee, winner } = game;
+
+      // Initialize stats for inviter and invitee if not already present
+      if (!userStats[inviter.id]) {
+          userStats[inviter.id] = { wins: 0, losses: 0, username: inviter.username };
+      }
+      if (!userStats[invitee.id]) {
+          userStats[invitee.id] = { wins: 0, losses: 0, username: invitee.username };
+      }
+
+      // Update stats
+      if (winner.id === inviter.id) {
+          userStats[inviter.id].wins += 1;
+          userStats[invitee.id].losses += 1;
+      } else if (winner.id === invitee.id) {
+          userStats[invitee.id].wins += 1;
+          userStats[inviter.id].losses += 1;
+      }
+  });
+
+  return userStats;
+}
+
 
 // Function to fetch and display user statistics
 export async function Stat_js() {
@@ -35,18 +62,62 @@ export async function Stat_js() {
   }));
   users.sort((a, b) => b.wins - a.wins);
 
+  populateLeaderBoard(users, user_stat);
+  populateMatch(games);
+
+  document.querySelectorAll('.stat-nav-link').forEach(button => {
+    button.addEventListener('click', (event) => {
+      event.preventDefault();
+      const target = button.getAttribute('data-target');
+      document.querySelectorAll('.stat-block').forEach(block => {
+        block.style.display = 'none';
+      });
+      document.getElementById(target).style.display = 'block';
+      document.querySelectorAll('.stat-nav-link').forEach(btn => btn.classList.remove('active'));
+      button.classList.add('active');
+    });
+  });
+
+  // Display the default stat block
+  document.getElementById('wins-losses').style.display = 'block';
+  document.querySelector('.stat-nav-link[data-target="wins-losses"]').classList.add('active');
+}
+
+function populateLeaderBoard(users, userStats) {
   const usersListElement = document.getElementById("users-list");
   if (usersListElement) {
     usersListElement.innerHTML = users
       .map((user) => {
-        const stats = user_stat[user.id] || { wins: 0, losses: 0 };
+        const stats = userStats[user.id] || { wins: 0, losses: 0 };
 
         return `
           <tr>
-            <th style="border: 1px solid #ccc; padding: 8px; background-color: #90EE90; color: #8B0000;">${user.username}</td>
-            <th style="border: 1px solid #ccc; padding: 8px; background-color: #90EE90; color: #8B0000;">${stats.wins}</td>
-            <th style="border: 1px solid #ccc; padding: 8px; background-color: #90EE90; color: #8B0000;">${stats.losses}</td>
-            <th style="border: 1px solid #ccc; padding: 8px; background-color: #90EE90; color: #8B0000;">"Waiting for Rachel"</td>
+            <td style="border: 1px solid #ccc; padding: 8px; background-color: #90EE90; color: #8B0000;">${user.username}</td>
+            <td style="border: 1px solid #ccc; padding: 8px; background-color: #90EE90; color: #8B0000;">${stats.wins}</td>
+            <td style="border: 1px solid #ccc; padding: 8px; background-color: #90EE90; color: #8B0000;">${stats.losses}</td>
+            <td style="border: 1px solid #ccc; padding: 8px; background-color: #90EE90; color: #8B0000;">waitin for Rachel</td>
+          </tr>
+        `;
+      })
+      .join("");
+  }
+}
+
+function populateMatch(gameResults) {
+  const tableBody = document.getElementById("history-list");
+  if (tableBody) {
+    tableBody.innerHTML = gameResults
+      .map((game) => {
+        const winner = game.winner.username;
+        const loser = game.winner.id === game.inviter.id ? game.invitee.username : game.inviter.username;
+        const date = new Date(game.createdAt).toLocaleDateString();
+        const time = new Date(game.createdAt).toLocaleTimeString();
+        return `
+          <tr>
+            <td>${winner}</td>
+            <td>${loser}</td>
+            <td>${date}</td>
+            <td>${time}</td>
           </tr>
         `;
       })
@@ -57,32 +128,6 @@ export async function Stat_js() {
 // Call the Stat_js function to display user statistics
 Stat_js();
 
-function calculateWinsAndLosses(gameResults) {
-  const userStats = {};
-
-  gameResults.forEach(game => {
-      const { inviter, invitee, winner } = game;
-
-      // Initialize stats for inviter and invitee if not already present
-      if (!userStats[inviter.id]) {
-          userStats[inviter.id] = { wins: 0, losses: 0, username: inviter.username };
-      }
-      if (!userStats[invitee.id]) {
-          userStats[invitee.id] = { wins: 0, losses: 0, username: invitee.username };
-      }
-
-      // Update stats
-      if (winner.id === inviter.id) {
-          userStats[inviter.id].wins += 1;
-          userStats[invitee.id].losses += 1;
-      } else if (winner.id === invitee.id) {
-          userStats[invitee.id].wins += 1;
-          userStats[inviter.id].losses += 1;
-      }
-  });
-
-  return userStats;
-}
 
 
 
