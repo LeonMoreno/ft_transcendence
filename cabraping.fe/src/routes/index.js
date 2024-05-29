@@ -18,11 +18,13 @@ import { Friends_html } from "../pages/Friends/html.js";
 import {
   Friends_js,
 } from "../pages/Friends/funcions-js.js";
-import { Chat_js } from "../pages/Chat/funcions-js.js";
+import { Chat_js, Chat_Update_js } from "../pages/Chat/funcions-js.js";
 import { Chat_html } from "../pages/Chat/html.js";
 import { Stat_js } from "../pages/Stat/functions-js.js";
 import { Stat_html } from "../pages/Stat/html.js";
 import resolveRoutes from "../utils/resolveRoutes.js";
+
+import { connectWebSocketGlobal  } from "../components/wcGlobal.js";
 
 const routes = {
   "/": [Home_html, Home_js],
@@ -63,6 +65,11 @@ const router = async () => {
   for (let index = 1; index < render.length; index++) {
     await render[index]();
   }
+
+  if (user_location[0] !== 'chat') {
+    await Chat_Update_js();
+  }
+  connectWebSocketGlobal();
 };
 
 export default router;

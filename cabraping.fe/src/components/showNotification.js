@@ -42,10 +42,10 @@ export function showNotificationPopup(userName, message) {
   const notificationBody = document.createElement("div");
   notificationBody.className = "d-flex";
 
-  const notificationContent = document.createElement("div");
-  notificationContent.className = "toast-body";
-  notificationContent.textContent = `${userName} has sent you a message 🛜`;
-  // notificationContent.textContent = `${userName} te ha enviado un mensaje: ${message}`;
+  const notificationContent = document.createElement('div');
+  notificationContent.className = 'toast-body';
+  notificationContent.textContent = `${userName} ${message}`;
+  // notificationContent.textContent = `${userName} has sent you a message `;
 
   const closeButton = document.createElement("button");
   closeButton.type = "button";

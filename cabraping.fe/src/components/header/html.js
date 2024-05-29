@@ -31,7 +31,7 @@ export async function Header_html() {
 
     userNotificationSocket.onmessage = function (event) {
       const data = JSON.parse(event.data);
-      console.log("Message from server ", data);
+      // console.log("Message from server ", data);
 
       const userNotificationElement =
         document.getElementById("user-notification");

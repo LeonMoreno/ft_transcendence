@@ -54,10 +54,12 @@ INSTALLED_APPS = [
     'corsheaders',
     'cabraping',
     'channels',
+    'globalwc',
     'chat',
     'game',
     'users',
     'auth42',
+    'dotenv',
 ]
 
 CORS_ALLOWED_ORIGINS = [

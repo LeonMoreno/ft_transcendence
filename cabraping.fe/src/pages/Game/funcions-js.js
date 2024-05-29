@@ -41,7 +41,7 @@ export async function Game_js() {
   gameSocket.onmessage = function (event) {
     const data = JSON.parse(event.data);
 
-    console.log("Message from server ", data);
+    // console.log("Message from server ", data);
 
     handleGameState(data.message);
   };
