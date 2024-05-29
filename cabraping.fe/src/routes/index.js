@@ -18,7 +18,7 @@ import { Friends_html } from "../pages/Friends/html.js";
 import {
   Friends_js,
 } from "../pages/Friends/funcions-js.js";
-import { Chat_js } from "../pages/Chat/funcions-js.js";
+import { Chat_js, Chat_Update_js } from "../pages/Chat/funcions-js.js";
 import { Chat_html } from "../pages/Chat/html.js";
 import resolveRoutes from "../utils/resolveRoutes.js";
 
@@ -66,7 +66,7 @@ const router = async () => {
   }
 
   if (user_location[0] !== 'chat') {
-    await Chat_js();
+    await Chat_Update_js();
   }
   connectWebSocketGlobal();
 };

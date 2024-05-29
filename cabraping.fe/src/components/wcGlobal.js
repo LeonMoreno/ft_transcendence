@@ -1,6 +1,7 @@
 import { showNotificationPopup } from "./showNotification.js";
-import { Chat_js } from "../pages/Chat/funcions-js.js"
+import { Chat_Update_js } from "../pages/Chat/funcions-js.js"
 import { Friends_js } from "../pages/Friends/funcions-js.js";
+import { Users_js } from "../pages/Users/funcions-js.js";
 
 let WSsocket = null;  // Variable global para almacenar la instancia del WebSocket
 
@@ -13,6 +14,52 @@ function filterMessagesForUser(message, userId) {
 
 function FilterUSerconnect(message, userId) {
     return message.user_ids;
+}
+
+function execute_processes_by_category(message) {
+    switch (message.event) {
+        case "game_invite":
+            showNotificationPopup(message.user_name, message.message);
+            Chat_Update_js();
+            break;
+        case "channel_created":
+            showNotificationPopup(message.user_name, message.message);
+            Chat_Update_js();
+            break;
+        case "accepted_game":
+            Chat_Update_js();
+            showNotificationPopup(message.user_name, "Accept the Game. let's go");
+            window.location.href = `/#game/${message.message}`;
+            break;
+
+        default:
+            run_processes_per_message(message);
+            break;
+    }
+}
+
+
+function run_processes_per_message(message) {
+    switch (message.message) {
+        case "Send friend request":
+            Friends_js();
+            Users_js();
+            Chat_Update_js();
+            break;
+        case "Send accept friend":
+            Friends_js();
+            Users_js();
+            Chat_Update_js();
+            break;
+        case "Send delete friend":
+            Friends_js();
+            Users_js();
+            Chat_Update_js();
+            break;
+
+        default:
+            break;
+    }
 }
 
 // Función para conectar al WebSocket y escuchar mensajes
@@ -51,30 +98,13 @@ export function connectWebSocketGlobal() {
 
         // message
         if (filterMessagesForUser(message, id)){
-
-            switch (message.event) {
-                case "game_invite":
-                    showNotificationPopup(message.user_name, message.message);
-                    break;
-                case "channel_created":
-                    showNotificationPopup(message.user_name, message.message);
-                    Chat_js();
-                    break;
-                case "accepted_game":
-                    showNotificationPopup(message.user_name, "Accept the Game. let's go");
-                    window.location.href = `/#game/${message.message}`;
-                    // rediret to the game
-                    break;
-
-                default:
-                    break;
-            }
+            execute_processes_by_category(message)
         }
         if (FilterUSerconnect(message, id)){
-            // Friends_js
             localStorage.setItem('id_active_users', JSON.stringify(message.user_ids));
-            // Friends_js();
-            Chat_js();
+            Chat_Update_js();
+            Friends_js();
+            Users_js();
         }
     };
 
@@ -106,11 +136,7 @@ export function sendChannelCreatedNotifications(userId, userName, destUserId) {
         user_name: userName,
         dest_user_id: String(destUserId)
     };
-    
-    console.log("----------------------");
-    console.log("Send message");
-    console.log(message);
-    console.log("----------------------");
+
     WSsocket.send(JSON.stringify(message));
 }
 
@@ -144,6 +170,62 @@ export function sendAcceptedGameNotifications(userId, userName, destUserId, game
     const message = {
         type: "accepted_game",
         message: String(game_id),
+        user_id: String(userId),
+        user_name: userName,
+        dest_user_id: String(destUserId)
+    };
+    ;
+    WSsocket.send(JSON.stringify(message));
+}
+
+// Función para enviar un mensaje específico al WebSocket
+export function sendFriendRequestNotifications(userId, userName, destUserId) {
+
+    if (!WSsocket || WSsocket.readyState !== WebSocket.OPEN) {
+        console.error('WebSocket is not connected');
+        return;
+    }
+
+    const message = {
+        type: "notify",
+        message: "Send friend request",
+        user_id: String(userId),
+        user_name: userName,
+        dest_user_id: String(destUserId)
+    };
+    ;
+    WSsocket.send(JSON.stringify(message));
+}
+
+// Función para enviar un mensaje específico al WebSocket
+export function sendFriendAcceptdNotifications(userId, userName, destUserId) {
+
+    if (!WSsocket || WSsocket.readyState !== WebSocket.OPEN) {
+        console.error('WebSocket is not connected');
+        return;
+    }
+
+    const message = {
+        type: "notify",
+        message: "Send accept friend",
+        user_id: String(userId),
+        user_name: userName,
+        dest_user_id: String(destUserId)
+    };
+    ;
+    WSsocket.send(JSON.stringify(message));
+}
+
+export function sendFriendDeletedNotifications(userId, userName, destUserId) {
+
+    if (!WSsocket || WSsocket.readyState !== WebSocket.OPEN) {
+        console.error('WebSocket is not connected');
+        return;
+    }
+
+    const message = {
+        type: "notify",
+        message: "Send accept friend",
         user_id: String(userId),
         user_name: userName,
         dest_user_id: String(destUserId)

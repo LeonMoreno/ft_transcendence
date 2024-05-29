@@ -1,4 +1,6 @@
+import { sendFriendAcceptdNotifications, sendFriendDeletedNotifications } from "../../components/wcGlobal.js";
 import { getToken } from "../../utils/get-token.js";
+import { showActiveFriends } from "../Chat/funcions-js.js";
 
 const BACKEND_URL = "http://localhost:8000";
 let myUserData = {};
@@ -33,6 +35,10 @@ export async function FriendsRender() {
   await fetchMyUserData();
 
   const friendsListElement = document.getElementById("friends-list");
+  if (!friendsListElement)
+  {
+    return null
+  }
   friendsListElement.innerHTML = "";
 
   const friends = myUserData.friends || []; // Define friends here
@@ -60,10 +66,24 @@ export async function FriendsRender() {
           game.inviter.id === friend.id &&
           game.invitationStatus === "PENDING"
       );
+
+      // showActiveFriends
+
+      let friendActive =  showActiveFriends(myUserData.friends, friend.id);
+      let HTML_friendActive = "";
+
+      if (typeof(friendActive) === "boolean" && friendActive === true){
+        HTML_friendActive = `<p class="mb-0 ms-3 rounded-circle bg-success" style="height: 20px; width: 20px;"></p>`
+      }
+      if (typeof(friendActive) === "boolean" &&  friendActive === false){
+        HTML_friendActive = `<p class="mb-0 ms-3 rounded-circle bg-secondary" style="height: 20px; width: 20px;" ></p>`
+      }
+
       return `<li id="${
         friend.id
       }" class="list-group-item d-flex gap-4 align-items-center">
-    <h3>${friend.username}</h3>
+      <h3>${friend.username}</h3>
+      ${HTML_friendActive}
       <button type="button" class="btn btn-sm btn-primary" data-action="invite-game"
       data-id="${friend.id}">Invite to a game</button>
     ${
@@ -141,6 +161,9 @@ export async function FriendRequestsRender() {
   const friendRequestsListElement = document.getElementById(
     "friend-requests-list"
   );
+  if (!friendRequestsListElement){
+    return null;
+  }
   friendRequestsListElement.innerHTML = "";
 
   const responseFriendRequests = await fetch(
@@ -163,18 +186,21 @@ export async function FriendRequestsRender() {
 
   const friendRequestsDataString = friendRequests
     .map((friendRequest) => {
-      return `<li id="${friendRequest.id}" class="list-group-item d-flex gap-4 align-items-center">
-    <h3>${friendRequest.from_user.username}</h3>
+      return `
+  <li id="${friendRequest.id}" class="list-group-item d-flex gap-4 align-items-center">
+      <h3>${friendRequest.from_user.username}</h3>
     <div className="d-flex gap-4">
       <button
         type="button"
         class="btn btn-sm btn-primary"
         data-action="confirm"
+        data-from-id="${friendRequest.from_user.id}"
         data-id="${friendRequest.id}">Confirm</button>
-      <button
+        <button
         type="button"
         class="btn btn-sm btn-secondary "
         data-action="delete"
+        data-from-id="${friendRequest.from_user.id}"
         data-id="${friendRequest.id}">Delete</button>
     </div>
   </li>`;
@@ -195,6 +221,7 @@ export async function FriendRequestsRender() {
   confirmButtonElements.forEach((button) => {
     button.addEventListener("click", async (event) => {
       const friendRequestId = event.target.getAttribute("data-id");
+      const fromiId = event.target.getAttribute("data-from-id");
 
       await fetch(`${BACKEND_URL}/api/friend_requests/${friendRequestId}/`, {
         method: "PUT",
@@ -207,12 +234,14 @@ export async function FriendRequestsRender() {
 
       FriendsRender();
       FriendRequestsRender();
+      sendFriendAcceptdNotifications(myUserData.id, myUserData.username, fromiId)
     });
   });
 
   deleteButtonElements.forEach((button) => {
     button.addEventListener("click", async (event) => {
       const friendRequestId = event.target.getAttribute("data-id");
+      const fromiId = event.target.getAttribute("data-from-id");
 
       const response = await fetch(
         `${BACKEND_URL}/api/friend_requests/${friendRequestId}/`,
@@ -224,6 +253,7 @@ export async function FriendRequestsRender() {
 
       FriendsRender();
       FriendRequestsRender();
+      sendFriendDeletedNotifications(myUserData.id, myUserData.username, fromiId);
     });
   });
 }

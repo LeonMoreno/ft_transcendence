@@ -22,6 +22,37 @@ let channel_title = "general";
 let array_channels;
 let myUser = null;
 
+export async function Chat_Update_js() {
+  const jwt = localStorage.getItem('jwt');
+  if (!jwt) {
+      return;
+  }
+
+  // Extract user_id from JWT
+  user_id = getUserIdFromJWT;
+  
+  const responseMyUser = await fetch(`${BACKEND_URL}/api/me/`, {
+    headers: { Authorization: `Bearer ${jwt}` },
+  });
+  myUser = await responseMyUser.json();
+
+  if (myUser.code === "user_not_found" || myUser.code === "token_not_valid") {
+    window.location.replace("/#logout");
+  }
+  UserName = myUser.username;
+
+  channels = await getUserChannels(myUser.id);
+
+  if (channels.length > 0) {
+    updateChannelList(channels); // Call the new function to update the channels dropdown
+    channel = channels[0].id; // Sets the first channel as the current channel
+    // Subscribe to all channels
+    channels.forEach(channel => {
+      createWebSocketConnection(channel.id);
+  });
+  }
+}
+
 export async function Chat_js() {
 
     const jwt = localStorage.getItem('jwt');
@@ -48,18 +79,12 @@ export async function Chat_js() {
     });
     myUser = await responseMyUser.json();
 
-    console.log("----------------");
-    console.log("myUser");
-    console.log(myUser);
-    console.log("----------------");
     if (myUser.code === "user_not_found" || myUser.code === "token_not_valid") {
       window.location.replace("/#logout");
     }
     UserName = myUser.username;
 
     blocks_users_frontend(jwt);
-
-    showActiveFriends(myUser.friends);
 
 
     // Agregar evento para el botón "Block User"
@@ -90,7 +115,6 @@ export async function Chat_js() {
     }
 
     const button = document.getElementById('addChannel');
-    console.log(button);
     if (button) {
       button.addEventListener('click', handleButtonClick);
     }
@@ -123,28 +147,30 @@ export async function Chat_js() {
     }
 
     checkRequestGame();
-
   }
 
   // Función para mostrar amigos conectados
-function showActiveFriends(friends) {
+export function showActiveFriends(friends, check_id) {
+
+  if (!friends.some(friend => String(friend.id) === String(check_id))){
+    return null
+  }
+
   const activeUserIds = JSON.parse(localStorage.getItem('id_active_users')) || [];
   const activeFriends = friends.filter(friend => activeUserIds.includes(String(friend.id)));
-  // const activeUser = usersList.filter(friend => activeUserIds.includes(friend.id));
 
   console.log("🇲🇽🇲🇽🇲🇽🇲🇽");
   console.log("friends:", friends);
   console.log("activeFriends:", activeFriends);
 
-  const activeFriendsList = document.getElementById('active-friends-list');
-    if (activeFriendsList) {
-        activeFriendsList.innerHTML = '';
-        activeFriends.forEach(friend => {
-            const friendItem = document.createElement('li');
-            friendItem.textContent = friend.username;
-            activeFriendsList.appendChild(friendItem);
-        });
-    }
+
+  if (activeFriends[0] && String(activeFriends[0].id) === String(check_id)) {
+    console.log("----> showActiveFriends 🍀");
+    return true
+  }
+
+  console.log("----> showActiveFriends 🚨");
+  return false
 }
 
   async function inviteGame(jwt) {
@@ -174,11 +200,6 @@ function showActiveFriends(friends) {
     } else {
       showNotification('Failed to invitation user', 'error');
     }
-
-    const textarea = document.getElementById('messageTextarea');
-    textarea.value = "Sent invitation";
-    handleSendClick();
-
 
     const inviteGameButtonButton = document.getElementById('inviteGameButton');
     if (inviteGameButtonButton) inviteGameButtonButton.disabled = true;
@@ -263,10 +284,6 @@ function showActiveFriends(friends) {
       }
     );
 
-    const textarea = document.getElementById('messageTextarea');
-    textarea.value = "Accept Game";
-    handleSendClick();
-
     sendAcceptedGameNotifications(user_id, UserName, communication_user_id, gameId);
     console.log({ result: await result.json() });
     // /game
@@ -296,8 +313,6 @@ function showActiveFriends(friends) {
       body: JSON.stringify({ blocked_user_id: communication_user_id }),
     });
 
-    console.log("--> response")
-    console.log(response)
     switchChannel(-1);
     updateChannelList(channels);
     if (response.ok) {
@@ -515,8 +530,8 @@ function updateChannelList(channels) {
     );
 
 
-      console.log("💡 isBlocked:");
-      console.log(isBlocked);
+      // console.log("💡 isBlocked:");
+      // console.log(isBlocked);
 
       if (!isBlocked){
         // const option = document.createElement('option');
@@ -549,9 +564,25 @@ function updateChannelList(channels) {
           // option.textContent = "No disponible";
           option_name.textContent = "No disponible";
         }
-        // channelsDropdown.appendChild(option);
+        let friend_status = showActiveFriends(myUser.friends, differentMember.id);
+
         option_component.appendChild(option_img);
         option_component.appendChild(option_name);
+
+        if (typeof(friend_status) === "boolean"){
+
+          const option_frind = document.createElement('p');
+          option_frind.style.height = "20px";
+          option_frind.style.width = "20px";
+
+          if (friend_status === true){
+            option_frind.className = 'mb-0 ms-3 rounded-circle bg-success';
+          }else{
+            option_frind.className = 'mb-0 ms-3 rounded-circle bg-secondary';
+          }
+          option_component.appendChild(option_frind);
+        }
+
         channelsDiv.appendChild(option_component);
 
 
@@ -582,7 +613,7 @@ function updateChannelList(channels) {
 }
 
 function switchChannel(newChannelId) {
-  console.log("--> switchChannel:", newChannelId);
+  // console.log("--> switchChannel:", newChannelId);
   // Update the current channel
   channel_now = newChannelId;
 
@@ -619,7 +650,7 @@ function switchChannel(newChannelId) {
     const channelHeader = document.getElementById('channel-title');
     if (channelHeader) channelHeader.textContent = "No Channel Selected";
 
-    console.log("---- restar");
+    // console.log("---- restar");
 
   }
   else{
@@ -721,14 +752,14 @@ function changeNameChanel(channel) {
     communication_user_id = channel.members.find(member => member.username !== UserName).id;
   }
 
-  console.log("----> change communication_user_id:");
-  console.log(communication_user_id);
+  // console.log("----> change communication_user_id:");
+  // console.log(communication_user_id);
   // Update the header with the selected channel's name
   const channelHeader = document.getElementById("channel-title");
   if (channelHeader) {
     channelHeader.textContent = `${channel_title}`;
   }
-  console.log("---> 🤖🤖🤖 change name :", channel_title);
+  // console.log("---> 🤖🤖🤖 change name :", channel_title);
 }
 
 // Function to create a WebSocket connection
