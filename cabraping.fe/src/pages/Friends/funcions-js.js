@@ -23,8 +23,6 @@ export async function fetchMyUserData() {
     headers: { Authorization: `Bearer ${jwt}` },
   });
   myUserData = await responseMe.json();
-  console.log("--> myUserData");
-  console.log(myUserData);
   if (!myUserData) {
     return null;
   }
@@ -60,11 +58,23 @@ export async function FriendsRender() {
 
   friendsListElement.innerHTML = friends
     .map((friend) => {
-      const game = games.find(
+      // Go to the game or Invite to a game
+      const inviterToGame = games.find((game) => {
+        return (
+          game.inviter.id === myUserData.id &&
+          game.invitee.id === friend.id &&
+          game.invitationStatus !== "FINISHED"
+        );
+      });
+
+      // Accept to join the game
+      const invitedToGame = games.find(
         (game) =>
           game.invitee.id === myUserData.id &&
           game.inviter.id === friend.id &&
-          game.invitationStatus === "PENDING"
+          game.invitationStatus !== "FINISHED" &&
+          (game.invitationStatus === "PENDING" ||
+            game.invitationStatus === "ACCEPTED")
       );
 
       // showActiveFriends
@@ -87,11 +97,12 @@ export async function FriendsRender() {
       <button type="button" class="btn btn-sm btn-primary" data-action="invite-game"
       data-id="${friend.id}">Invite to a game</button>
     ${
-      game
-        ? ` <button type="button"
-      class="btn btn-sm btn-secondary"
-      data-action="accept-game"
-      data-id="${game.id}">Accept to join the game</button>`
+      invitedToGame
+        ? `
+      <button type="button"
+        class="btn btn-sm btn-primary"
+        data-action="accept-game"
+        data-id="${invitedToGame.id}">Accept to join the game</button>`
         : ""
     }
     </li>`;
@@ -123,8 +134,6 @@ export async function FriendsRender() {
         }),
       });
 
-      console.log({ result: await result.json() });
-
       FriendsRender();
       FriendRequestsRender();
     });
@@ -145,8 +154,6 @@ export async function FriendsRender() {
         }
       );
 
-      console.log({ result: await result.json() });
-      // /game
       window.location.href = `/#game/${gameId}`;
 
       FriendsRender();

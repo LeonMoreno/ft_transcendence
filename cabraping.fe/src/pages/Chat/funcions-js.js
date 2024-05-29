@@ -51,6 +51,8 @@ export async function Chat_Update_js() {
       createWebSocketConnection(channel.id);
   });
   }
+
+  checkRequestGame();
 }
 
 export async function Chat_js() {
@@ -175,6 +177,14 @@ export function showActiveFriends(friends, check_id) {
 
   async function inviteGame(jwt) {
 
+    if (communication_user_id < 1){
+      return
+    }
+
+
+    console.log("✈️✈️✈️");
+    console.log("myUser.id:",myUser.id, ", communication_user_id:", communication_user_id);
+
 
     const response = await fetch(`${BACKEND_URL}/api/games/`, {
       method: "POST",
@@ -184,7 +194,7 @@ export function showActiveFriends(friends, check_id) {
       },
       body: JSON.stringify({
         invitationStatus: "PENDING",
-        inviter: user_id,
+        inviter: myUser.id,
         invitee: communication_user_id,
       }),
     });
@@ -225,6 +235,12 @@ export function showActiveFriends(friends, check_id) {
     console.log("--> 🎮 games");
     console.log(games);
 
+    console.log("---> 🎮 my_id:", my_id, ", communication_user_id:", communication_user_id);
+    console.log("---> 🎮🎮🎮 leve-1:", games.find( (game) => game.invitee.id === Number(my_id) ));
+    console.log("---> 🎮🎮🎮 leve-2:", games.find( (game) => game.invitee.id === Number(my_id) && game.inviter.id === Number(communication_user_id) ));
+    console.log("---> 🎮🎮🎮 leve-2:", games.find( (game) => game.invitee.id === Number(my_id) && game.inviter.id === Number(communication_user_id) && game.invitationStatus === "PENDING" ));
+
+
     const game = games.find(
       (game) =>
         game.invitee.id === my_id &&
@@ -232,6 +248,7 @@ export function showActiveFriends(friends, check_id) {
         game.invitationStatus === "PENDING"
     );
 
+    console.log("--> 🎮🎮 game:", game);
     if(game){
       gameId = game.id;
       const acceptGameButton = document.getElementById('acceptGameButton');
@@ -261,7 +278,7 @@ export function showActiveFriends(friends, check_id) {
     );
 
     if(game_pending){
-      showNotificationPopup(inviter.username, "I send you an invitation to the game");
+      showNotificationPopup(game_pending.inviter.username, "I send you an invitation to the game");
     }
 
 }
@@ -561,7 +578,6 @@ function updateChannelList(channels) {
           option_img.src = differentMember.avatarImageURL;
 
         } else {
-          // option.textContent = "No disponible";
           option_name.textContent = "No disponible";
         }
         let friend_status = showActiveFriends(myUser.friends, differentMember.id);
@@ -603,13 +619,6 @@ function updateChannelList(channels) {
     });
 
   }
-
-
-  // Set up an event listener to handle channel changes
-  // channelsDropdown.addEventListener('change', (event) => {
-  //   const selectedChannelId = event.target.value;
-  //   switchChannel(selectedChannelId); // Function to handle channel switch
-  // });
 }
 
 function switchChannel(newChannelId) {

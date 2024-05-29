@@ -17,6 +17,9 @@ function FilterUSerconnect(message, userId) {
 }
 
 function execute_processes_by_category(message) {
+    console.log("🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉");
+    console.log("execute_processes_by_category");
+    console.log("🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉");
     switch (message.event) {
         case "game_invite":
             showNotificationPopup(message.user_name, message.message);
@@ -143,6 +146,9 @@ export function sendChannelCreatedNotifications(userId, userName, destUserId) {
 // Función para enviar un mensaje específico al WebSocket
 export function sendGameInvataeNotifications(userId, userName, destUserId) {
 
+    console.log("💊💊💊💊💊💊💊💊💊");
+    console.log("sendGameInvataeNotifications");
+    console.log("💊💊💊💊💊💊💊💊💊");
     if (!WSsocket || WSsocket.readyState !== WebSocket.OPEN) {
         console.error('WebSocket is not connected');
         return;
