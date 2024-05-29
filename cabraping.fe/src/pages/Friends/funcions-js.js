@@ -52,18 +52,23 @@ export async function FriendsRender() {
 
   friendsListElement.innerHTML = friends
     .map((friend) => {
-      const inviterToGame = games.find(
-        (game) =>
+      // Go to the game
+      const inviterToGame = games.find((game) => {
+        return (
           game.inviter.id === myUserData.id &&
           game.invitee.id === friend.id &&
-          game.invitationStatus === "PENDING"
-      );
+          game.invitationStatus === "ACCEPTED" &&
+          game.invitationStatus !== "FINISHED"
+        );
+      });
 
+      // Accept invitation
       const invitedToGame = games.find(
         (game) =>
           game.invitee.id === myUserData.id &&
           game.inviter.id === friend.id &&
-          game.invitationStatus === "PENDING"
+          game.invitationStatus !== "PENDING" &&
+          game.invitationStatus !== "FINISHED"
       );
 
       return `<li id="${friend.id}"
@@ -71,10 +76,10 @@ export async function FriendsRender() {
         <h3>${friend.username}</h3>
        ${
          inviterToGame
-           ? `<a href="/#game/${inviterToGame.gameId}"
+           ? `<a href="/#game/${inviterToGame.id}"
        class="btn btn-sm btn-primary">Go to the game</button>`
            : `<button type="button" class="btn btn-sm btn-secondary" data-action="invite-game"
-       data-id="${friend.id}">Invite friend to a game</button>`
+       data-id="${friend.id}">Invite to a game</button>`
        }
     ${
       invitedToGame
@@ -82,7 +87,7 @@ export async function FriendsRender() {
       <button type="button"
         class="btn btn-sm btn-primary"
         data-action="accept-game"
-        data-id="${invitedToGame.id}">Accept friend to join the game</button>`
+        data-id="${invitedToGame.id}">Accept to join the game</button>`
         : ""
     }
     </li>`;
