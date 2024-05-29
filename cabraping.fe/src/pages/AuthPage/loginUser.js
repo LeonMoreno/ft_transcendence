@@ -1,4 +1,4 @@
-import { showNotification } from "../../components/showNotification.js"
+import { showNotification } from "../../components/showNotification.js";
 
 // Function to log in
 export function loginUser(username, password) {
@@ -9,26 +9,26 @@ export function loginUser(username, password) {
     },
     body: JSON.stringify({ username, password }),
   })
-  .then(response => {
-    if (response.ok) {
+    .then((response) => {
+      if (response.ok) {
         showNotification("successful login", "success");
         return response.json();
-    } else {
+      } else {
         showNotification("Incorrect username or password", "error");
-        throw new Error('Login failed');
-    }
-  })
-  .then(data => {
-    console.log("data.access");
-    console.log(data.access);
+        throw new Error("Login failed");
+      }
+    })
+    .then((data) => {
+      // console.log("data.access");
+      // console.log(data.access);
 
-    localStorage.setItem('jwt', data.access);
-    // window.location.href = '/#';
-    setTimeout(() => {
-      window.location.href = '/#';
-  }, 500);
-  })
-  .catch((error) => {
-    console.error('Error:', error);
-  });
+      localStorage.setItem("jwt", data.access);
+      // window.location.href = '/#';
+      setTimeout(() => {
+        window.location.href = "/#";
+      }, 500);
+    })
+    .catch((error) => {
+      console.error("Error:", error);
+    });
 }

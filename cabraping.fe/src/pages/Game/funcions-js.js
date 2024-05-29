@@ -1,43 +1,48 @@
 import { getToken } from "../../utils/get-token.js";
-import { getHash } from "../../utils/getHash.js";
+import { getHash } from "../../utils/getHash";
 const BACKEND_URL = "http://localhost:8000";
 
 export async function Game_js() {
   const jwt = getToken();
-  let gameId = getHash();
+  const gameId = getHash();
 
-  if (gameId === "/") {
-    return;
-  }
-
-  // Get my user
+  if (gameId === "/") return;
 
   const responseGame = await fetch(`${BACKEND_URL}/api/games/${gameId}/`, {
     headers: { Authorization: `Bearer ${jwt}` },
   });
-  let game = await responseGame.json();
 
-  // console.log({ game });
+  const game = await responseGame.json();
 
-  // Check if the game status is not ACCEPTED, redirect to somewhere
-  // PENDING, FINISHED
+  const gameIdElement = document.getElementById("game-id");
+  gameIdElement.innerText = game.id;
 
-  // Check if my user is not one of the inviter/invitee in the game
-  // redirect to somewhere
-
-  if (game.status === "FINISHED") {
+  if (responseGame.status !== 200 || game.invitationStatus === "FINISHED")
     return;
-  }
+
+  let leftPlayer = {
+    ...game.inviter,
+    score: game?.inviterScore || 0,
+    canPlay: false,
+  };
+
+  let rightPlayer = {
+    ...game.invitee,
+    score: game?.inviteeScore || 0,
+    canPlay: false,
+  };
 
   const gameSocket = new WebSocket(`ws://localhost:8000/ws/game/${game.id}/`);
 
   gameSocket.onopen = function (event) {
-    console.log("WebSocket connection established");
+    console.log("Game socket connected");
   };
 
   gameSocket.onmessage = function (event) {
     const data = JSON.parse(event.data);
-    // console.log("Message from server ", data);
+
+    console.log("Message from server ", data);
+
     handleGameState(data.message);
   };
 
@@ -47,7 +52,7 @@ export async function Game_js() {
         `Connection closed cleanly, code=${event.code}, reason=${event.reason}`
       );
     } else {
-      console.log("Connection died");
+      console.log("Game socket connection died");
     }
   };
 
@@ -57,29 +62,16 @@ export async function Game_js() {
 
   const canvasElement = document.getElementById("game");
   const context = canvasElement.getContext("2d");
+
   const leftPaddleScoreElement = document.getElementById("left-paddle-score");
   const rightPaddleScoreElement = document.getElementById("right-paddle-score");
 
-  // const grid = 15;
   const grid = 5;
-
   const paddleHeight = grid * 5;
   const maxPaddleY = canvasElement.height - grid - paddleHeight;
 
-  // var ballSpeed = 5;
-  // var paddleSpeed = 6;
   var paddleSpeed = 3;
   var ballSpeed = 0.5;
-
-  let leftPlayer = {
-    ...game.inviter,
-    score: 0,
-  };
-
-  let rightPlayer = {
-    ...game.invitee,
-    score: 0,
-  };
 
   let leftPaddle = {
     x: grid * 2,
@@ -195,9 +187,6 @@ export async function Game_js() {
           inviteeScore: rightPlayer.score,
         };
 
-        console.log({ requestBody });
-        // Stop the game loop later
-
         const response = await fetch(
           `${BACKEND_URL}/api/games/${gameId}/finish_game/`,
           {
@@ -211,8 +200,6 @@ export async function Game_js() {
         );
 
         const result = response.json;
-        console.log({ result });
-        window.location = "/#friends";
 
         return;
       }
