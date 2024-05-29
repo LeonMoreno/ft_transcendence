@@ -32,6 +32,22 @@ export async function Header_html() {
     userNotificationSocket.onmessage = function (event) {
       const data = JSON.parse(event.data);
       console.log("Message from server ", data); // only get { message: "" }
+
+      const userNotificationElement =
+        document.getElementById("user-notification");
+
+      if (data.status === "GAME_ACCEPTED") {
+        userNotificationElement.innerHTML = `
+        <div class="d-flex gap-2">
+          <span>${data.message}</span>
+          <a href="/#game/${data.game_id}" class="btn btn-sm btn-secondary">
+            Go to the game
+          </a>
+        </div>
+        `;
+      } else {
+        userNotificationElement.innerText = data.message;
+      }
     };
 
     userNotificationSocket.onclose = function (event) {
@@ -53,9 +69,11 @@ export async function Header_html() {
       <a class="navbar-brand" href="#">
         <img src="${image}" alt="Logo" style="height: 50px;">
       </a>
+      
       <button class="navbar-toggler" type="button" id="navbarToggle">
         <span class="navbar-toggler-icon"></span>
       </button>
+      
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav">
           ${
@@ -76,8 +94,14 @@ export async function Header_html() {
       ${
         isAuthenticated
           ? `
-        <div>
-          <a href="/#user" class="me-3 text-decoration-none text-dark">${myUser.username}</a>
+        <div class="d-flex gap-4">
+          <div id="user-notification">
+            <!-- -->
+          </div>
+
+          <a href="/#user" class="me-3 text-decoration-none text-dark">
+            <b>${myUser.username}</b>
+          </a>
           <a href="/#logout" class="btn btn-primary">Logout</a>
         </div>
       `
