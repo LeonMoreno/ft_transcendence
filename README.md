@@ -61,15 +61,15 @@ This will start the Redis service and configure it to start automatically at boo
 
 ## pip intall
 
-- pip install -r pip_environment_dependencies.txt
+```sh
+pip install -r pip_environment_dependencies.txt
+```
 
 ### PosgresSQL
 
 Migrate the database. You must have a database named "transcendence_db"
 
 ```sh
-
-
 python3 manage.py makemigrations chat users
 ```
 

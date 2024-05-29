@@ -50,8 +50,6 @@ export async function FriendsRender() {
   });
   const games = await responseGames.json();
 
-  console.log({ game: games[games.length - 1] });
-
   friendsListElement.innerHTML = friends
     .map((friend) => {
       // Go to the game or Invite to a game
@@ -59,8 +57,7 @@ export async function FriendsRender() {
         return (
           game.inviter.id === myUserData.id &&
           game.invitee.id === friend.id &&
-          game.invitationStatus !== "FINISHED" &&
-          game.invitationStatus === "ACCEPTED"
+          game.invitationStatus !== "FINISHED"
         );
       });
 
@@ -141,8 +138,6 @@ export async function FriendsRender() {
         }
       );
 
-      console.log({ result: await result.json() });
-      // /game
       window.location.href = `/#game/${gameId}`;
 
       FriendsRender();

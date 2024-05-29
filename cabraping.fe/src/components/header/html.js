@@ -26,17 +26,17 @@ export async function Header_html() {
     );
 
     userNotificationSocket.onopen = function (event) {
-      console.log("User notification socket connected");
+      // console.log("User notification socket connected");
     };
 
     userNotificationSocket.onmessage = function (event) {
       const data = JSON.parse(event.data);
-      console.log("Message from server ", data); // only get { message: "" }
+      console.log("Message from server ", data);
 
       const userNotificationElement =
         document.getElementById("user-notification");
 
-      if (data.status === "GAME_ACCEPTED") {
+      if (data.status === "GAME_ACCEPTED" || data.status === "GAME_INVITED") {
         userNotificationElement.innerHTML = `
         <div class="d-flex gap-2">
           <span>${data.message}</span>

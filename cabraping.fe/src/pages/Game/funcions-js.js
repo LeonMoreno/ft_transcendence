@@ -14,8 +14,23 @@ export async function Game_js() {
 
   const game = await responseGame.json();
 
+  const gameIdElement = document.getElementById("game-id");
+  gameIdElement.innerText = game.id;
+
   if (responseGame.status !== 200 || game.invitationStatus === "FINISHED")
     return;
+
+  let leftPlayer = {
+    ...game.inviter,
+    score: game?.inviterScore || 0,
+    canPlay: false,
+  };
+
+  let rightPlayer = {
+    ...game.invitee,
+    score: game?.inviteeScore || 0,
+    canPlay: false,
+  };
 
   const gameSocket = new WebSocket(`ws://localhost:8000/ws/game/${game.id}/`);
 
@@ -25,7 +40,9 @@ export async function Game_js() {
 
   gameSocket.onmessage = function (event) {
     const data = JSON.parse(event.data);
-    // console.log("Message from server ", data);
+
+    console.log("Message from server ", data);
+
     handleGameState(data.message);
   };
 
@@ -35,7 +52,7 @@ export async function Game_js() {
         `Connection closed cleanly, code=${event.code}, reason=${event.reason}`
       );
     } else {
-      console.log("Connection died");
+      console.log("Game socket connection died");
     }
   };
 
@@ -45,28 +62,16 @@ export async function Game_js() {
 
   const canvasElement = document.getElementById("game");
   const context = canvasElement.getContext("2d");
+
   const leftPaddleScoreElement = document.getElementById("left-paddle-score");
   const rightPaddleScoreElement = document.getElementById("right-paddle-score");
 
   const grid = 5;
-
   const paddleHeight = grid * 5;
   const maxPaddleY = canvasElement.height - grid - paddleHeight;
 
   var paddleSpeed = 3;
   var ballSpeed = 0.5;
-
-  console.log({ game });
-
-  let leftPlayer = {
-    ...game.inviter,
-    score: game?.inviterScore || 0,
-  };
-
-  let rightPlayer = {
-    ...game.invitee,
-    score: game?.inviteeScore || 0,
-  };
 
   let leftPaddle = {
     x: grid * 2,
@@ -182,9 +187,6 @@ export async function Game_js() {
           inviteeScore: rightPlayer.score,
         };
 
-        console.log({ requestBody });
-        // Stop the game loop later
-
         const response = await fetch(
           `${BACKEND_URL}/api/games/${gameId}/finish_game/`,
           {
@@ -198,7 +200,6 @@ export async function Game_js() {
         );
 
         const result = response.json;
-        console.log({ result });
 
         return;
       }

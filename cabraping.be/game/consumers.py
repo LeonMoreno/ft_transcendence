@@ -1,4 +1,5 @@
 import json
+from rest_framework_simplejwt.tokens import AccessToken
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.layers import get_channel_layer
 
@@ -13,13 +14,19 @@ class GameConsumer(AsyncWebsocketConsumer):
             self.channel_name
         )
 
+        # Get the user ID
+        # data_json = json.loads(text_data)
+        # user_id = data_json.user_id
+        # print(f"User ID: {user_id}")
+
         await self.accept()
         await self.channel_layer.group_send(
             self.game_group_name,
             {
                 "type": "game_state_message",
-                "message": "Game state message",
-                "sender_channel_name": self.channel_name
+                "sender_channel_name": self.channel_name,
+                "message": "A player joined the game",
+                # "user_id": user_id
             }
         )
 

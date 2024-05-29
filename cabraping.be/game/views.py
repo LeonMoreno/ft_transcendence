@@ -14,6 +14,23 @@ class GameViewSet(viewsets.ModelViewSet):
     queryset = Game.objects.all()
     serializer_class = GameSerializer
 
+    # When creating a new game
+    # Send a notification to the invitee
+    def perform_create(self, serializer):
+        game = serializer.save()
+        
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            f'user_{game.invitee.id}',
+            {
+                'type': 'user_notification_message',
+                'message': 'You are being invited to a game',
+                'status': 'GAME_INVITED',
+                'user_id': game.invitee.id,
+                'game_id': game.id
+            }
+        )
+
     # Delete all games
     @action(detail=False, methods=["delete"])
     def delete_all(self, request):
