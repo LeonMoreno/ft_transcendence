@@ -22,6 +22,8 @@ import { Chat_js } from "../pages/Chat/funcions-js.js";
 import { Chat_html } from "../pages/Chat/html.js";
 import resolveRoutes from "../utils/resolveRoutes.js";
 
+import { connectWebSocketGlobal  } from "../components/wcGlobal.js";
+
 const routes = {
   "/": [Home_html, Home_js],
   "/auth": [AuthPage_html, AuthPage_js],
@@ -66,6 +68,7 @@ const router = async () => {
   if (user_location[0] !== 'chat') {
     await Chat_js();
   }
+  connectWebSocketGlobal();
 };
 
 export default router;

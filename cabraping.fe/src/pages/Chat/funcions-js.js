@@ -1,6 +1,7 @@
 // import image from '../../assets/logo.svg';
 import { getHash } from "../../utils/getHash.js";
 import { showNotification, showNotificationPopup } from '../../components/showNotification.js';
+import { sendAcceptedGameNotifications, sendChannelCreatedNotifications, sendGameInvataeNotifications } from "../../components/wcGlobal.js";
 
 let image = "assets/logo.svg";
 
@@ -46,6 +47,11 @@ export async function Chat_js() {
       headers: { Authorization: `Bearer ${jwt}` },
     });
     myUser = await responseMyUser.json();
+
+    console.log("----------------");
+    console.log("myUser");
+    console.log(myUser);
+    console.log("----------------");
     if (myUser.code === "user_not_found" || myUser.code === "token_not_valid") {
       window.location.replace("/#logout");
     }
@@ -71,10 +77,9 @@ export async function Chat_js() {
     const usersRouteButton = document.getElementById('usersRouteButton');
     if (usersRouteButton) {
       usersRouteButton.disabled = true;
-      // usersRouteButton.addEventListener('click', () => window.location.href = '#users');
       usersRouteButton.addEventListener('click', () => window.location.href = `#user/${communication_user_id}`);
     }
-    
+
     const acceptGameButton = document.getElementById('acceptGameButton');
     if (acceptGameButton) {
       acceptGameButton.disabled = true;
@@ -120,7 +125,6 @@ export async function Chat_js() {
 
   async function inviteGame(jwt) {
 
-    // const jwt = localStorage.getItem('jwt');
 
     const response = await fetch(`${BACKEND_URL}/api/games/`, {
       method: "POST",
@@ -142,6 +146,7 @@ export async function Chat_js() {
 
     if (response.ok) {
       showNotification('Sent invitation', 'success');
+      sendGameInvataeNotifications(user_id, UserName, communication_user_id);
     } else {
       showNotification('Failed to invitation user', 'error');
     }
@@ -238,6 +243,7 @@ export async function Chat_js() {
     textarea.value = "Accept Game";
     handleSendClick();
 
+    sendAcceptedGameNotifications(user_id, UserName, communication_user_id, gameId);
     console.log({ result: await result.json() });
     // /game
     window.location.href = `/#game/${gameId}`;
@@ -437,8 +443,6 @@ function handleButtonClick() {
       .then((response) => response.json())
       .then((users) => {
         usersList = users;
-        // console.log("--> users:");
-        // console.log(users);
         membersList.innerHTML = ''; // Clear existing list item
         users.forEach(user => {
             if (user.username != UserName){
@@ -777,6 +781,8 @@ function handleSaveChannelClick() {
         showNotification("Channel successfully created", "success");
         // Actualiza la lista de canales
         getUserChannels(user_id).then(updateChannelList); // Asume que user_id es global
+        // sendChannelCreatedMessage
+        sendChannelCreatedNotifications(user_id, UserName, selectedUsersMember[0])
       } else {
         showNotification("Error there is already a chat", "error");
       }
