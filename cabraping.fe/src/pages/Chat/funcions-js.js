@@ -59,6 +59,9 @@ export async function Chat_js() {
 
     blocks_users_frontend(jwt);
 
+    showActiveFriends(myUser.friends);
+
+
     // Agregar evento para el botón "Block User"
     const blockUserButton = document.getElementById('blockUserButton');
     if (blockUserButton) {
@@ -122,6 +125,27 @@ export async function Chat_js() {
     checkRequestGame();
 
   }
+
+  // Función para mostrar amigos conectados
+function showActiveFriends(friends) {
+  const activeUserIds = JSON.parse(localStorage.getItem('id_active_users')) || [];
+  const activeFriends = friends.filter(friend => activeUserIds.includes(String(friend.id)));
+  // const activeUser = usersList.filter(friend => activeUserIds.includes(friend.id));
+
+  console.log("🇲🇽🇲🇽🇲🇽🇲🇽");
+  console.log("friends:", friends);
+  console.log("activeFriends:", activeFriends);
+
+  const activeFriendsList = document.getElementById('active-friends-list');
+    if (activeFriendsList) {
+        activeFriendsList.innerHTML = '';
+        activeFriends.forEach(friend => {
+            const friendItem = document.createElement('li');
+            friendItem.textContent = friend.username;
+            activeFriendsList.appendChild(friendItem);
+        });
+    }
+}
 
   async function inviteGame(jwt) {
 
@@ -292,8 +316,6 @@ export async function Chat_js() {
     });
     blockUsersList = await responseBlockUser.json();
 
-    console.log("--> blockUsersList");
-    console.log(blockUsersList);
 
     const responseUsers = await fetch(`${BACKEND_URL}/api/users/`, {
       headers: { Authorization: `Bearer ${jwt}` },
@@ -468,8 +490,8 @@ function handleButtonClick() {
 
 // Function to update the channels list UI with a selector
 function updateChannelList(channels) {
-  console.log("---> 🎉 channels");
-  console.log(channels);
+  // console.log("---> 🎉 channels");
+  // console.log(channels);
   // Get the channels dropdown element
   // const channelsDropdown = document.getElementById('channelsDropdown');
   const channelsDiv = document.getElementById('chanelsLists');
