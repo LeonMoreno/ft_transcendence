@@ -20,6 +20,8 @@ import {
 } from "../pages/Friends/funcions-js.js";
 import { Chat_js, Chat_Update_js } from "../pages/Chat/funcions-js.js";
 import { Chat_html } from "../pages/Chat/html.js";
+import { Stat_js } from "../pages/Stat/functions-js.js";
+import { Stat_html } from "../pages/Stat/html.js";
 import resolveRoutes from "../utils/resolveRoutes.js";
 
 import { connectWebSocketGlobal  } from "../components/wcGlobal.js";
@@ -33,11 +35,10 @@ const routes = {
   "/chat": [Chat_html, Chat_js],
   "/chat/:id": [Chat_html, Chat_js],
   "/user": [User_html, User_js],
-  "/user/:id": [User_html, User_js],
   "/users": [Users_html, Users_js],
   "/friends": [Friends_html, Friends_js],
+  "/stats": [Stat_html, Stat_js],
   "/404": [Error404_html, Error404_js],
-  
 };
 
 const router = async () => {
