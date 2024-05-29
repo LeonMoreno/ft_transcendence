@@ -67,7 +67,7 @@ export async function FriendsRender() {
         (game) =>
           game.invitee.id === myUserData.id &&
           game.inviter.id === friend.id &&
-          game.invitationStatus !== "PENDING" &&
+          game.invitationStatus === "PENDING" &&
           game.invitationStatus !== "FINISHED"
       );
 

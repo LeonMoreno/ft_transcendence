@@ -20,7 +20,7 @@ export async function Game_js() {
   const gameSocket = new WebSocket(`ws://localhost:8000/ws/game/${game.id}/`);
 
   gameSocket.onopen = function (event) {
-    console.log("WebSocket connection established");
+    console.log("Game socket connected");
   };
 
   gameSocket.onmessage = function (event) {

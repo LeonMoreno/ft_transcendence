@@ -9,6 +9,7 @@ export async function Header_html() {
   const isAuthenticated = Boolean(jwt);
 
   if (isAuthenticated) {
+    // Handle user data
     const responseMyUser = await fetch(`${BACKEND_URL}/api/me/`, {
       headers: { Authorization: `Bearer ${jwt}` },
     });
@@ -18,6 +19,32 @@ export async function Header_html() {
     if (myUser.code === "user_not_found" || myUser.code === "token_not_valid") {
       window.location.replace("/#logout");
     }
+
+    // Handle user notification
+    const userNotificationSocket = new WebSocket(
+      `ws://localhost:8000/ws/users/${myUser.id}/`
+    );
+
+    userNotificationSocket.onopen = function (event) {
+      console.log("User notification socket connected");
+    };
+
+    userNotificationSocket.onmessage = function (event) {
+      const data = JSON.parse(event.data);
+      console.log("Message from server ", data); // only get { message: "" }
+    };
+
+    userNotificationSocket.onclose = function (event) {
+      if (event.wasClean) {
+        console.log(`Disconnected, code=${event.code}, reason=${event.reason}`);
+      } else {
+        console.log("Connection died");
+      }
+    };
+
+    userNotificationSocket.onerror = function (error) {
+      console.error(`WebSocket error: ${error.message}`);
+    };
   }
 
   const view = `

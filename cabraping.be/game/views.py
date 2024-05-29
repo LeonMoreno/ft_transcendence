@@ -5,6 +5,9 @@ from rest_framework import status
 from .models import Game
 from .serializers import GameSerializer
 
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
+
 # Create your views here.
 
 class GameViewSet(viewsets.ModelViewSet):
@@ -26,6 +29,20 @@ class GameViewSet(viewsets.ModelViewSet):
         if request.user == game.invitee:
             game.invitationStatus = "ACCEPTED"
             game.save()
+
+            # Send a notification to the inviter
+            channel_layer = get_channel_layer()
+            async_to_sync(channel_layer.group_send)(
+                f'user_{game.inviter.id}',
+                {
+                    'type': 'user_notification_message',
+                    'message': 'A game being accepted',
+                    'status': 'GAME_ACCEPTED',
+                    'user_id': game.inviter.id,
+                    'game_id': game.id
+                }
+            )
+
             serializer = self.get_serializer(game)
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(
