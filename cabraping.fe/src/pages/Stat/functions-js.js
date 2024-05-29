@@ -31,6 +31,28 @@ function calculateWinsAndLosses(gameResults) {
   return userStats;
 }
 
+function calculateMyUserStats(myUser, gameResults) {
+  let myUserStats = {
+    played: 0,
+    wins: 0,
+    losses: 0
+  };
+
+  gameResults.forEach(game => {
+    const { inviter, invitee, winner } = game;
+    if (inviter.id === myUser.id || invitee.id === myUser.id) {
+      myUserStats.played += 1;
+      if (winner.id === myUser.id) {
+        myUserStats.wins += 1;
+      } else {
+        myUserStats.losses += 1;
+      }
+    }
+  });
+
+  return myUserStats;
+}
+
 
 // Function to fetch and display user statistics
 export async function Stat_js() {
@@ -54,6 +76,7 @@ export async function Stat_js() {
   if (!games) return null;
 
   const user_stat = calculateWinsAndLosses(games);
+  const myUserStats = calculateMyUserStats(myUser, games);
 
   users = users.map(user => ({
     ...user,
@@ -85,6 +108,9 @@ export async function Stat_js() {
   document.getElementById('username').innerText = myUser.username;
   document.getElementById('first_name').innerText = myUser.first_name;
   document.getElementById('last_name').innerText = myUser.last_name;
+  document.getElementById('played').innerText = myUserStats.played;
+  document.getElementById('wins').innerText = myUserStats.wins;
+  document.getElementById('losses').innerText = myUserStats.losses;
 }
 
 function populateLeaderBoard(users, userStats) {

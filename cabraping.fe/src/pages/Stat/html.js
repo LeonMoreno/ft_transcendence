@@ -57,17 +57,54 @@ export async function Stat_html() {
         </table>
       </div>
   <div class="stat-block" id="selfstats" style="display: none;">
-  <h3>Personal Stats</h3>
-    <table class="table table-bordered" id="self-stats-table">
-      <tbody>
-        <tr>
-          <td class="text-center">
-            <img id="avatarImageURL" src="" class="rounded float-start w-30 h-30" alt="Avatar">
-          </td>
-          <td>
-            <div class="card-body text-center" style="width: 40rem;">
-                <h5 class="card-title">Username:</h5>
-                <p class="card-text" id="username"></p>
+    <h3>Personal Stats</h3>
+      <div class="d-flex align-items-start">
+        <img id="avatarImageURL" src="" class="rounded" alt="Avatar" style="max-width: 300px; height: 300px; object-fit: cover;">
+                <td>
+                <table class="table">
+                  </thead>
+                      <tr class="table table-active">
+                        <th class="col-2">Username:</th>
+                        <td scope="col" id="username"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr class="table">
+                        <th>First name: </td>
+                        <td id="first_name"></td>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr class="table table-active">
+                        <th>Last name: </td>
+                        <td id="last_name"></td>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <th>Games played: </td>
+                        <td id="played"></td>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr class="table table-active">
+                        <th>Games won: </td>
+                        <td id="wins"></td>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <th>Games lost: </td>
+                        <td id="losses"></td>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr class="table table-active">
+                        <th>Tournaments won: </td>
+                        <td>"Waiting for Rachel"</td>
+                      </tr>
+                  <tbody>
+              </table>
               </div>
             </div>
           </td>
