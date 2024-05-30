@@ -84,12 +84,13 @@ class TournamentViewSet(viewsets.ModelViewSet):
         winner_user.has_chevre_verte_award = True
         winner_user.save()
     
+    @transaction.atomic
     def create(self, request, *args, **kwargs):
         data = request.data
         creator = request.user  # Assuming the user is authenticated
         tournament = Tournament.objects.create(name=data['name'])
-        tournament.participants.add(creator)  # Add the creator as a participant
-        Participant.objects.create(user=creator, tournament=tournament, received_invite=True, accepted_invite=True)  # Add the creator to Participant
+        participant = Participant.objects.create(user=creator, tournament=tournament, received_invite=True, accepted_invite=True)  # Create a participant
+        tournament.tournament_participants.add(participant)  # Add the participant to the tournament
         tournament.save()  # Save the tournament after adding the participant
         serializer = self.get_serializer(tournament)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -114,7 +115,14 @@ class ParticipantViewSet(viewsets.ModelViewSet):
         participant = self.get_object()
         channel_layer = get_channel_layer()
         async_to_sync(channel_layer.group_send)(
-            f'chat_{participant.user.id}',
+            f'tournament_{participant.tournament.id}',
+            {
+                'type': 'send_update',
+                'participants': ParticipantSerializer(participant.tournament.tournament_participants.all(), many=True).data
+            }
+        )
+        async_to_sync(channel_layer.group_send)(
+            f'user_{participant.user.id}', 
             {
                 'type': 'send_tournament_invitation',
                 'tournament_name': participant.tournament.name,

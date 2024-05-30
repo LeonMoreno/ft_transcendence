@@ -1,11 +1,13 @@
 from rest_framework import serializers
 from .models import Tournament, Participant, Match
-# from .models import Tournament, Match, Participant, Final
+from users.serializers import CustomUserSerializer
 
 class ParticipantSerializer(serializers.ModelSerializer):
+    user = CustomUserSerializer()
+
     class Meta:
         model = Participant
-        fields = '__all__'
+        fields = ['id', 'user', 'tournament', 'received_invite', 'accepted_invite']
 
 class MatchSerializer(serializers.ModelSerializer):
     class Meta:
@@ -13,16 +15,9 @@ class MatchSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class TournamentSerializer(serializers.ModelSerializer):
+    participants = ParticipantSerializer(source='tournament_participants', many=True, read_only=True)
     matches = MatchSerializer(many=True, read_only=True)
 
     class Meta:
         model = Tournament
         fields = '__all__'
-
-#alternative:
-#class FinalSerializer(serializers.ModelSerializer):
-#    tournament = TournamentSerializer(many=False, read_only=True)
-
-#    class Meta:
-#        model = Final
-#        fields = '__all__'

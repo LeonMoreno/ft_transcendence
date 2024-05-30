@@ -2,6 +2,7 @@ import { getToken } from "../../utils/get-token.js";
 import { showNotification } from "../../components/showNotification.js";
 
 const BACKEND_URL = "http://localhost:8000";
+let activeWebSockets = {};
 
 // Function to display notifications using a modal
 function displayNotification(message) {
@@ -19,6 +20,30 @@ function displayNotification(message) {
 
 function displayErrorMessage(message) {
     displayNotification(message);
+}
+
+//websocket
+function monitorInvitationStatus(tournamentId) {
+    if (activeWebSockets[tournamentId]) {
+        return; // Already monitoring this tournament
+    }
+
+    const socket = new WebSocket(`ws://localhost:8000/ws/tournament/${tournamentId}/`);
+
+    socket.onmessage = function(event) {
+        const data = JSON.parse(event.data);
+        const participants = data.participants;
+        participants.forEach(participant => {
+            updateParticipantsList(participant.username, participant.status);
+        });
+    };
+
+    socket.onclose = function(event) {
+        console.error('WebSocket closed unexpectedly');
+        delete activeWebSockets[tournamentId]; // Remove from active connections
+    };
+
+    activeWebSockets[tournamentId] = socket; // Track the active WebSocket
 }
 
 async function userExists(username) {
@@ -154,6 +179,9 @@ async function sendInvitation(participantId, username, tournamentId) {
         if (response.ok) {
             console.log('Invitation sent successfully');
             displayNotification('Invitation sent successfully to ' + username);
+            if (!activeWebSockets[tournamentId]) {
+                monitorInvitationStatus(tournamentId);  // Start monitoring if not already monitoring
+            }
             return true;
         } else {
             const errorData = await response.json();
@@ -181,7 +209,7 @@ async function getParticipantId(username, tournamentId) {
 
         if (response.ok) {
             const data = await response.json();
-            return data.id; // Assuming the API returns the participant's ID
+            return data.id;
         } else {
             console.error('Failed to get participant ID');
             return null;
