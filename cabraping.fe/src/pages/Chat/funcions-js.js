@@ -206,7 +206,7 @@ export function showActiveFriends(friends, check_id) {
 
     if (response.ok) {
       showNotification('Sent invitation', 'success');
-      sendGameInvataeNotifications(user_id, UserName, communication_user_id);
+      sendGameInvataeNotifications(user_id, UserName, communication_user_id, "sendGameInvataeNotifications");
     } else {
       showNotification('Failed to invitation user', 'error');
     }
@@ -263,10 +263,15 @@ export function showActiveFriends(friends, check_id) {
       (game) =>
         game.invitee.id === my_id &&
         game.invitationStatus === "ACCEPTED"
-    );
+      );
 
+    console.log("😴😴😴😴😴😴😴😴😴😴😴😴😴😴😴😴😴😴😴😴");
+    console.log("game_ACCEPTED:",game_ACCEPTED);
+    console.log("😴😴😴😴😴😴😴😴😴😴😴😴😴😴😴😴😴😴😴😴");
+
+    // if (game_ACCEPTED){
     if (game_ACCEPTED){
-      window.location.href = `/#game/${gameId}`;
+      window.location.href = `/#game/${game_ACCEPTED.id}`;
     }
 
     // send notificacion
@@ -288,6 +293,10 @@ export function showActiveFriends(friends, check_id) {
     const jwt = localStorage.getItem('jwt');
     if (!jwt) {
         return;
+    }
+
+    if (gameId === "-1" && gameId === -1){
+      return
     }
 
     const result = await fetch(
@@ -729,7 +738,7 @@ function loadMessagesFromLocalStorage(channelId) {
 }
 
 // Function to obtain the JWT user ID
-function getUserIdFromJWT(jwt) {
+export function getUserIdFromJWT(jwt) {
   const payload = jwt.split(".")[1];
   const decodedPayload = JSON.parse(atob(payload));
   return decodedPayload.user_id;

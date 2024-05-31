@@ -25,12 +25,16 @@ import { Stat_html } from "../pages/Stat/html.js";
 import resolveRoutes from "../utils/resolveRoutes.js";
 
 import { connectWebSocketGlobal  } from "../components/wcGlobal.js";
+import { Matching_html } from "../pages/Matching/html.js";
+import { Matching_js } from "../pages/Matching/funcions-js.js";
+
 
 const routes = {
   "/": [Home_html, Home_js],
   "/auth": [AuthPage_html, AuthPage_js],
   "/logout": [LogoutPage_js],
-  "/game": [Game_html, Game_js],
+  "/matching": [Matching_html, Matching_js], // Nueva ruta para la página de matching
+  "/game": [Matching_html, Matching_js],
   "/game/:id": [Game_html, Game_js],
   "/chat": [Chat_html, Chat_js],
   "/chat/:id": [Chat_html, Chat_js],
@@ -70,7 +74,8 @@ const router = async () => {
   if (user_location[0] !== 'chat') {
     await Chat_Update_js();
   }
-  connectWebSocketGlobal();
+
+  await connectWebSocketGlobal();
 };
 
 export default router;

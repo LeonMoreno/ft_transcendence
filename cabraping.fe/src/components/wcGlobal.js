@@ -1,33 +1,32 @@
 import { showNotificationPopup } from "./showNotification.js";
-import { Chat_Update_js } from "../pages/Chat/funcions-js.js"
+import { Chat_Update_js, getUserIdFromJWT } from "../pages/Chat/funcions-js.js"
 import { Friends_js } from "../pages/Friends/funcions-js.js";
 import { Users_js } from "../pages/Users/funcions-js.js";
 
+const BACKEND_URL = "http://localhost:8000";
 let WSsocket = null;  // Variable global para almacenar la instancia del WebSocket
-
+let myUser = null;
 
 // Función para filtrar mensajes según el dest_user_id
 function filterMessagesForUser(message, userId) {
     return message.dest_user_id === userId.toString();
 }
-// Función para filtrar mensajes según el dest_user_id
 
-function FilterUSerconnect(message, userId) {
-    return message.user_ids;
-}
-
-function execute_processes_by_category(message) {
-    console.log("🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉");
-    console.log("execute_processes_by_category");
-    console.log("🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉");
+function execute_processes_by_category(message, myUser) {
     switch (message.event) {
-        case "game_invite":
-            showNotificationPopup(message.user_name, message.message);
-            Chat_Update_js();
-            break;
         case "channel_created":
             showNotificationPopup(message.user_name, message.message);
             Chat_Update_js();
+            break;
+        case "game_invite":
+            if (message.message !== 'system')
+                showNotificationPopup(message.user_name, message.message);
+            else
+            {
+                console.log("💡💡💡 game_invite 💡💡💡", message);
+                sendGameAccept_Waiting(message.dest_user_id, message.user_id, myUser);
+            }
+            // Chat_Update_js();
             break;
         case "accepted_game":
             Chat_Update_js();
@@ -66,7 +65,9 @@ function run_processes_per_message(message) {
 }
 
 // Función para conectar al WebSocket y escuchar mensajes
-export function connectWebSocketGlobal() {
+export async function connectWebSocketGlobal() {
+
+
     if (WSsocket && WSsocket.readyState === WebSocket.OPEN) {
         console.log('WebSocket is already connected');
         return;
@@ -76,6 +77,14 @@ export function connectWebSocketGlobal() {
     if (!jwt) {
         console.error('No JWT token found in localStorage');
         return;
+    }
+
+    if (!myUser)
+    {
+        const responseMyUser = await fetch(`${BACKEND_URL}/api/me/`, {
+            headers: { Authorization: `Bearer ${jwt}` },
+        });
+        myUser = await responseMyUser.json();
     }
 
     // Decodificar el JWT y obtener el ID
@@ -101,13 +110,22 @@ export function connectWebSocketGlobal() {
 
         // message
         if (filterMessagesForUser(message, id)){
-            execute_processes_by_category(message)
+            execute_processes_by_category(message, myUser)
         }
-        if (FilterUSerconnect(message, id)){
+
+        if (message.event === "update_user_list"){
             localStorage.setItem('id_active_users', JSON.stringify(message.user_ids));
             Chat_Update_js();
             Friends_js();
             Users_js();
+        }
+
+        if(message.event === "update_waiting_list"){
+            console.log("💊💊💊💊 update:", message);
+            localStorage.setItem('update_waiting_list', JSON.stringify(message.user_ids));
+            // getUserIdFromJWT
+            let id = getUserIdFromJWT(jwt);
+            handleUpdateWaitingList(message, String(id), myUser);
         }
     };
 
@@ -121,6 +139,124 @@ export function connectWebSocketGlobal() {
         console.log('WebSocket connection closed:', event);
         WSsocket = null;  // Reset the socket instance to allow reconnection if needed
     };
+}
+
+
+
+async function sendGameAccept_Waiting(userId, dest_user_id, myUser) {
+
+
+    let find_me = false;
+    const jwt = localStorage.getItem('jwt');
+    const update_waiting_list = localStorage.getItem('update_waiting_list');
+    if (!jwt || !update_waiting_list) {
+        return;
+    }
+
+    console.log("💡💡 -> game_invite 💡💡");
+
+    const waitingIds = update_waiting_list;
+    if (waitingIds.length >= 2) {
+        for (let i = 0; i + 1 < waitingIds.length; i += 2) {
+            if (Number(waitingIds[i]) === Number(userId) && Number(waitingIds[i + 1]) === Number(dest_user_id) ) {
+                find_me = true;
+                console.log("💡💡💡💡");
+                break;
+            }
+        }
+    }
+
+    console.log("💡💡 --> game_invite 💡💡");
+    if (find_me === true)
+    {
+        return;
+    }
+
+    console.log("💡💡 ---> game_invite 💡💡");
+
+    const payload = jwt.split('.')[1];
+    const decodedPayload = JSON.parse(atob(payload));
+    let my_id = decodedPayload.user_id; // Update user_id variable with the user ID extracted from the JWT
+
+    const responseGames = await fetch(`${BACKEND_URL}/api/games/`, {
+      headers: { Authorization: `Bearer ${jwt}` },
+    });
+    const games = await responseGames.json();
+
+    console.log("--> 🛜 games");
+    console.log(games);
+
+    console.log("---> 🛜 my_id:", userId, ", communication_user_id:", dest_user_id);
+    console.log("---> 🛜🛜 leve-1:", games.find( (game) => game.invitee.id === Number(userId) ));
+    console.log("---> 🛜🛜🛜 leve-2:", games.find( (game) => game.invitee.id === Number(userId) && game.inviter.id === Number(dest_user_id) ));
+    console.log("---> 🛜🛜🛜🛜 leve-2:", games.find( (game) => game.invitee.id === Number(userId) && game.inviter.id === Number(dest_user_id) && game.invitationStatus === "PENDING" ));
+
+    const game = games.find(
+      (game) =>
+        game.invitee.id === Number(userId) &&
+        game.inviter.id === Number(dest_user_id) &&
+        game.invitationStatus === "PENDING"
+    );
+
+    console.log("💡💡 ---> game_invite 💡");
+    if(game){
+        const response = await fetch(
+            `${BACKEND_URL}/api/games/${game.id}/accept_game/`,
+            {
+            method: "PUT",
+            headers: {
+                Authorization: `Bearer ${jwt}`,
+                "Content-Type": "application/json",
+            },
+            }
+        );
+        if (!response.ok)
+        {
+            console.error("error in system");
+        }
+        console.log("💡💡 ---> game_invite");
+        sendAcceptedGameNotifications(userId, myUser.userName, dest_user_id, game.id);
+        sendDelleteMatchedMessage(userId, dest_user_id);
+        console.log("💡💡💡💡💡💡-> game_invite:", game.id);
+        window.location.href = `/#game/${game.id}`;
+    }
+
+}
+
+async function sendGameInitate_Waiting(userId, inviteId) {
+
+    const jwt = localStorage.getItem('jwt');
+
+    const response = await fetch(`${BACKEND_URL}/api/games/`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${jwt}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        invitationStatus: "PENDING",
+        inviter: userId,
+        invitee: inviteId,
+      }),
+    });
+
+    return response;
+}
+
+// Función para manejar el evento "update_waiting_list"
+async function handleUpdateWaitingList(message, userId, myUser) {
+    const waitingIds = message.waiting_ids;
+    if (waitingIds.length >= 2) {
+        for (let i = 1; i < waitingIds.length; i += 2) {
+            if (waitingIds[i] === userId) {
+                let status = await sendGameInitate_Waiting(userId, waitingIds[i - 1]);
+                if (status.ok){
+                    sendGameInvataeNotifications(userId, myUser.userName, waitingIds[i - 1], "system");
+                }
+                break;
+            }
+        }
+    }
 }
 
 
@@ -144,7 +280,7 @@ export function sendChannelCreatedNotifications(userId, userName, destUserId) {
 }
 
 // Función para enviar un mensaje específico al WebSocket
-export function sendGameInvataeNotifications(userId, userName, destUserId) {
+export function sendGameInvataeNotifications(userId, userName, destUserId, text) {
 
     console.log("💊💊💊💊💊💊💊💊💊");
     console.log("sendGameInvataeNotifications");
@@ -156,7 +292,7 @@ export function sendGameInvataeNotifications(userId, userName, destUserId) {
     
     const message = {
         type: "game_invite",
-        message: "You have been invited to a game",
+        message: text,
         user_id: String(userId),
         user_name: userName,
         dest_user_id: String(destUserId)
@@ -237,5 +373,61 @@ export function sendFriendDeletedNotifications(userId, userName, destUserId) {
         dest_user_id: String(destUserId)
     };
     ;
+    WSsocket.send(JSON.stringify(message));
+}
+
+
+// Function to join the matchmaking queue
+export function joinMatchmakingQueue(userId, userName) {
+    if (!WSsocket || WSsocket.readyState !== WebSocket.OPEN) {
+        console.error('WebSocket is not connected');
+        return;
+    }
+
+    const message = {
+        type: "join_queue",
+        user_id: String(userId),
+        user_name: userName,
+    };
+
+    WSsocket.send(JSON.stringify(message));
+}
+
+
+// Función para enviar el mensaje de espera de coincidencia
+export function sendWaitMatchedMessage(userId) {
+    if (!WSsocket || WSsocket.readyState !== WebSocket.OPEN) {
+        console.error('WebSocket is not connected');
+        return;
+    }
+
+    const message = {
+        type: "wait_matched",
+        message: "You are now waiting for a match.",
+        user_id: String(userId)
+    };
+
+    console.log("----------------------");
+    console.log("Send message");
+    console.log(message);
+    console.log("----------------------");
+    WSsocket.send(JSON.stringify(message));
+}
+
+export function sendDelleteMatchedMessage(userId, otherId) {
+    if (!WSsocket || WSsocket.readyState !== WebSocket.OPEN) {
+        console.error('WebSocket is not connected');
+        return;
+    }
+
+    const message = {
+        "type": "delete_matched",
+        "matched_user_ids": [String(userId), String(otherId)]
+    }
+
+    console.log("----------------------");
+    console.log("Send message");
+    console.log(message);
+    console.log("----------------------");
     WSsocket.send(JSON.stringify(message));
 }
