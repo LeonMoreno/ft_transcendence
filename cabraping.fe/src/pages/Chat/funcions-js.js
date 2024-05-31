@@ -282,9 +282,9 @@ export function showActiveFriends(friends, check_id) {
         game.invitationStatus === "PENDING"
     );
 
-    if(game_pending){
-      showNotificationPopup(game_pending.inviter.username, "I send you an invitation to the game");
-    }
+    // if(game_pending){
+      // showNotificationPopup(game_pending.inviter.username, "I send you an invitation to the game");
+    // }
 
 }
 

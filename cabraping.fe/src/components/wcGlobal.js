@@ -29,8 +29,8 @@ function execute_processes_by_category(message, myUser) {
             // Chat_Update_js();
             break;
         case "accepted_game":
+            // showNotificationPopup(message.user_name, "Accept the Game. let's go");
             Chat_Update_js();
-            showNotificationPopup(message.user_name, "Accept the Game. let's go");
             window.location.href = `/#game/${message.message}`;
             break;
 
@@ -87,8 +87,6 @@ export async function connectWebSocketGlobal() {
         myUser = await responseMyUser.json();
     }
 
-    // Decodificar el JWT y obtener el ID
-    // Extract user_id from JWT
     const payload = jwt.split('.')[1];
     const decodedPayload = JSON.parse(atob(payload));
     const id = decodedPayload.user_id;
