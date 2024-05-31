@@ -10,9 +10,6 @@ WORKDIR /app
 # Install project dependencies
 RUN npm install -g serve
 
-# Install `serve` globally
-RUN npm install -g serve
-
 # Copying the rest of the project source code to the container
 COPY ./cabraping.fe .
 
@@ -25,4 +22,3 @@ EXPOSE 8080
 # Command to serve the application using a simple HTTP server to serve static files.
 # CMD ["npx", "serve", "-s", "dist", "-l", "8080"]
 CMD ["npx", "serve", "-s", "src", "-l", "8080"]
-#CMD ["serve", "-s", "src", "-l", "8080"]

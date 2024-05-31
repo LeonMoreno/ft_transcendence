@@ -3,6 +3,13 @@ import { getToken } from "../../utils/get-token.js";
 const BACKEND_URL = "http://localhost:8000";
 
 export async function Friends_html() {
+
+  const jwt = localStorage.getItem('jwt');
+  if (!jwt) {
+      window.location.href = '/#';
+      return;
+  }
+
   return `
     <div class="container-sm min-vh-100">
       <h2>All of My Friends</h2>

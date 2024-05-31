@@ -1,8 +1,11 @@
+import { sendFriendRequestNotifications } from "../../components/wcGlobal.js";
+import { showActiveFriends } from "../Chat/funcions-js.js";
 import { Users_html } from "./html.js";
 
 const BACKEND_URL = "http://localhost:8000";
 let users = [];
 let friendRequests = [];
+let  myUser = null;
 
 // export async function UsersInit() {
 export async function Users_js() {
@@ -13,7 +16,8 @@ export async function Users_js() {
   const responseMyUser = await fetch(`${BACKEND_URL}/api/me/`, {
     headers: { Authorization: `Bearer ${jwt}` },
   });
-  const myUser = await responseMyUser.json();
+  // const myUser = await responseMyUser.json();
+  myUser = await responseMyUser.json();
   if (!myUser) return null;
 
   const responseUsers = await fetch(`${BACKEND_URL}/api/users/`);
@@ -35,6 +39,12 @@ export async function Users_js() {
   });
 
   const usersListElement = document.getElementById("users-list");
+  if (!usersListElement)
+  {
+    return
+  }
+
+
   usersListElement.innerHTML = users
     .map((user) => {
       const isSameUser = user.id === myUser.id;
@@ -42,9 +52,20 @@ export async function Users_js() {
         (friendId) => friendId === myUser.id
       );
 
+      let friendActive =  showActiveFriends(myUser.friends, user.id);
+      let HTML_friendActive = "";
+    
+      if (typeof(friendActive) === "boolean" && friendActive === true){
+        HTML_friendActive = `<p class="mb-0 ms-3 rounded-circle bg-success" style="height: 20px; width: 20px;"></p>`
+      }
+      if (typeof(friendActive) === "boolean" &&  friendActive === false){
+        HTML_friendActive = `<p class="mb-0 ms-3 rounded-circle bg-secondary" style="height: 20px; width: 20px;" ></p>`
+      }
+
       return `
   <li class="list-group-item d-flex gap-4 align-items-center">
       <h3>${user.username}</h3>
+      ${HTML_friendActive}
       ${
         !isSameUser && !isOurFriend && !user.isSentFriendRequest
           ? `<button
@@ -89,10 +110,9 @@ export async function Users_js() {
         body: JSON.stringify({ to_user: toUserId }),
       });
 
-      // Users();
-      // UsersInit();
       Users_html();
       Users_js();
+      sendFriendRequestNotifications(myUser.id, myUser.username, toUserId);
     });
   });
 }

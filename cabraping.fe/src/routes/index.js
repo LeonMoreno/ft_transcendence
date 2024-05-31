@@ -1,6 +1,4 @@
 import Footer_html from "../components/footer/html.js";
-//import Header_html from "../components/header/html.js";
-//import Header_js from "../components/header/funcions-js.js";
 import { Header_js } from "../components/header/funcions-js.js";
 import { Header_html } from "../components/header/html.js";
 import { Home_js } from "../pages/home/funcions-js.js";
@@ -17,14 +15,21 @@ import { Users_html } from "../pages/Users/html.js";
 import { Game_js } from "../pages/Game/funcions-js.js";
 import { Game_html } from "../pages/Game/html.js";
 import { Friends_html } from "../pages/Friends/html.js";
-import { Friends_js, FriendsRender, FriendRequestsRender } from "../pages/Friends/funcions-js.js";
-import { Chat_js } from "../pages/Chat/funcions-js.js";
-import { Chat_html } from "../pages/Chat/html.js";
+//import { Friends_js, FriendsRender, FriendRequestsRender } from "../pages/Friends/funcions-js.js"; // rachel
 import { Tournament_html } from "../pages/Tournament/html.js";
 import { TournamentInit } from "../pages/Tournament/funcions-js.js";
-//import Tournament_html from "../pages/Tournament/html.js"; // Use default import
-//import TournamentInit from "../pages/Tournament/funcions-js.js"; 
+import {
+  Friends_js,
+} from "../pages/Friends/funcions-js.js";
+import { Chat_js, Chat_Update_js } from "../pages/Chat/funcions-js.js";
+import { Chat_html } from "../pages/Chat/html.js";
+import { Stat_js } from "../pages/Stat/functions-js.js";
+import { Stat_html } from "../pages/Stat/html.js";
+import { Profile_js } from "../pages/Profile/functions-js.js";
+import { Profile_html } from "../pages/Profile/html.js";
 import resolveRoutes from "../utils/resolveRoutes.js";
+
+import { connectWebSocketGlobal  } from "../components/wcGlobal.js";
 
 const routes = {
   "/": [Home_html, Home_js],
@@ -34,14 +39,16 @@ const routes = {
   "/chat": [Chat_html, Chat_js],
   "/chat/:id": [Chat_html, Chat_js],
   "/user": [User_html, User_js],
-  "/user/:id": [User_html, User_js],
+  //"/user/:id": [User_html, User_js],
   "/users": [Users_html, Users_js],
-  "/friends": [Friends_html, Friends_js, FriendsRender, FriendRequestsRender],
-  //"/friends": [Friends_html, Friends_js],
+  //"/friends": [Friends_html, Friends_js, FriendsRender, FriendRequestsRender], // rachel
   "/tournament": [Tournament_html, TournamentInit],
   "/logout": [LogoutPage_js],
+  "/friends": [Friends_html, Friends_js],
+  "/stats": [Stat_html, Stat_js],
+  "/profile": [Profile_html, Profile_js],
+  "/user/:id": [Profile_html, Profile_js],
   "/404": [Error404_html, Error404_js],
-  
 };
 
 const router = async () => {
@@ -67,10 +74,11 @@ const router = async () => {
   initializeLogoutButtons();
 
   if (user_location[0] !== 'chat') {
-    await Chat_js();
+    await Chat_Update_js();
   }
+  connectWebSocketGlobal();
 };
 
 export default router;
-window.addEventListener('load', router);
-window.addEventListener('hashchange', router);
+//window.addEventListener('load', router); // rachel - check if needed
+//window.addEventListener('hashchange', router); // rachel - check if needed
