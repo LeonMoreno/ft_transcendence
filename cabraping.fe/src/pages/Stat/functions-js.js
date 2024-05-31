@@ -177,8 +177,7 @@ function populateLeaderBoard(users, userStats) {
     document.getElementById('wins').innerText = myUserStats.wins;
     document.getElementById('losses').innerText = myUserStats.losses;
   }
-  // Call the Stat_js function to display user statistics
-  //Stat_js();
+
   
   
   
