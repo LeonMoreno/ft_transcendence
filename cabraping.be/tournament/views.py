@@ -126,7 +126,11 @@ class ParticipantViewSet(viewsets.ModelViewSet):
             {
                 'type': 'send_tournament_invitation',
                 'tournament_name': participant.tournament.name,
-                'message': f"You have been invited to join the tournament {participant.tournament.name}! Do you think you have what it takes to win the prestigious Chèvre Verte Award?"
+                'message': f"You have been invited to join the tournament {participant.tournament.name}! Do you think you have what it takes to win the prestigious Chèvre Verte Award?",
+                'user_id': participant.user.id,
+                'user_name': participant.user.username,
+                'dest_user_id': request.user.id,
+                'tournament_id': participant.tournament.id
             }
         )
         participant.received_invite = True

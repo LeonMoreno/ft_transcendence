@@ -32,7 +32,6 @@ const Tournament_html = async () => {
           </div>
       </div>
     `;
-  };
-  
-  export { Tournament_html };
-  
+};
+
+export { Tournament_html };

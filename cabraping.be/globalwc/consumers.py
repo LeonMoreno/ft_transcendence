@@ -179,6 +179,27 @@ class NotificationConsumer(AsyncWebsocketConsumer):
             'event': 'update_user_list',
             'user_ids': user_ids,
         }))
+    
+    # rachel
+    async def send_tournament_invitation(self, event):
+        message = event['message']
+        tournament_name = event['tournament_name']
+        user_id = event['user_id']
+        user_name = event['user_name']
+        dest_user_id = event['dest_user_id']
+
+        # Send message to WebSocket
+        await self.send(text_data=json.dumps({
+            'type': 'tournament',
+            'event': 'tournament_invite',
+            'message': message,
+            'tournament_name': tournament_name,
+            'user_id': user_id,
+            'user_name': user_name,
+            'dest_user_id': dest_user_id,
+            'tournament_id': event['tournament_id']
+        }))
+
 
 
 # # globalwc/consumers.py

@@ -77,11 +77,4 @@ class MyWebSocketConsumerChat(AsyncWebsocketConsumer):
                 'userDetails': user_details,
             }))
 
-# rachel
-    async def send_tournament_invitation(self, event):
-        await self.send(text_data=json.dumps({
-            'type': 'tournament_invitation',
-            'tournament_name': event['tournament_name'],
-            'message': f"You are invited to join the tournament {event['tournament_name']}. Are you ready to compete for the prestigious Chèvre Verte Award?"
-        }))
 

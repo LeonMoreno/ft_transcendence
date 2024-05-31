@@ -113,7 +113,7 @@ export async function Chat_js() {
     const acceptGameButton = document.getElementById('acceptGameButton');
     if (acceptGameButton) {
       acceptGameButton.disabled = true;
-      acceptGameButton.addEventListener('click', () => acceoptGame());
+      acceptGameButton.addEventListener('click', () => acceptGame());
     }
 
     const button = document.getElementById('addChannel');
@@ -283,7 +283,7 @@ export function showActiveFriends(friends, check_id) {
 
 }
 
-  async function acceoptGame() {
+  async function acceptGame() {
 
     const jwt = localStorage.getItem('jwt');
     if (!jwt) {
