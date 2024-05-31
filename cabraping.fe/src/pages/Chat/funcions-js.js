@@ -5,7 +5,14 @@ import { sendAcceptedGameNotifications, sendChannelCreatedNotifications, sendGam
 
 let image = "assets/logo.svg";
 
-const BACKEND_URL = "http://localhost:8000";
+// Extract the IP address from the URL used to access the frontend
+const frontendURL = new URL(window.location.href);
+const serverIPAddress = frontendURL.hostname;
+const serverPort = 8000; // Specify the port your backend server is running on
+const BACKEND_URL = `http://${serverIPAddress}:${serverPort}`;
+const WS_URL = `ws://${serverIPAddress}:${serverPort}`;
+
+console.log(BACKEND_URL);
 
 let sockets = {}; // Object to store WebSocket connections
 let usersList = []; // Global variable to store the list of users
@@ -266,7 +273,7 @@ export function showActiveFriends(friends, check_id) {
     );
 
     if (game_ACCEPTED){
-      window.location.href = `/#game/${gameId}`;
+      window.location.href = `/#game/${game_ACCEPTED.id}`;
     }
 
     // send notificacion
@@ -778,7 +785,7 @@ function createWebSocketConnection(channelId) {
     return; // Already connected
   }
 
-  const ws = new WebSocket(`ws://127.0.0.1:8000/ws/chat/${channelId}/`);
+  const ws = new WebSocket(`${WS_URL}/ws/chat/${channelId}/`);
   ws.addEventListener("message", (event) => {
       const message = JSON.parse(event.data);
       console.log("--> Mensaje ❤️: ", message);
