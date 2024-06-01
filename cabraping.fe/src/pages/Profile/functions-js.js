@@ -59,14 +59,6 @@ export async function Profile_js() {
 
 userId = getHash() || null;
 if (userId === '/') userId = null;
-
-
-//   const responseMyUser = await fetch(`${BACKEND_URL}/api/me/`, {
-//     headers: { Authorization: `Bearer ${jwt}` },
-//   });
-//   const myUser = await responseMyUser.json();
-//   if (!myUser) return null;
-
   
 const responseUsers = await fetch(`${BACKEND_URL}/api/users/`);
 users = await responseUsers.json();
@@ -107,4 +99,4 @@ if (userId) {
 }
 
 // Call the Profile_js function to display user statistics
-Profile_js();
+//Profile_js();

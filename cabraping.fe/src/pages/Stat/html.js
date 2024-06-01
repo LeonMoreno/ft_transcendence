@@ -18,7 +18,7 @@ export async function Stat_html() {
       <div class="stat-block" id="wins-losses" style="display: none;">
         <h3>Wins and Losses</h3>
         <table class="table table-bordered" id="wins-losses-table">
-          <tbody id="users-list"></tbody>
+          <tbody id="leaderboard"></tbody>
         </table>
       </div>
       <div class="stat-block" id="history" style="display: none;">
@@ -26,71 +26,55 @@ export async function Stat_html() {
         <table class="table table-bordered" id="match-history-table">
           <thead>
             <tr>
-              <td class="table-dark">Winner</th>
-              <td class="table-dark">Loser</th>
-              <td class="table-dark">Time</th>
-              <td class="table-dark">Date</th>
+              <th class="table-dark">Winner</th>
+              <th class="table-dark">Loser</th>
+              <th class="table-dark">Time</th>
+              <th class="table-dark">Date</th>
             </tr>
           </thead>
           <tbody id="history-list"></tbody>
         </table>
       </div>
-  <div class="stat-block" id="selfstats" style="display: none;">
-    <h3>Personal Stats</h3>
-      <div class="d-flex align-items-start">
-        <img id="avatarImageURL" src="" class="rounded" alt="Avatar" style="max-width: 300px; height: 300px; object-fit: cover;">
-                <td>
-                <table class="table">
-                  </thead>
-                      <tr class="table table-active">
-                        <th class="col-2">Username:</th>
-                        <td scope="col" id="username"></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr class="table">
-                        <th>First name: </td>
-                        <td id="first_name"></td>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr class="table table-active">
-                        <th>Last name: </td>
-                        <td id="last_name"></td>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <th>Games played: </td>
-                        <td id="played"></td>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr class="table table-active">
-                        <th>Games won: </td>
-                        <td id="wins"></td>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <th>Games lost: </td>
-                        <td id="losses"></td>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr class="table table-active">
-                        <th>Tournaments won: </td>
-                        <td>"Waiting for Rachel"</td>
-                      </tr>
-                  <tbody>
-              </table>
-              </div>
-            </div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+      <div class="stat-block" id="selfstats" style="display: none;">
+        <h3>Personal Stats</h3>
+        <div class="d-flex align-items-start">
+          <img id="avatarImageURL" src="" class="rounded" alt="Avatar" style="max-width: 300px; height: 300px; object-fit: cover;">
+          <table class="table">
+            <tbody>
+              <tr class="table-active">
+                <th class="col-2">Username:</th>
+                <td id="username"></td>
+              </tr>
+              <tr>
+                <th>First name:</th>
+                <td id="first_name"></td>
+              </tr>
+              <tr class="table-active">
+                <th>Last name:</th>
+                <td id="last_name"></td>
+              </tr>
+              <tr>
+                <th>Games played:</th>
+                <td id="played"></td>
+              </tr>
+              <tr class="table-active">
+                <th>Games won:</th>
+                <td id="wins"></td>
+              </tr>
+              <tr>
+                <th>Games lost:</th>
+                <td id="losses"></td>
+              </tr>
+              <tr class="table-active">
+                <th>Tournaments won:</th>
+                <td>Waiting for Rachel</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
   `;
 }
+
 
