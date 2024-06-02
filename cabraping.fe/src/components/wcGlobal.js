@@ -23,7 +23,6 @@ function execute_processes_by_category(message, myUser) {
                 showNotificationPopup(message.user_name, message.message);
             else
             {
-                console.log("💡💡💡 game_invite 💡💡💡", message);
                 sendGameAccept_Waiting(message.dest_user_id, message.user_id, myUser);
             }
             // Chat_Update_js();
@@ -119,7 +118,6 @@ export async function connectWebSocketGlobal() {
         }
 
         if(message.event === "update_waiting_list"){
-            console.log("💊💊💊💊 update:", message);
             localStorage.setItem('update_waiting_list', JSON.stringify(message.user_ids));
             // getUserIdFromJWT
             let id = getUserIdFromJWT(jwt);
@@ -151,26 +149,20 @@ async function sendGameAccept_Waiting(userId, dest_user_id, myUser) {
         return;
     }
 
-    console.log("💡💡 -> game_invite 💡💡");
-
     const waitingIds = update_waiting_list;
     if (waitingIds.length >= 2) {
         for (let i = 0; i + 1 < waitingIds.length; i += 2) {
             if (Number(waitingIds[i]) === Number(userId) && Number(waitingIds[i + 1]) === Number(dest_user_id) ) {
                 find_me = true;
-                console.log("💡💡💡💡");
                 break;
             }
         }
     }
 
-    console.log("💡💡 --> game_invite 💡💡");
     if (find_me === true)
     {
         return;
     }
-
-    console.log("💡💡 ---> game_invite 💡💡");
 
     const payload = jwt.split('.')[1];
     const decodedPayload = JSON.parse(atob(payload));
@@ -181,14 +173,6 @@ async function sendGameAccept_Waiting(userId, dest_user_id, myUser) {
     });
     const games = await responseGames.json();
 
-    console.log("--> 🛜 games");
-    console.log(games);
-
-    console.log("---> 🛜 my_id:", userId, ", communication_user_id:", dest_user_id);
-    console.log("---> 🛜🛜 leve-1:", games.find( (game) => game.invitee.id === Number(userId) ));
-    console.log("---> 🛜🛜🛜 leve-2:", games.find( (game) => game.invitee.id === Number(userId) && game.inviter.id === Number(dest_user_id) ));
-    console.log("---> 🛜🛜🛜🛜 leve-2:", games.find( (game) => game.invitee.id === Number(userId) && game.inviter.id === Number(dest_user_id) && game.invitationStatus === "PENDING" ));
-
     const game = games.find(
       (game) =>
         game.invitee.id === Number(userId) &&
@@ -196,7 +180,6 @@ async function sendGameAccept_Waiting(userId, dest_user_id, myUser) {
         game.invitationStatus === "PENDING"
     );
 
-    console.log("💡💡 ---> game_invite 💡");
     if(game){
         const response = await fetch(
             `${BACKEND_URL}/api/games/${game.id}/accept_game/`,
@@ -212,10 +195,8 @@ async function sendGameAccept_Waiting(userId, dest_user_id, myUser) {
         {
             console.error("error in system");
         }
-        console.log("💡💡 ---> game_invite");
         sendAcceptedGameNotifications(userId, myUser.userName, dest_user_id, game.id);
         sendDelleteMatchedMessage(userId, dest_user_id);
-        console.log("💡💡💡💡💡💡-> game_invite:", game.id);
         window.location.href = `/#game/${game.id}`;
     }
 
@@ -280,9 +261,6 @@ export function sendChannelCreatedNotifications(userId, userName, destUserId) {
 // Función para enviar un mensaje específico al WebSocket
 export function sendGameInvataeNotifications(userId, userName, destUserId, text) {
 
-    console.log("💊💊💊💊💊💊💊💊💊");
-    console.log("sendGameInvataeNotifications");
-    console.log("💊💊💊💊💊💊💊💊💊");
     if (!WSsocket || WSsocket.readyState !== WebSocket.OPEN) {
         console.error('WebSocket is not connected');
         return;
@@ -405,10 +383,6 @@ export function sendWaitMatchedMessage(userId) {
         user_id: String(userId)
     };
 
-    console.log("----------------------");
-    console.log("Send message");
-    console.log(message);
-    console.log("----------------------");
     WSsocket.send(JSON.stringify(message));
 }
 
@@ -423,9 +397,5 @@ export function sendDelleteMatchedMessage(userId, otherId) {
         "matched_user_ids": [String(userId), String(otherId)]
     }
 
-    console.log("----------------------");
-    console.log("Send message");
-    console.log(message);
-    console.log("----------------------");
     WSsocket.send(JSON.stringify(message));
 }

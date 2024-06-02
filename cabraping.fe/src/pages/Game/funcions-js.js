@@ -6,8 +6,6 @@ export async function Game_js() {
   const jwt = getToken();
   const gameId = getHash();
 
-  console.log("---2-2-2--2:gameId:", gameId);
-
   if (gameId === "-1")
   {
     console.log("---------------------------------------------------");
