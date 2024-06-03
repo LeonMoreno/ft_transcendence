@@ -1,4 +1,3 @@
-const BACKEND_URL = "http://localhost:8000";
 
 export async function Profile_html() {
     return `

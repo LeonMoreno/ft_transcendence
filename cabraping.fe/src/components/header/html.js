@@ -1,7 +1,13 @@
 // import image from "../../assets/logo.svg";
 let image = "assets/logo.svg";
 
-const BACKEND_URL = "http://localhost:8000";
+// Extract the IP address from the URL used to access the frontend
+const frontendURL = new URL(window.location.href);
+const serverIPAddress = frontendURL.hostname;
+const serverPort = 8000; // Specify the port your backend server is running on
+const BACKEND_URL = `http://${serverIPAddress}:${serverPort}`;
+const WS_URL = `ws://${serverIPAddress}:${serverPort}`;
+
 let myUser = null;
 
 export async function Header_html() {
@@ -22,7 +28,7 @@ export async function Header_html() {
 
     // Handle user notification
     const userNotificationSocket = new WebSocket(
-      `ws://localhost:8000/ws/users/${myUser.id}/`
+      `${WS_URL}/ws/users/${myUser.id}/`
     );
 
     userNotificationSocket.onopen = function (event) {

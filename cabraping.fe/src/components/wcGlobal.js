@@ -3,9 +3,15 @@ import { Chat_Update_js, getUserIdFromJWT } from "../pages/Chat/funcions-js.js"
 import { Friends_js } from "../pages/Friends/funcions-js.js";
 import { Users_js } from "../pages/Users/funcions-js.js";
 
-const BACKEND_URL = "http://localhost:8000";
-let WSsocket = null;  // Variable global para almacenar la instancia del WebSocket
+
+const frontendURL = new URL(window.location.href);
+const serverIPAddress = frontendURL.hostname;
+const serverPort = 8000; // Specify the port your backend server is running on
+const BACKEND_URL = `http://${serverIPAddress}:${serverPort}`;
+const WS_URL = `ws://${serverIPAddress}:${serverPort}`;
+
 let myUser = null;
+
 
 // Función para filtrar mensajes según el dest_user_id
 function filterMessagesForUser(message, userId) {
@@ -93,7 +99,7 @@ export async function connectWebSocketGlobal() {
     console.log(`--> 👋 User id:${id}`);
 
     // Conectarse al WebSocket
-    const wsUrl = `ws://localhost:8000/ws/notifications/${id}/`;
+    const wsUrl = `${WS_URL}/ws/notifications/${id}/`;
     WSsocket = new WebSocket(wsUrl);
 
     // Manejar la conexión abierta

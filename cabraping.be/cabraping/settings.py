@@ -35,7 +35,7 @@ SECRET_KEY = os.getenv("DJANGO_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -62,18 +62,19 @@ INSTALLED_APPS = [
     'dotenv',
 ]
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:8080",
-    "https://api.intra.42.fr",
-    "http://127.0.0.1:8080",
-    "http://127.0.0.1",
-]
+# CORS_ALLOWED_ORIGINS = [
+#     "http://localhost:8080",
+#     "https://api.intra.42.fr",
+#     "http://127.0.0.1:8080",
+#     "http://127.0.0.1",
+# ]
+
+CORS_ALLOW_ALL_ORIGINS = True
 
 
 AUTH_USER_MODEL = 'users.CustomUser'
 
 AUTHENTICATION_BACKENDS = ['users.backends.EmailBackend']
-
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (

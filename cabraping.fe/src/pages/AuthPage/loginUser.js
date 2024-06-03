@@ -1,8 +1,14 @@
 import { showNotification } from "../../components/showNotification.js";
 
+// Extract the IP address from the URL used to access the frontend
+const frontendURL = new URL(window.location.href);
+const serverIPAddress = frontendURL.hostname;
+const serverPort = 8000; // Specify the port your backend server is running on
+const BACKEND_URL = `http://${serverIPAddress}:${serverPort}`;
+
 // Function to log in
 export function loginUser(username, password) {
-  fetch("http://127.0.0.1:8000/api/token/", {
+  fetch(`${BACKEND_URL}/api/token/`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

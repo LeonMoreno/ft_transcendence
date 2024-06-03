@@ -1,7 +1,12 @@
 import { showNotification } from '../../components/showNotification.js';
 import { getHash } from '../../utils/getHash.js';
 
-const BACKEND_URL = "http://localhost:8000";
+// Extract the IP address from the URL used to access the frontend
+const frontendURL = new URL(window.location.href);
+const serverIPAddress = frontendURL.hostname;
+const serverPort = 8000; // Specify the port your backend server is running on
+const BACKEND_URL = `http://${serverIPAddress}:${serverPort}`;
+
 let jwt;
 let myUser = null;
 let userId = null;

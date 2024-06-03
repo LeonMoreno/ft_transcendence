@@ -24,3 +24,4 @@ python manage.py runserver 0.0.0.0:8000
 
 # Execute the command passed to docker run or docker-compose up
 exec "$@"
+
