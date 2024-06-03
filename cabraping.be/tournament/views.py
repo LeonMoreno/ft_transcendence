@@ -17,6 +17,7 @@ class TournamentViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     
     @action(detail=True, methods=['post'])
+    @transaction.atomic
     def start_tournament(self, request, pk=None):
         tournament = self.get_object()
         participants = list(tournament.participants.all())
@@ -26,8 +27,10 @@ class TournamentViewSet(viewsets.ModelViewSet):
 
         semifinal1 = Match.objects.create(tournament=tournament, participant1=participants[0], participant2=participants[1])
         semifinal2 = Match.objects.create(tournament=tournament, participant1=participants[2], participant2=participants[3])
-        tournament.status = 'Semifinals'
+        tournament.status = 'in_progress'
         tournament.save()
+
+        # rachel - call Jonathan's remote player module here
 
         return Response({'message': 'Tournament started. Semifinals are set up.'})
 
