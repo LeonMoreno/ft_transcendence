@@ -125,27 +125,42 @@ class ParticipantViewSet(viewsets.ModelViewSet):
             }
         )
         async_to_sync(channel_layer.group_send)(
-            f'user_{participant.user.id}', 
+            f'user_{participant.myUser.id}', 
             {
                 'type': 'send_tournament_invitation',
                 'tournament_name': participant.tournament.name,
                 'message': f"You have been invited to join the tournament {participant.tournament.name}! Do you think you have what it takes to win the prestigious Chèvre Verte Award?",
-                'user_id': participant.user.id,
+                'user_id': participant.myUser.id,
                 'user_name': participant.user.username,
-                'dest_user_id': request.user.id,
+                'dest_user_id': request.myUser.id,
                 'tournament_id': participant.tournament.id
             }
         )
         participant.received_invite = True
         participant.save()
-        return Response({'message': f'Invitation sent successfully to {participant.user.username} for {participant.tournament.name}'})
+        return Response({'message': f'Invitation successfully sent to {participant.user.username} for {participant.tournament.name}'})
 
-    @action(detail=False, methods=['GET'], url_path='status')
-    def get_participants_status(self, request):
+    #@action(detail=False, methods=['GET'], url_path='status')
+    #def get_participants_status(self, request):
+    #    tournament_id = request.query_params.get('tournament_id')
+    #    participants = self.queryset.filter(tournament_id=tournament_id)
+    #    serializer = self.get_serializer(participants, many=True)
+    #    return Response(serializer.data)
+
+    @action(detail=False, methods=['get'])
+    def status(self, request):
         tournament_id = request.query_params.get('tournament_id')
-        participants = self.queryset.filter(tournament_id=tournament_id)
-        serializer = self.get_serializer(participants, many=True)
-        return Response(serializer.data)
+        if not tournament_id:
+            return Response({'error': 'Tournament ID is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            tournament = Tournament.objects.get(id=tournament_id)
+        except Tournament.DoesNotExist:
+            return Response({'error': 'Tournament not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        participants = Participant.objects.filter(tournament=tournament)
+        data = [{'id': p.id, 'accepted_invite': p.accepted_invite} for p in participants]
+        return Response(data)
 
     @action(detail=True, methods=['PATCH'], url_path='update-status')
     def update_status(self, request, pk=None):

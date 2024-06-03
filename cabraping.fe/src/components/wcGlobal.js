@@ -2,6 +2,7 @@ import { showNotificationPopup } from "./showNotification.js";
 import { Chat_Update_js, getUserIdFromJWT } from "../pages/Chat/funcions-js.js";
 import { Friends_js } from "../pages/Friends/funcions-js.js";
 import { Users_js } from "../pages/Users/funcions-js.js";
+import { handleTournamentInvite } from "../pages/Tournament/funcions-js.js";
 
 const BACKEND_URL = "http://localhost:8000";
 let WSsocket = null;  // Global variable for the main WebSocket instance
@@ -41,30 +42,144 @@ function handleWebSocketMessage(message, userId) {
     }
 }
 
-function handleAcceptedInvite(message) {
+/*function handleTournamentWebSocketMessage(data, tournamentId) {
+    console.log(`Received WebSocket message for tournament ${tournamentId}:`, data);
+    switch (data.event) {
+        case 'game_invite':
+            if (data.type === 'tournament') {
+                handleTournamentInvite(data, tournamentId);
+            } else {
+                handleGameInvite(data);
+            }
+            break;
+        case 'accepted_invite':
+            handleAcceptedInvite(data, tournamentId);
+            break;
+        case 'rejected_invite':
+            handleRejectedInvite(data, tournamentId);
+            break;
+        case 'user_connected':
+            updateParticipantsList(data.user_id, 'connected', tournamentId);
+            break;
+        case 'user_disconnected':
+            updateParticipantsList(data.user_id, 'disconnected', tournamentId);
+            break;
+        case 'update_user_list':
+            updateParticipantsList(data.user_ids, 'updated', tournamentId);
+            break;
+        default:
+            console.log('Unknown event type:', data.event);
+    }
+}*/
+
+function handleAcceptedInvite(message, tournamentId) {
     console.log(`Invitation accepted by ${message.user_name}`);
-    updateParticipantsList(message.user_name, 'accepted');
-    const tournamentId = sessionStorage.getItem('currentTournamentId');
+    updateParticipantsList(message.user_name, 'accepted', false);
+    checkStartTournament(tournamentId);
+}
+
+function handleRejectedInvite(message, tournamentId) {
+    console.log(`Invitation rejected by ${message.user_name}`);
+    updateParticipantsList(message.user_name, 'rejected', false);
+    showNotification(`Invitation rejected by ${message.user_name}. Invite someone else or delete the tournament.`, 'error');
+    checkStartTournament(tournamentId);
+}
+
+
+export function sendTournamentInvitation(tournamentId, username) {
+    console.log(`Preparing to send tournament invitation for tournament ${tournamentId} to ${username}`);
+    const tournamentName = localStorage.getItem(`tournamentName_${tournamentId}`);
+    const creatorUsername = localStorage.getItem('username');
+    const userId = localStorage.getItem('userId');
+
+    if (!activeWebSockets[tournamentId] || activeWebSockets[tournamentId].readyState === WebSocket.CLOSED) {
+        const wsUrl = `ws://localhost:8000/ws/tournament/${tournamentId}/`;
+        const tournamentSocket = new WebSocket(wsUrl);
+
+        tournamentSocket.onopen = function() {
+            console.log(`WebSocket connection opened for tournament ${tournamentId}`);
+            activeWebSockets[tournamentId] = tournamentSocket;
+            sendMessage();
+        };
+
+        tournamentSocket.onmessage = function(event) {
+            const data = JSON.parse(event.data);
+            console.log(`Received WebSocket message for tournament ${tournamentId}:`, data);
+            handleTournamentWebSocketMessage(data, tournamentId);
+        };
+
+        tournamentSocket.onclose = function(event) {
+            console.log(`WebSocket connection closed for tournament ${tournamentId}:`, event);
+            delete activeWebSockets[tournamentId];
+        };
+
+        tournamentSocket.onerror = function(error) {
+            console.error(`WebSocket error for tournament ${tournamentId}:`, error);
+        };
+    } else {
+        sendMessage();
+    }
+
+    function sendMessage() {
+        const message = {
+            type: 'tournament',
+            event: 'game_invite',
+            user_id: userId,
+            message: `${creatorUsername} is inviting you to join the tournament ${tournamentName}. Do you think you have what it takes to win the prestigious Chèvre Verte Award?`,
+            user_name: creatorUsername,
+            dest_user_id: username,
+            tournament_id: tournamentId
+        };
+        console.log(`Sending tournament invitation message: ${JSON.stringify(message)}`);
+        activeWebSockets[tournamentId].send(JSON.stringify(message));
+    }
+}
+
+function handleTournamentWebSocketMessage(data, tournamentId) {
+    console.log(`Received WebSocket message for tournament ${tournamentId}:`, data);
+    if (!data.event) {
+        console.error('Missing event type in WebSocket message:', data);
+        return;
+    }
+
+    switch (data.event) {
+        case 'game_invite':
+            if (data.type === 'tournament') {
+                handleTournamentInvite(data, tournamentId);
+            } else {
+                handleGameInvite(data);
+            }
+            break;
+        case 'accepted_invite':
+            handleAcceptedInvite(data, tournamentId);
+            break;
+        case 'rejected_invite':
+            handleRejectedInvite(data, tournamentId);
+            break;
+        case 'user_connected':
+            updateParticipantsList(data.user_id, 'connected', tournamentId);
+            break;
+        case 'user_disconnected':
+            updateParticipantsList(data.user_id, 'disconnected', tournamentId);
+            break;
+        case 'update_user_list':
+            updateParticipantsList(data.user_ids, 'updated', tournamentId);
+            break;
+        default:
+            console.log('Unknown event type:', data.event);
+    }
+}
+
+
+function checkStartTournament(tournamentId) {
+    const startTournamentButton = document.getElementById('startTournamentButton');
     checkAllParticipantsAccepted(tournamentId).then(allAccepted => {
         if (allAccepted) {
-            document.getElementById('startTournamentButton').disabled = false;
+            startTournamentButton.disabled = false;
+        } else {
+            startTournamentButton.disabled = true;
         }
     });
-}
-
-function handleRejectedInvite(message) {
-    console.log(`Invitation rejected by ${message.user_name}`);
-    updateParticipantsList(message.user_name, 'rejected');
-    showNotification(`Invitation rejected by ${message.user_name}. Invite someone else or delete the tournament.`, 'error');
-}
-
-function checkStartTournament() {
-    const startTournamentButton = document.getElementById('startTournamentButton');
-    if (acceptedParticipants.length === 3) { // rachel - check if this needs to be 4 to include creator
-        startTournamentButton.disabled = false;
-    } else {
-        startTournamentButton.disabled = true;
-    }
 }
 
 function execute_processes_by_category(message, myUser) {
@@ -290,7 +405,11 @@ export function sendGameInvataeNotifications(userId, userName, destUserId, text)
 }
 
 // rachel - function to send tournament invitation
-export function sendTournamentInvitation(tournamentId, username) {
+/*export function sendTournamentInvitation(tournamentId, username) {
+    console.log(`Preparing to send tournament invitation for tournament ${tournamentId} to ${username}`);
+    const tournamentName = localStorage.getItem(`tournamentName_${tournamentId}`);
+    const userId = localStorage.getItem('userId');
+
     if (!activeWebSockets[tournamentId] || activeWebSockets[tournamentId].readyState === WebSocket.CLOSED) {
         const wsUrl = `ws://localhost:8000/ws/tournament/${tournamentId}/`;
         const tournamentSocket = new WebSocket(wsUrl);
@@ -319,44 +438,24 @@ export function sendTournamentInvitation(tournamentId, username) {
     }
 
     function sendMessage() {
+        const userId = localStorage.getItem('userId');
         const message = {
             type: 'tournament',
             event: 'game_invite',
-            message: `You are invited to join the tournament ${tournamentId}. Do you think you have what it takes to win the prestigious Chèvre Verte Award?`,
-            user_id: localStorage.getItem('userId'),
+            user_id: userId,
+            message: `${userId} is inviting you to join the tournament ${tournamentName}. Do you think you have what it takes to win the prestigious Chèvre Verte Award?`,
             user_name: localStorage.getItem('username'),
             dest_user_id: username,
             tournament_id: tournamentId
         };
+        console.log(`Sending tournament invitation message: ${JSON.stringify(message)}`);
         activeWebSockets[tournamentId].send(JSON.stringify(message));
     }
 }
 
-function handleTournamentWebSocketMessage(data, tournamentId) {
-    switch (data.event) {
-        case 'game_invite':
-            if (data.type === 'tournament') {
-                handleTournamentInvite(data);
-            } else {
-                handleGameInvite(data);
-            }
-            break;
-        case 'accepted_game':
-            handleAcceptedGame(data);
-            break;
-        case 'user_connected':
-            updateParticipantsList(data.user_id, 'connected');
-            break;
-        case 'user_disconnected':
-            updateParticipantsList(data.user_id, 'disconnected');
-            break;
-        case 'update_user_list':
-            updateParticipantsList(data.user_ids, 'updated');
-            break;
-        default:
-            console.log('Unknown event type:', data.event);
-    }
-}
+*/
+
+
 
 // Función para enviar un mensaje específico al WebSocket
 export function sendAcceptedGameNotifications(userId, userName, destUserId, game_id) {
@@ -474,6 +573,7 @@ export function sendDelleteMatchedMessage(userId, otherId) {
 
     WSsocket.send(JSON.stringify(message));
 }
+
 
 
 /*

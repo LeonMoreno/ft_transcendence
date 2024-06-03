@@ -1,7 +1,6 @@
 import { getToken } from "../../utils/get-token.js";
 import { showNotification } from '../../components/showNotification.js';
-import { sendTournamentInvitation } from '../../components/wcGlobal.js';
-import { activeWebSockets } from '../../components/wcGlobal.js';
+import { sendTournamentInvitation, activeWebSockets } from '../../components/wcGlobal.js';
 
 const BACKEND_URL = "http://localhost:8000";
 let invitedParticipants = [];  // List to keep track of invited participants
@@ -16,7 +15,13 @@ async function handleAddParticipant(e) {
         return;
     }
 
-    const tournamentId = sessionStorage.getItem('currentTournamentId');
+    const currentUser = localStorage.getItem('username');
+    if (participantName === currentUser) {
+        displayErrorMessage('You cannot invite yourself to the party. Have some manners!');
+        return;
+    }
+
+    const tournamentId = localStorage.getItem('currentTournamentId');
     if (!tournamentId) {
         displayErrorMessage('No tournament ID found. Please create a tournament first.');
         return;
@@ -28,6 +33,7 @@ async function handleAddParticipant(e) {
     } else if (isOnline) {
         const participantId = await getParticipantId(participantName, tournamentId);
         if (participantId) {
+            console.log(`Sending tournament invitation to ${participantName}`);
             sendTournamentInvitation(tournamentId, participantName);
             updateParticipantsList(participantName, 'invited');
         } else {
@@ -56,6 +62,10 @@ function checkAddParticipantButton(e) {
 
 async function checkAllParticipantsAccepted(tournamentId) {
     try {
+        if (!tournamentId) {
+            console.error('Tournament ID is null or undefined');
+            return;
+        }
         const response = await fetch(`${BACKEND_URL}/api/participants/status/?tournament_id=${tournamentId}`, {
             headers: {
                 'Authorization': `Bearer ${getToken()}`,
@@ -81,7 +91,7 @@ async function checkAllParticipantsAccepted(tournamentId) {
 function updateStartTournamentButtonState(participants) {
     const startTournamentButton = document.getElementById('startTournamentButton');
     const acceptedCount = participants.filter(participant => participant.accepted_invite).length;
-    if (acceptedCount === 3) { // Assuming the creator plus 3 participants
+    if (acceptedCount === 4) { // Including the creator
         startTournamentButton.disabled = false;
     } else {
         startTournamentButton.disabled = true;
@@ -90,18 +100,27 @@ function updateStartTournamentButtonState(participants) {
 
 // Function to update the list of participants in the UI
 function updateParticipantsList(participantName, status, isCreator = false) {
+    const currentUser = localStorage.getItem('username');
+    if (participantName === currentUser) {
+        displayErrorMessage('You cannot invite yourself to the party. Have some manners!');
+        return;
+    }
     const participantsList = document.getElementById('participantsList');
     if (participantsList) {
         // Check if the participant is already in the list to avoid duplication
         const existingParticipant = Array.from(participantsList.children).find(item => item.textContent.includes(participantName));
         if (existingParticipant) {
             existingParticipant.textContent = participantName + ' - ' + status;
+            displayErrorMessage('This user has been invited already. Don\'t be pushy.');
         } else {
             const listItem = document.createElement('li');
             listItem.textContent = isCreator ? participantName : participantName + ' - ' + "invited";
             participantsList.appendChild(listItem);
+            if (!isCreator) {
+                showNotification('Invitation successfully sent to ' + participantName + '.', 'success');
+            }
         }
-        checkAllParticipantsAccepted(sessionStorage.getItem('currentTournamentId'));
+        checkAllParticipantsAccepted(localStorage.getItem('currentTournamentId'));
     } else {
         displayErrorMessage("Participant list unavailable.");
     }
@@ -178,6 +197,11 @@ function displayNotification(message) {
     const modalMessage = document.getElementById('modalMessage');
     const closeButton = document.getElementById('closeModalButton');
 
+    if (!modal || !modalMessage || !closeButton) {
+        console.error('Notification modal elements not found');
+        return;
+    }
+
     modalMessage.textContent = message;
     modal.style.display = 'block';
 
@@ -217,7 +241,10 @@ function TournamentInit() {
 
     const startTournamentButton = document.getElementById('startTournamentButton');
     if (startTournamentButton) {
-        startTournamentButton.addEventListener('click', startTournament);
+        startTournamentButton.addEventListener('click', () => {
+            const tournamentId = localStorage.getItem('currentTournamentId');
+            startTournament(tournamentId);
+        });
         console.log("Event listener added to start tournament button");
     }
 }
@@ -246,7 +273,6 @@ async function getParticipantId(username, tournamentId) {
     }
 }
 
-
 async function handleCreateTournament(e) {
     e.preventDefault();
     console.log("Create Tournament form submitted");
@@ -262,7 +288,8 @@ async function handleCreateTournament(e) {
             const data = await response.json();
             showNotification("Tournament created successfully", "success");
             document.getElementById('tournamentNameInput').value = '';
-            sessionStorage.setItem('currentTournamentId', data.id);
+            localStorage.setItem('currentTournamentId', data.id);
+            localStorage.setItem(`tournamentName_${data.id}`, tournamentName); 
             updateParticipantsList('You (Creator)', 'invited', true); // Automatically adds the creator as a participant
             const addParticipantButton = document.getElementById('addParticipantButton');
             addParticipantButton.disabled = false;
@@ -329,7 +356,6 @@ function rejectInvitation(tournamentId, username) {
     activeWebSockets[tournamentId].send(JSON.stringify(message));
 }
 
-
 async function startTournament(tournamentId) {
     try {
         const response = await fetch(`${BACKEND_URL}/api/tournaments/${tournamentId}/start_tournament/`, {
@@ -356,6 +382,11 @@ async function startTournament(tournamentId) {
     }
 }
 
+export function handleTournamentInvite(data, tournamentId) {
+    console.log(`Tournament invitation received for tournament ${tournamentId}:`, data);
+    showNotification(`You have been invited to a tournament by ${data.user_name}. Tournament: ${data.tournament_name}`);
+    updateParticipantsList(data.user_id, 'invited', tournamentId);
+}
 
 export {
     createTournament,
@@ -364,10 +395,10 @@ export {
     displayNotification,
     displayErrorMessage,
     checkUserOnlineStatus,
-   // sendTournamentInvitation,
     startTournament,
     TournamentInit
 };
+
 
 
 /*import { getToken } from "../../utils/get-token.js";
