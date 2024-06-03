@@ -1,4 +1,7 @@
-import { sendFriendAcceptdNotifications, sendFriendDeletedNotifications } from "../../components/wcGlobal.js";
+import {
+  sendFriendAcceptdNotifications,
+  sendFriendDeletedNotifications,
+} from "../../components/wcGlobal.js";
 import { getToken } from "../../utils/get-token.js";
 import { showActiveFriends } from "../Chat/funcions-js.js";
 
@@ -38,15 +41,13 @@ export async function FriendsRender() {
   await fetchMyUserData();
 
   const friendsListElement = document.getElementById("friends-list");
-  if (!friendsListElement)
-  {
-    return null
+  if (!friendsListElement) {
+    return null;
   }
   friendsListElement.innerHTML = "";
 
   const friends = myUserData.friends || []; // Define friends here
 
-  // friends = myUserData.friends;
   if (!Array.isArray(friends)) {
     return null;
   }
@@ -59,12 +60,24 @@ export async function FriendsRender() {
   const responseGames = await fetch(`${BACKEND_URL}/api/games/`, {
     headers: { Authorization: `Bearer ${jwt}` },
   });
+
   const games = await responseGames.json();
 
   friendsListElement.innerHTML = friends
     .map((friend) => {
-      // Go to the game or Invite to a game
-      const inviterToGame = games.find((game) => {
+      // Check for unfinished games
+      const unfinishedGame = games.find((game) => {
+        return (
+          ((game.inviter.id === myUserData.id &&
+            game.invitee.id === friend.id) ||
+            (game.invitee.id === myUserData.id &&
+              game.inviter.id === friend.id)) &&
+          game.invitationStatus !== "FINISHED"
+        );
+      });
+
+      // Check for games that the user can join or continue
+      const canGoToGame = games.find((game) => {
         return (
           game.inviter.id === myUserData.id &&
           game.invitee.id === friend.id &&
@@ -72,8 +85,7 @@ export async function FriendsRender() {
         );
       });
 
-      // Accept to join the game
-      const invitedToGame = games.find(
+      const canAccceptGame = games.find(
         (game) =>
           game.invitee.id === myUserData.id &&
           game.inviter.id === friend.id &&
@@ -82,34 +94,49 @@ export async function FriendsRender() {
             game.invitationStatus === "ACCEPTED")
       );
 
-      // showActiveFriends
+      const hideInviteButton = Boolean(unfinishedGame);
 
-      let friendActive =  showActiveFriends(myUserData.friends, friend.id);
+      let friendActive = showActiveFriends(myUserData.friends, friend.id);
       let HTML_friendActive = "";
 
-      if (typeof(friendActive) === "boolean" && friendActive === true){
-        HTML_friendActive = `<p class="mb-0 ms-3 rounded-circle bg-success" style="height: 20px; width: 20px;"></p>`
+      if (typeof friendActive === "boolean" && friendActive === true) {
+        HTML_friendActive = `<p class="mb-0 ms-3 rounded-circle bg-success" style="height: 20px; width: 20px;"></p>`;
       }
-      if (typeof(friendActive) === "boolean" &&  friendActive === false){
-        HTML_friendActive = `<p class="mb-0 ms-3 rounded-circle bg-secondary" style="height: 20px; width: 20px;" ></p>`
+      if (typeof friendActive === "boolean" && friendActive === false) {
+        HTML_friendActive = `<p class="mb-0 ms-3 rounded-circle bg-secondary" style="height: 20px; width: 20px;" ></p>`;
       }
 
-      return `<li id="${
-        friend.id
-      }" class="list-group-item d-flex gap-4 align-items-center">
-      <h3>${friend.username}</h3>
-      ${HTML_friendActive}
-      <button type="button" class="btn btn-sm btn-primary" data-action="invite-game"
-      data-id="${friend.id}">Invite to a game</button>
-    ${
-      invitedToGame
-        ? `
-      <button type="button"
+      return `<li id="${friend.id}"
+        class="list-group-item d-flex gap-4 align-items-center">
+        <h3>${friend.username}</h3>
+        <span>${HTML_friendActive}</span>
+
+        ${
+          !hideInviteButton
+            ? `<button type="button" class="btn btn-sm btn-primary" data-action="invite-game"
+        data-id="${friend.id}">Invite to a game</button>`
+            : ""
+        }
+
+        ${
+          canGoToGame
+            ? `<a
+            href="/#game/${canGoToGame.id}"
+            class="btn btn-sm btn-primary"
+          >
+            Go to the game
+          </a>`
+            : ""
+        }
+
+       ${
+         canAccceptGame
+           ? `<button type="button"
         class="btn btn-sm btn-primary"
         data-action="accept-game"
-        data-id="${invitedToGame.id}">Accept to join the game</button>`
-        : ""
-    }
+        data-id="${canAccceptGame.id}">Accept to join the game</button>`
+           : ""
+       }
     </li>`;
     })
     .join("");
@@ -173,7 +200,7 @@ export async function FriendRequestsRender() {
   const friendRequestsListElement = document.getElementById(
     "friend-requests-list"
   );
-  if (!friendRequestsListElement){
+  if (!friendRequestsListElement) {
     return null;
   }
   friendRequestsListElement.innerHTML = "";
@@ -246,7 +273,11 @@ export async function FriendRequestsRender() {
 
       FriendsRender();
       FriendRequestsRender();
-      sendFriendAcceptdNotifications(myUserData.id, myUserData.username, fromiId)
+      sendFriendAcceptdNotifications(
+        myUserData.id,
+        myUserData.username,
+        fromiId
+      );
     });
   });
 
@@ -265,7 +296,11 @@ export async function FriendRequestsRender() {
 
       FriendsRender();
       FriendRequestsRender();
-      sendFriendDeletedNotifications(myUserData.id, myUserData.username, fromiId);
+      sendFriendDeletedNotifications(
+        myUserData.id,
+        myUserData.username,
+        fromiId
+      );
     });
   });
 }
