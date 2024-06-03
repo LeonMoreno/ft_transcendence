@@ -9,8 +9,6 @@ RUN apt-get update && apt-get install -y netcat-openbsd && rm -rf /var/lib/apt/l
 
 # We copy the requirements files first to take advantage of Docker's layer cache.
 COPY ./cabraping.be/pip_environment_dependencies.txt /app/
-COPY ./cabraping.be/localhost.crt /app/
-COPY ./cabraping.be/localhost.key /app/
 
 # We install the project dependencies
 RUN pip install --upgrade pip
