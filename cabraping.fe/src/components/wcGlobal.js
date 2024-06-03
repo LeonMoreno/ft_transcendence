@@ -10,6 +10,8 @@ const serverPort = 8000; // Specify the port your backend server is running on
 const BACKEND_URL = `http://${serverIPAddress}:${serverPort}`;
 const WS_URL = `ws://${serverIPAddress}:${serverPort}`;
 
+let WSsocket = null;  // Variable global para almacenar la instancia del WebSocket
+
 let myUser = null;
 
 
