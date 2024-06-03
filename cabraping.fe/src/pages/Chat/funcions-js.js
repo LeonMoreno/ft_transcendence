@@ -37,7 +37,7 @@ export async function Chat_Update_js() {
 
   // Extract user_id from JWT
   user_id = getUserIdFromJWT;
-  
+
   const responseMyUser = await fetch(`${BACKEND_URL}/api/me/`, {
     headers: { Authorization: `Bearer ${jwt}` },
   });
@@ -94,7 +94,6 @@ export async function Chat_js() {
     UserName = myUser.username;
 
     blocks_users_frontend(jwt);
-
 
     // Agregar evento para el botón "Block User"
     const blockUserButton = document.getElementById('blockUserButton');
@@ -168,60 +167,91 @@ export function showActiveFriends(friends, check_id) {
   const activeUserIds = JSON.parse(localStorage.getItem('id_active_users')) || [];
   const activeFriends = friends.filter(friend => activeUserIds.includes(String(friend.id)));
 
-  console.log("🇲🇽🇲🇽🇲🇽🇲🇽");
-  console.log("friends:", friends);
-  console.log("activeFriends:", activeFriends);
-
-
   if (activeFriends[0] && String(activeFriends[0].id) === String(check_id)) {
-    console.log("----> showActiveFriends 🍀");
     return true
   }
-
-  console.log("----> showActiveFriends 🚨");
   return false
 }
 
-  async function inviteGame(jwt) {
+async function inviteGame(jwt) {
+  if (communication_user_id < 1) {
+      return;
+  }
 
-    if (communication_user_id < 1){
-      return
-    }
+  const responseGames = await fetch(`${BACKEND_URL}/api/games/`, {
+      headers: { Authorization: `Bearer ${jwt}` },
+  });
+  const games = await responseGames.json();
 
+  const existingGame = games.find(
+      (game) =>
+          game.invitationStatus === "PENDING" &&
+          ((game.invitee.id === myUser.id && game.inviter.id === communication_user_id) ||
+          (game.inviter.id === myUser.id && game.invitee.id === communication_user_id))
+  );
 
-    console.log("✈️✈️✈️");
-    console.log("myUser.id:",myUser.id, ", communication_user_id:", communication_user_id);
+  if (existingGame) {
+      showNotification('There is already a pending game invitation', 'warning');
+      return;
+  }
 
-
-    const response = await fetch(`${BACKEND_URL}/api/games/`, {
+  const response = await fetch(`${BACKEND_URL}/api/games/`, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${jwt}`,
-        "Content-Type": "application/json",
+          Authorization: `Bearer ${jwt}`,
+          "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        invitationStatus: "PENDING",
-        inviter: myUser.id,
-        invitee: communication_user_id,
+          invitationStatus: "PENDING",
+          inviter: myUser.id,
+          invitee: communication_user_id,
       }),
-    });
+  });
 
-    // I send you an invitation to the game
-
-    console.log("-> response");
-    console.log(response);
-
-    if (response.ok) {
+  if (response.ok) {
       showNotification('Sent invitation', 'success');
-      sendGameInvataeNotifications(user_id, UserName, communication_user_id);
-    } else {
-      showNotification('Failed to invitation user', 'error');
-    }
-
-    const inviteGameButtonButton = document.getElementById('inviteGameButton');
-    if (inviteGameButtonButton) inviteGameButtonButton.disabled = true;
-
+      sendGameInvataeNotifications(user_id, UserName, communication_user_id, "sendGameInvataeNotifications");
+  } else {
+      showNotification('Failed to invite user', 'error');
   }
+
+  const inviteGameButtonButton = document.getElementById('inviteGameButton');
+  if (inviteGameButtonButton) inviteGameButtonButton.disabled = true;
+}
+
+  // async function inviteGame(jwt) {
+
+  //   if (communication_user_id < 1){
+  //     return
+  //   }
+
+  //   const response = await fetch(`${BACKEND_URL}/api/games/`, {
+  //     method: "POST",
+  //     headers: {
+  //       Authorization: `Bearer ${jwt}`,
+  //       "Content-Type": "application/json",
+  //     },
+  //     body: JSON.stringify({
+  //       invitationStatus: "PENDING",
+  //       inviter: myUser.id,
+  //       invitee: communication_user_id,
+  //     }),
+  //   });
+
+  //   // I send you an invitation to the game
+
+  //   if (response.ok) {
+  //     showNotification('Sent invitation', 'success');
+  //     sendGameInvataeNotifications(user_id, UserName, communication_user_id, "sendGameInvataeNotifications");
+  //   } else {
+  //     showNotification('Failed to invitation user', 'error');
+  //   }
+
+  //   const inviteGameButtonButton = document.getElementById('inviteGameButton');
+  //   if (inviteGameButtonButton) inviteGameButtonButton.disabled = true;
+
+  // }
+
 
   async function checkRequestGame() {
 
@@ -239,27 +269,26 @@ export function showActiveFriends(friends, check_id) {
     });
     const games = await responseGames.json();
 
-    console.log("--> 🎮 games");
-    console.log(games);
-
-    console.log("---> 🎮 my_id:", my_id, ", communication_user_id:", communication_user_id);
-    console.log("---> 🎮🎮🎮 leve-1:", games.find( (game) => game.invitee.id === Number(my_id) ));
-    console.log("---> 🎮🎮🎮 leve-2:", games.find( (game) => game.invitee.id === Number(my_id) && game.inviter.id === Number(communication_user_id) ));
-    console.log("---> 🎮🎮🎮 leve-2:", games.find( (game) => game.invitee.id === Number(my_id) && game.inviter.id === Number(communication_user_id) && game.invitationStatus === "PENDING" ));
-
+    console.log("--> 🎮 games:", games);
 
     const game = games.find(
       (game) =>
-        game.invitee.id === my_id &&
-        game.inviter.id === communication_user_id &&
-        game.invitationStatus === "PENDING"
+        game.invitationStatus === "PENDING" &&
+        (game.invitee.id === my_id ||
+        game.inviter.id === my_id)
     );
+    // const game = games.find(
+    //   (game) =>
+    //     game.invitee.id === my_id &&
+    //     game.inviter.id === communication_user_id &&
+    //     game.invitationStatus === "PENDING"
+    // );
 
-    console.log("--> 🎮🎮 game:", game);
+    console.log("--> 🎮 game:", game);
     if(game){
       gameId = game.id;
-      const acceptGameButton = document.getElementById('acceptGameButton');
-      if (acceptGameButton) acceptGameButton.disabled = false;
+      // const acceptGameButton = document.getElementById('acceptGameButton');
+      // if (acceptGameButton) acceptGameButton.disabled = false;
 
       const inviteGameButtonButton = document.getElementById('inviteGameButton');
       if (inviteGameButtonButton) inviteGameButtonButton.disabled = true;
@@ -270,23 +299,22 @@ export function showActiveFriends(friends, check_id) {
       (game) =>
         game.invitee.id === my_id &&
         game.invitationStatus === "ACCEPTED"
-    );
+      );
 
     if (game_ACCEPTED){
       window.location.href = `/#game/${game_ACCEPTED.id}`;
     }
 
     // send notificacion
-
     const game_pending = games.find(
       (game) =>
         game.invitee.id === my_id &&
         game.invitationStatus === "PENDING"
     );
 
-    if(game_pending){
-      showNotificationPopup(game_pending.inviter.username, "I send you an invitation to the game");
-    }
+    // if(game_pending){
+      // showNotificationPopup(game_pending.inviter.username, "I send you an invitation to the game");
+    // }
 
 }
 
@@ -295,6 +323,10 @@ export function showActiveFriends(friends, check_id) {
     const jwt = localStorage.getItem('jwt');
     if (!jwt) {
         return;
+    }
+
+    if (gameId === "-1" && gameId === -1){
+      return
     }
 
     const result = await fetch(
@@ -317,10 +349,6 @@ export function showActiveFriends(friends, check_id) {
 
 
   async function blockUser(userId) {
-
-    console.log("--> blockUser");
-    console.log("---> communication_user_id");
-    console.log(communication_user_id);
 
     if (user_id < 0 || communication_user_id < 0){
       return;
@@ -427,7 +455,6 @@ function handleSendClick() {
               "UserName": UserName,
               "userDetails": myUser,
           }
-          console.log("-> sockets[channel_now]:", sockets[channel_now]);
           sockets[channel_now].send(JSON.stringify(info_send)); // Send message through the corresponding WebSocket
           textarea.value = '';
           addMessageToChat(info_send);
@@ -696,6 +723,7 @@ function switchChannel(newChannelId) {
 
     // Load messages from local storage
     loadMessagesFromLocalStorage(newChannelId);
+    console.log("--> checkRequestGame();");
     checkRequestGame();
   }
 }
@@ -736,7 +764,7 @@ function loadMessagesFromLocalStorage(channelId) {
 }
 
 // Function to obtain the JWT user ID
-function getUserIdFromJWT(jwt) {
+export function getUserIdFromJWT(jwt) {
   const payload = jwt.split(".")[1];
   const decodedPayload = JSON.parse(atob(payload));
   return decodedPayload.user_id;
@@ -781,14 +809,13 @@ function changeNameChanel(channel) {
 // Function to create a WebSocket connection
 function createWebSocketConnection(channelId) {
   if (sockets[channelId]) {
-    console.log(`Already connected to channel ${channelId}`);
+    // console.log(`Already connected to channel ${channelId}`);
     return; // Already connected
   }
 
   const ws = new WebSocket(`${WS_URL}/ws/chat/${channelId}/`);
   ws.addEventListener("message", (event) => {
       const message = JSON.parse(event.data);
-      console.log("--> Mensaje ❤️: ", message);
       addMessageToChat(message);
   });
   ws.addEventListener("close", () => {
@@ -798,7 +825,6 @@ function createWebSocketConnection(channelId) {
 }
 
 function handleSaveChannelClick() {
-  console.log("--> 🦾 Click 🦾");
 
   let selectedOptions =
     document.getElementById("channelMembers").selectedOptions;
@@ -808,7 +834,7 @@ function handleSaveChannelClick() {
 
   selectedUsersMember.push(user_id);
 
-  console.log("selectedUsersMember: ", selectedUsersMember);
+  // console.log("selectedUsersMember: ", selectedUsersMember);
 
   // Extract the user name using user_id
   const userName =
@@ -837,14 +863,14 @@ function handleSaveChannelClick() {
   };
 
   // Displays the information in the console
-  console.log("channelData: ", channelData);
+  // console.log("channelData: ", channelData);
 
   // Perform POST request
   fetch(url, requestOptions)
     .then((response) => response.json())
     .then((data) => {
-      console.log("--> response");
-      console.log(data.name);
+      // console.log("--> response");
+      // console.log(data.name);
       if (data.name) {
         // Verify that the response status is 200 or 201.
         showNotification("Channel successfully created", "success");

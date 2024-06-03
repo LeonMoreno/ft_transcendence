@@ -13,7 +13,13 @@ export async function Game_js() {
   const jwt = getToken();
   const gameId = getHash();
 
-  if (gameId === "/") return;
+  if (gameId === "-1")
+  {
+    console.log("---------------------------------------------------");
+    console.log("Error in Game: -1");
+  }
+  if (gameId === "/" || gameId === "-1") return;
+  // if (gameId === "/" || gameId === "-1") return;
 
   const responseGame = await fetch(`${BACKEND_URL}/api/games/${gameId}/`, {
     headers: { Authorization: `Bearer ${jwt}` },
