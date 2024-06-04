@@ -43,7 +43,7 @@ export async function loginUser(username, password) {
 
   } catch (error) {
       console.error('Login error:', error);
-      displayErrorMessage('An error occurred during login');
+      displayErrorMessage('An error occurred during login. Have you signed up before trying to log in?');
   }
 }
 
