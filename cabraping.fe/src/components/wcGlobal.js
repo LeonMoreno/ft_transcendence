@@ -133,7 +133,7 @@ export function sendTournamentInvitation(tournamentId, participantUsername, part
     } else {
 
         // funcion to notifi the person is invite the
-        const data = create_data_for_TournamentWebSocket({tournamentId: tournamentId, type: "tournament", dest_user_id: participantId });
+        const data = create_data_for_TournamentWebSocket({tournamentId: tournamentId, event: "game_invite",  type: "tournament", dest_user_id: participantId });
         console.log("👋 👋 data:", data);
         handleTournamentWebSocketMessage(data, tournamentId);
         sendMessage();
@@ -215,10 +215,10 @@ function handleGameInvite(data) {
     //updateParticipantsList(data.user_name, 'invited');
 }
 
-export function create_data_for_TournamentWebSocket({tournamentId, type, dest_user_id} ) {
+export function create_data_for_TournamentWebSocket({tournamentId, event, type, dest_user_id} ) {
     const userId = localStorage.getItem('userId');
     const creatorUsername = localStorage.getItem('username');
-    return {tournamentId: tournamentId, type: type, userName: creatorUsername, user_id: userId, dest_user_id: dest_user_id }
+    return {tournamentId: tournamentId, event: event , type: type, userName: creatorUsername, user_id: userId, dest_user_id: dest_user_id }
 }
 
 export function handleTournamentWebSocketMessage(data, tournamentId) {
