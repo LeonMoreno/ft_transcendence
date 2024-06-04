@@ -1,5 +1,5 @@
 import { getToken } from "../../utils/get-token.js";
-import { showNotification } from '../../components/showNotification.js';
+import { showNotification, showNotificationPopup } from '../../components/showNotification.js';
 import { sendTournamentInvitation, activeWebSockets } from '../../components/wcGlobal.js';
 
 const BACKEND_URL = "http://localhost:8000";
@@ -281,7 +281,12 @@ async function handleCreateTournament(e) {
         displayErrorMessage('Tournament name cannot be empty.');
         return;
     }
-    try {
+    try { // rachel - enable the below once the tournaments are up and running
+        /*const currentTournamentId = localStorage.getItem('currentTournamentId');
+        if (currentTournamentId) {
+            displayErrorMessage('You cannot create another tournament while the previous one is not finished.');
+            return;
+        }*/
         const response = await createTournament(tournamentName);
         console.log('Response status:', response.status);
         if (response.ok) {
@@ -384,7 +389,7 @@ async function startTournament(tournamentId) {
 
 export function handleTournamentInvite(data, tournamentId) {
     console.log(`Tournament invitation received for tournament ${tournamentId}:`, data);
-    showNotification(`You have been invited to a tournament by ${data.user_name}. Tournament: ${data.tournament_name}`);
+    showNotificationPopup(data.user_name, `You have been invited to a tournament by ${data.user_name}. Tournament: ${data.tournament_name}`);
     updateParticipantsList(data.user_id, 'invited', tournamentId);
 }
 

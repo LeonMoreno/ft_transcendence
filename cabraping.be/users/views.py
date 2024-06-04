@@ -251,6 +251,7 @@ def custom_login(request):
             'message': 'Logged in successfully'
         })
 
+
     return Response({'error': 'Invalid credentials'}, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
