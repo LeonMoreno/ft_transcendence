@@ -199,30 +199,34 @@ export function updateParticipantsList(participantName, status, isCreator = fals
 async function checkUserOnlineStatus(username) {
     console.log(`Checking online status for user: ${username}`);
     try {
-        const exists = await userExists(username); // checks if the user exists first
-        if (!exists) {
-            displayErrorMessage("User not found. Please double-check their nickname.");
-            return null; // User does not exist
-        }
-
-        const response = await fetch(`${BACKEND_URL}/api/users/${username}/status/`, {
+        const response = await fetch(`${BACKEND_URL}/api/users/`, {
             headers: {
                 'Authorization': `Bearer ${getToken()}`,
                 'Content-Type': 'application/json'
             }
         });
-        //const response = await getUserIdByUsername(username);
-        console.log(`Response status: ${response.status}`);
 
         if (!response.ok) {
-            console.error(`Error checking user online status: ${response.status} ${response.statusText}`);
-            displayErrorMessage("An error occurred while checking the user's online status.");
+            console.error(`Error fetching users: ${response.status} ${response.statusText}`);
+            displayErrorMessage("An error occurred while fetching users.");
             return null;
         }
 
-        const data = await response.json();
-        console.log(`User online status: ${data.isOnline}`);
-        return data.isOnline;
+        const users = await response.json();
+        // Check if the username exists in the users list
+        const user = users.find(user => user.username === username);
+
+        if (!user) {
+            displayErrorMessage("User not found. Please double-check their username.");
+            return null; // User does not exist
+        }
+
+        // Check if the user ID is in the list of active users from localStorage
+        const activeUsers = JSON.parse(localStorage.getItem('id_active_users')) || [];
+        const isActive = activeUsers.includes(String(user.id));
+
+        console.log(`User ${username} is ${isActive ? 'online' : 'offline'}`);
+        return isActive;
 
     } catch (error) {
         console.error('Error checking user online status:', error);

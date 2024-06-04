@@ -40,7 +40,7 @@ function handleWebSocketMessage(message, userId) {
             break;
         case 'game_invite':
             if (message.type === 'tournament') {
-                // handleTournamentInvite(message, message.tournament_id);
+                handleTournamentInvite(message, message.tournament_id);
             } else {
                 handleGameInvite(message);
             }
