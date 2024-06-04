@@ -5,7 +5,8 @@ export function createUser(email, password) {
 
   const img = "https://i.pinimg.com/736x/22/d8/71/22d8716223532ec51ea7b0ea471bbe67.jpg"
 
-  fetch('http://127.0.0.1:8000/api/users/', {
+//   fetch('http://127.0.0.1:8000/api/users/', {
+  fetch('http://localhost:8000/api/users/', {
       method: 'POST',
       headers: {
           'Content-Type': 'application/json'

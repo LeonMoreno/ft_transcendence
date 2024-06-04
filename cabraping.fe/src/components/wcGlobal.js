@@ -6,7 +6,7 @@ import { updateParticipantsList } from "../pages/Tournament/funcions-js.js";
 import { getToken } from "../../utils/get-token.js";
 
 const BACKEND_URL = "http://localhost:8000";
-let WSsocket = null;  // Global variable for the main WebSocket instance
+let WSsocket;  // Global variable for the main WebSocket instance
 let myUser = null;
 export let activeWebSockets = {}; // Track multiple WebSocket connections
 
@@ -40,10 +40,14 @@ function handleWebSocketMessage(message, userId) {
             break;
         case 'game_invite':
             if (message.type === 'tournament') {
-                handleTournamentInvite(message, message.tournament_id);
+                // handleTournamentInvite(message, message.tournament_id);
             } else {
                 handleGameInvite(message);
             }
+            break;
+        case 'tournament_invite':
+            console.log("🍀--> tournament_invite🍀:", message);
+            handleTournamentInvite(message, message.tournament_id);
             break;
         default:
             console.log('Unknown event type:', message.event);
@@ -133,10 +137,17 @@ export function sendTournamentInvitation(tournamentId, participantUsername, part
     } else {
 
         // funcion to notifi the person is invite the
-        const data = create_data_for_TournamentWebSocket({tournamentId: tournamentId, event: "game_invite",  type: "tournament", dest_user_id: participantId });
+        const data = create_data_for_TournamentWebSocket({
+            tournamentId: tournamentId,
+            event: "game_invite",
+            type: "tournament",
+            dest_user_id: participantId
+        });
         console.log("👋 👋 data:", data);
-        handleTournamentWebSocketMessage(data, tournamentId);
-        sendMessage();
+        // destUserId;
+        // handleTournamentWebSocketMessage(data, tournamentId);
+        sendSendTorunamentNotifications(userId, creatorUsername, participantId, tournamentId, tournamentName);
+        // sendMessage();
     }
 
     async function sendMessage() {
@@ -206,6 +217,12 @@ export async function getUserIdByUsername(username) {
 function handleTournamentInvite(data, tournamentId) {
     console.log(`Tournament invitation received for tournament ${tournamentId}:`, data);
     showNotificationPopup(data.user_name, `, you have been invited to a tournament by ${data.user_name}. Tournament: ${data.tournament_name}`);
+
+
+    // console.log(" ✈️ sendSendTorunamentNotifications");
+    // const tournamentName = localStorage.getItem(`tournamentName_${tournamentId}`);
+    // sendSendTorunamentNotifications(data.userId, data.userName, data.destUserId, tournamentId, tournamentName );
+
     updateParticipantsList(data.user_id, 'invited', tournamentId);
 }
 
@@ -231,6 +248,7 @@ export function handleTournamentWebSocketMessage(data, tournamentId) {
     switch (data.event) {
         case 'game_invite':
             if (data.type === 'tournament') {
+                console.log(" 💡 tournament 💡 ");
                 handleTournamentInvite(data, tournamentId);
             } else {
                 handleGameInvite(data);
@@ -343,7 +361,7 @@ export async function connectWebSocketGlobal() {
     WSsocket = new WebSocket(wsUrl);
 
     WSsocket.onopen = function () {
-        console.log('WebSocket connection opened');
+        console.log('🤯  WebSocket connection opened');
     };
 
     WSsocket.onmessage = function (event) {
@@ -556,6 +574,25 @@ export function sendAcceptedGameNotifications(userId, userName, destUserId, game
         user_id: String(userId),
         user_name: userName,
         dest_user_id: String(destUserId)
+    };
+
+    WSsocket.send(JSON.stringify(message));
+}
+
+export function sendSendTorunamentNotifications(userId, userName, destUserId, tournament_id, tournament_name) {
+    if (!WSsocket || WSsocket.readyState !== WebSocket.OPEN) {
+        console.error('WebSocket is not connected');
+        return;
+    }
+
+    const message = {
+        type: 'tournament_invite',
+        message: 'You have been invited to join the tournament!',
+        user_id: userId,
+        user_name: userName,
+        dest_user_id: destUserId,
+        tournament_id: tournament_id,
+        tournament_name: tournament_name
     };
 
     WSsocket.send(JSON.stringify(message));
