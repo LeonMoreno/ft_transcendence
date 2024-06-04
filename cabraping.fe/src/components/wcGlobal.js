@@ -146,13 +146,15 @@ export function sendTournamentInvitation(tournamentId, participantUsername) {
             message: `${creatorUsername} is inviting you to join the tournament ${tournamentName}. Do you think you have what it takes to win the prestigious Chèvre Verte Award?`,
             user_name: creatorUsername,
             dest_user_id: recipientId,
-            tournament_id: tournamentId
+            tournament_id: tournamentId,
+            tournament_name: tournamentName
         };
 
         console.log(`Sending tournament invitation message: ${JSON.stringify(message)}`);
         activeWebSockets[tournamentId].send(JSON.stringify(message));
     }
 }
+
 
 async function getUserIdByUsername(username) {
     try {
@@ -190,6 +192,11 @@ async function getUserIdByUsername(username) {
     }
 }
 
+function handleTournamentInvite(data, tournamentId) {
+    console.log(`Tournament invitation received for tournament ${tournamentId}:`, data);
+    showNotificationPopup(data.user_name, `You have been invited to a tournament by ${data.user_name}. Tournament: ${data.tournament_name}`);
+    updateParticipantsList(data.user_id, 'invited', tournamentId);
+}
 
 function handleTournamentWebSocketMessage(data, tournamentId) {
     console.log(`Received WebSocket message for tournament ${tournamentId}:`, data);

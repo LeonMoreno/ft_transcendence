@@ -387,12 +387,6 @@ async function startTournament(tournamentId) {
     }
 }
 
-export function handleTournamentInvite(data, tournamentId) {
-    console.log(`Tournament invitation received for tournament ${tournamentId}:`, data);
-    showNotificationPopup(data.user_name, `You have been invited to a tournament by ${data.user_name}. Tournament: ${data.tournament_name}`);
-    updateParticipantsList(data.user_id, 'invited', tournamentId);
-}
-
 export {
     createTournament,
     handleCreateTournament,

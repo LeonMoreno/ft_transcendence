@@ -13,6 +13,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         )
 
         await self.accept()
+        print(f'WebSocket connection opened for tournament {self.tournament_id}')
 
     async def disconnect(self, close_code):
         # Leave room group
@@ -20,10 +21,12 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             self.group_name,
             self.channel_name
         )
+        print(f'WebSocket connection closed for tournament {self.tournament_id}: {close_code}')
 
     async def receive(self, text_data):
         data = json.loads(text_data)
         event = data.get('event')
+        print(f'Received event: {event}, data: {data}')
         
         # Route the message based on the event type
         if event == 'game_invite':
@@ -35,7 +38,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         # Add other event handlers as needed
 
     async def handle_game_invite(self, data):
-        # Handle the game invite event
+        print(f'Handling game invite: {data}')
         await self.channel_layer.group_send(
             self.group_name,
             {
@@ -43,47 +46,54 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                 'message': data['message'],
                 'user_name': data['user_name'],
                 'tournament_name': data['tournament_name'],
-                'event': 'game_invite'
+                'event': 'game_invite',
+                'dest_user_id': data['dest_user_id']
             }
         )
 
     async def handle_accepted_invite(self, data):
-        # Handle the accepted invite event
+        print(f'Handling accepted invite: {data}')
         await self.channel_layer.group_send(
             self.group_name,
             {
                 'type': 'accepted_invite',
                 'message': data['message'],
                 'user_name': data['user_name'],
-                'event': 'accepted_invite'
+                'event': 'accepted_invite',
+                'dest_user_id': data['dest_user_id']
             }
         )
 
     async def handle_rejected_invite(self, data):
-        # Handle the rejected invite event
+        print(f'Handling rejected invite: {data}')
         await self.channel_layer.group_send(
             self.group_name,
             {
                 'type': 'rejected_invite',
                 'message': data['message'],
                 'user_name': data['user_name'],
-                'event': 'rejected_invite'
+                'event': 'rejected_invite',
+                'dest_user_id': data['dest_user_id']
             }
         )
 
     # Event handler functions that send messages to WebSocket clients
     async def game_invite(self, event):
+        print(f'Sending game invite to WebSocket client: {event}')
         await self.send(text_data=json.dumps(event))
 
     async def accepted_invite(self, event):
+        print(f'Sending accepted invite to WebSocket client: {event}')
         await self.send(text_data=json.dumps(event))
 
     async def rejected_invite(self, event):
+        print(f'Sending rejected invite to WebSocket client: {event}')
         await self.send(text_data=json.dumps(event))
 
     # Receive message from tournament group
     async def tournament_message(self, event):
         message = event['message']
+        print(f'Receiving tournament message: {message}')
 
         # Send message to WebSocket
         await self.send(text_data=json.dumps({
@@ -92,6 +102,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
 
     async def send_update(self, event):
         participants = event['participants']
+        print(f'Sending update to WebSocket client: {participants}')
         await self.send(text_data=json.dumps({
             'participants': participants
         }))
