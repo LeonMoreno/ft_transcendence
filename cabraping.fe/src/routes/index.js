@@ -75,11 +75,11 @@ const router = async () => {
     await render[index]();
   }
 
-  if (user_location[0] !== 'chat') {
-    await Chat_Update_js();
-  }
+  // if (user_location[0] !== 'chat') {
+  //   await Chat_Update_js();
+  // }
 
-  await connectWebSocketGlobal();
+  // await connectWebSocketGlobal();
 };
 
 export default router;
