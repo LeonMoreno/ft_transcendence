@@ -2,8 +2,9 @@ import { showNotificationPopup } from "./showNotification.js";
 import { Chat_Update_js, getUserIdFromJWT } from "../pages/Chat/funcions-js.js";
 import { Friends_js } from "../pages/Friends/funcions-js.js";
 import { Users_js } from "../pages/Users/funcions-js.js";
-import { updateParticipantsList } from "../pages/Tournament/funcions-js.js";
+import { updateParticipantsList, acceptTournamentInvitation, rejectTournamentInvitation } from "../pages/Tournament/funcions-js.js";
 import { getToken } from "../../utils/get-token.js";
+import { showModal, hideModal } from "../../utils/modal.js";
 
 const BACKEND_URL = "http://localhost:8000";
 let WSsocket;  // Global variable for the main WebSocket instance
@@ -107,16 +108,15 @@ export function sendTournamentInvitation(tournamentId, participantUsername, part
     console.log(` 😰 activeWebSockets:`, activeWebSockets);
     console.log(` 😰 activeWebSockets[tournamentId]:`, activeWebSockets[tournamentId]);
 
-    // the next code is gona happend in is thisconect the  [`ws://localhost:8000/ws/tournament/${tournamentId}/`]
     if (!activeWebSockets[tournamentId] || activeWebSockets[tournamentId].readyState === WebSocket.CLOSED) {
         const wsUrl = `ws://localhost:8000/ws/tournament/${tournamentId}/`;
         const tournamentSocket = new WebSocket(wsUrl);
         console.log(`🤖 tournamentSocket:`, tournamentSocket);
 
-        tournamentSocket.onopen = async function() {
+        tournamentSocket.onopen = function() {
             console.log(`🛜 WebSocket connection opened for tournament ${tournamentId}`);
             activeWebSockets[tournamentId] = tournamentSocket;
-            await sendMessage();
+            sendMessage();
         };
 
         tournamentSocket.onmessage = function(event) {
@@ -136,7 +136,7 @@ export function sendTournamentInvitation(tournamentId, participantUsername, part
         };
     } else {
 
-        // funcion to notifi the person is invite the
+        // funcion to notify the invitee
         const data = create_data_for_TournamentWebSocket({
             tournamentId: tournamentId,
             event: "game_invite",
@@ -146,7 +146,7 @@ export function sendTournamentInvitation(tournamentId, participantUsername, part
         console.log("👋 👋 data:", data);
         // destUserId;
         // handleTournamentWebSocketMessage(data, tournamentId);
-        sendSendTorunamentNotifications(userId, creatorUsername, participantId, tournamentId, tournamentName);
+        sendTournamentNotifications(userId, creatorUsername, participantId, tournamentId, tournamentName);
         // sendMessage();
     }
 
@@ -214,17 +214,28 @@ export async function getUserIdByUsername(username) {
     }
 }
 
-function handleTournamentInvite(data, tournamentId) {
+export function handleTournamentInvite(data, tournamentId) {
     console.log(`Tournament invitation received for tournament ${tournamentId}:`, data);
-    showNotificationPopup(data.user_name, `, you have been invited to a tournament by ${data.user_name}. Tournament: ${data.tournament_name}`);
+    // Set the message in the modal
+    const message = `${data.user_name}, you have been invited to a tournament by ${data.user_name}. Tournament name: ${data.tournament_name}`;
+    document.getElementById('tournamentInviteMessage').innerText = message;
 
+    // Show the modal
+    showModal('tournamentInviteModal');
 
-    // console.log(" ✈️ sendSendTorunamentNotifications");
-    // const tournamentName = localStorage.getItem(`tournamentName_${tournamentId}`);
-    // sendSendTorunamentNotifications(data.userId, data.userName, data.destUserId, tournamentId, tournamentName );
+    // Attach event listeners for modal buttons
+    document.getElementById('acceptTournamentInvite').onclick = () => {
+        acceptTournamentInvitation(tournamentId, data.user_name);
+        hideModal('tournamentInviteModal');
+    };
+    document.getElementById('rejectTournamentInvite').onclick = () => {
+        rejectTournamentInvitation(tournamentId, data.user_name);
+        hideModal('tournamentInviteModal');
+    };
 
     updateParticipantsList(data.user_id, 'invited', tournamentId);
 }
+
 
 function handleGameInvite(data) {
     console.log('Game Invite:', data);
@@ -579,7 +590,7 @@ export function sendAcceptedGameNotifications(userId, userName, destUserId, game
     WSsocket.send(JSON.stringify(message));
 }
 
-export function sendSendTorunamentNotifications(userId, userName, destUserId, tournament_id, tournament_name) {
+export function sendTournamentNotifications(userId, userName, destUserId, tournament_id, tournament_name) {
     if (!WSsocket || WSsocket.readyState !== WebSocket.OPEN) {
         console.error('WebSocket is not connected');
         return;

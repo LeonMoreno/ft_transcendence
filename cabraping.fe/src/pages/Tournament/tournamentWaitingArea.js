@@ -1,6 +1,6 @@
 console.log('tournamentWaitingArea loaded');
 
-const TournamentWaitingArea = async () => {
+const TournamentWaitingArea_html = async () => {
     return `
         <div id="waitingArea" class="container mt-4">
             <h1>Tournament Waiting Area</h1>
@@ -12,4 +12,4 @@ const TournamentWaitingArea = async () => {
     `;
 };
 
-export { TournamentWaitingArea };
+export { TournamentWaitingArea_html };

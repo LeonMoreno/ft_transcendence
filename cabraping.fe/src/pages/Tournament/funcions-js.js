@@ -191,9 +191,10 @@ export function updateParticipantsList(participantName, status, isCreator = fals
             }
         }
         checkAllParticipantsAccepted(localStorage.getItem('currentTournamentId'));
-    } else {
-        displayErrorMessage("Participant list unavailable.");
-    }
+    } 
+    //else {
+      //  displayErrorMessage("Participant list unavailable.");
+    //}
 }
 
 async function checkUserOnlineStatus(username) {
@@ -380,11 +381,16 @@ async function createTournament(tournamentName) {
     }
 }
 
-function acceptInvitation(tournamentId, username) {
+export function acceptTournamentInvitation(tournamentId, username) {
+    if (!activeWebSockets[tournamentId] || activeWebSockets[tournamentId].readyState !== WebSocket.OPEN) {
+        console.error('WebSocket is not connected or already closed for tournament:', tournamentId);
+        return;
+    }
+
     const message = {
         type: 'tournament',
-        event: 'accepted_invite',
-        message: `User ${username} accepted the tournament invitation ${tournamentId}`,
+        event: 'accepted_tournament',
+        message: `User ${username} accepted the tournament invitation for tournament ${tournamentId}`,
         user_id: localStorage.getItem('userId'),
         user_name: localStorage.getItem('username'),
         dest_user_id: username,
@@ -392,13 +398,19 @@ function acceptInvitation(tournamentId, username) {
     };
 
     activeWebSockets[tournamentId].send(JSON.stringify(message));
+    window.location.hash = '#/tournamentWaitingArea';
 }
 
-function rejectInvitation(tournamentId, username) {
+export function rejectTournamentInvitation(tournamentId, username) {
+    if (!activeWebSockets[tournamentId] || activeWebSockets[tournamentId].readyState !== WebSocket.OPEN) {
+        console.error('WebSocket is not connected or already closed for tournament:', tournamentId);
+        return;
+    }
+
     const message = {
         type: 'tournament',
-        event: 'rejected_invite',
-        message: `User ${username} rejected the tournament invitation ${tournamentId}`,
+        event: 'rejected_tournament',
+        message: `User ${username} rejected the tournament invitation for tournament ${tournamentId}`,
         user_id: localStorage.getItem('userId'),
         user_name: localStorage.getItem('username'),
         dest_user_id: username,
@@ -406,6 +418,9 @@ function rejectInvitation(tournamentId, username) {
     };
 
     activeWebSockets[tournamentId].send(JSON.stringify(message));
+    const modalElement = document.getElementById('tournamentInviteModal');
+    const modalInstance = Modal.getInstance(modalElement);
+    modalInstance.hide();
 }
 
 async function startTournament(tournamentId) {

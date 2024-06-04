@@ -18,6 +18,7 @@ import { Friends_html } from "../pages/Friends/html.js";
 //import { Friends_js, FriendsRender, FriendRequestsRender } from "../pages/Friends/funcions-js.js"; // rachel
 import { Tournament_html } from "../pages/Tournament/html.js";
 import { TournamentInit } from "../pages/Tournament/funcions-js.js";
+import { TournamentWaitingArea_html } from "../pages/Tournament/tournamentWaitingArea.js";
 import {
   Friends_js,
 } from "../pages/Friends/funcions-js.js";
@@ -48,6 +49,7 @@ const routes = {
   "/users": [Users_html, Users_js],
   //"/friends": [Friends_html, Friends_js, FriendsRender, FriendRequestsRender], // rachel
   "/tournament": [Tournament_html, TournamentInit],
+  "/tournamentWaitingArea": [TournamentWaitingArea_html],
   "/logout": [LogoutPage_js],
   "/friends": [Friends_html, Friends_js],
   "/stats": [Stat_html, Stat_js],
@@ -68,6 +70,7 @@ const router = async () => {
   let user_location = location.hash.slice(1).toLocaleLowerCase().split("/");
   let render = resolveRoutes(routes, user_location);
 
+ 
   content.innerHTML = await render[0]();
   if (render.length > 1) {
     for (let i = 1; i < render.length; i++) {
@@ -86,5 +89,5 @@ const router = async () => {
 };
 
 export default router;
-//window.addEventListener('load', router); // rachel - check if needed
-//window.addEventListener('hashchange', router); // rachel - check if needed
+window.addEventListener('load', router);
+window.addEventListener('hashchange', router); 
