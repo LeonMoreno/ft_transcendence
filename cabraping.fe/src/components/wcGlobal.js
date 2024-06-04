@@ -509,6 +509,7 @@ export function sendTournamentInvitation(tournamentId, participantUsername) {
 
         tournamentSocket.onmessage = function(event) {
             const data = JSON.parse(event.data);
+            console.log(`TESTY TEST! Received WebSocket message for tournament ${tournamentId}:`);
             console.log(`Received WebSocket message for tournament ${tournamentId}:`, data); // this is not printing to the console
             handleTournamentWebSocketMessage(data, tournamentId); // rachel - this is not being called
         };
@@ -553,7 +554,7 @@ export function sendTournamentInvitation(tournamentId, participantUsername) {
     }
 }
 
-async function getUserIdByUsername(username) {
+export async function getUserIdByUsername(username) {
     try {
         const response = await fetch(`${BACKEND_URL}/api/users?username=${username}`, {
             headers: {

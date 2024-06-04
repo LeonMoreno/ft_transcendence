@@ -428,7 +428,7 @@ export {
 
 import { getToken } from "../../utils/get-token.js";
 import { showNotification, showNotificationPopup } from '../../components/showNotification.js';
-import { sendTournamentInvitation, activeWebSockets, handleTournamentWebSocketMessage } from '../../components/wcGlobal.js';
+import { sendTournamentInvitation, activeWebSockets, handleTournamentWebSocketMessage, getUserIdByUsername } from '../../components/wcGlobal.js';
 
 const BACKEND_URL = "http://localhost:8000";
 let invitedParticipants = [];  // List to keep track of invited participants
@@ -668,7 +668,7 @@ async function userExists(username) {
                 'Content-Type': 'application/json'
             }
         });
-
+        //const response = await getUserIdByUsername(username);
         console.log(`Response status: ${response.status}`);
 
         if (response.status === 404) {
@@ -682,6 +682,11 @@ async function userExists(username) {
         }
 
         const data = await response.json();
+        if (data.exists) {
+            console.log(`User ${username} exists.`);
+        } else {
+            console.log(`User ${username} does not exist.`);
+        }
         return data.exists;
 
     } catch (error) {
