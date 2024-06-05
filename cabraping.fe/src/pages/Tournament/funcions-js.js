@@ -9,6 +9,8 @@ let acceptedParticipants = []; // List to keep track of accepted participants
 function TournamentInit() {
     console.log("Initializing Tournament Page");
 
+    loadTournamentData();
+
     const tournamentForm = document.getElementById('tournamentForm');
     if (tournamentForm) {
         tournamentForm.addEventListener('submit', handleCreateTournament);
@@ -31,6 +33,7 @@ function TournamentInit() {
             if (event.key === 'Enter') {
                 checkAddParticipantButton(event);
             }
+            saveTournamentData();
         });
         console.log("Event listener added for Enter key on participant name input");
     } else {
@@ -42,14 +45,55 @@ function TournamentInit() {
         startTournamentButton.addEventListener('click', () => {
             const tournamentId = localStorage.getItem('currentTournamentId');
             startTournament(tournamentId);
+            saveTournamentData();
         });
         console.log("Event listener added to start tournament button");
     } else {
         console.error("Start tournament button not found");
     }
+
+    window.addEventListener('beforeunload', saveTournamentData);
 }
 
-// Establish WebSocket connection
+// Save tournament data to localStorage
+function saveTournamentData() {
+    const tournamentName = document.getElementById('tournamentNameInput').value;
+    if (tournamentName)
+    {
+        const participants = Array.from(document.getElementById('participantsList').children).map(item => ({
+            name: item.textContent.split(' - ')[0],
+            status: item.textContent.split(' - ')[1]
+        }));
+        const data = {
+            tournamentName,
+            participants
+        };
+        localStorage.setItem('pageTournament', JSON.stringify(data));
+        console.log("🥶 -> saveTournamentData:", data);
+    }
+}
+
+// Load tournament data from localStorage
+function loadTournamentData() {
+    const data = JSON.parse(localStorage.getItem('pageTournament'));
+    console.log("🥶 loadTournamentData:", data);
+    console.log("🥶 loadTournamentData:", (document.getElementById('tournamentNameInput').value !== ""));
+    if (data && data.tournamentName !== "") {
+        document.getElementById('tournamentNameInput').value = data.tournamentName || '';
+        document.getElementById('tournamentNameInput').disabled = true;
+        document.getElementById('tournamentForm').querySelector('button').disabled = true;
+        const participantsList = document.getElementById('participantsList');
+        participantsList.innerHTML = '';
+        data.participants.forEach(participant => {
+            const listItem = document.createElement('li');
+            listItem.textContent = `${participant.name} - ${participant.status}`;
+            participantsList.appendChild(listItem);
+        });
+        document.getElementById('addParticipantButton').disabled = false;
+    }
+}
+
+// Establecer conexión WebSocket
 export function connectTournamentWebSocket(tournamentId) {
     if (!activeWebSockets[tournamentId] || activeWebSockets[tournamentId].readyState === WebSocket.CLOSED) {
         const wsUrl = `ws://localhost:8000/ws/tournament/${tournamentId}/`;
@@ -101,9 +145,10 @@ async function handleAddParticipant(e) {
     if (isOnline === null) {
         displayErrorMessage("User not found. Please double-check their username.");
     } else if (isOnline) {
-        const participantId = await getParticipantId(participantName, tournamentId);
+        // const participantId = await getParticipantId(participantName, tournamentId);
+        const participantId = await getUserIdByUsername(participantName, tournamentId);
         if (participantId) {
-            console.log(`Sending tournament invitation to ${participantName}`);
+            console.log(`Sending tournament invitation to [${participantName}], participantId:[${participantId}]`);
             sendTournamentInvitation(tournamentId, participantName, participantId);
             updateParticipantsList(participantName, 'invited');
         } else {
@@ -114,6 +159,7 @@ async function handleAddParticipant(e) {
         console.log("Participant is not online.");
     }
     document.getElementById('participantNameInput').value = ''; // Clear input after adding
+    saveTournamentData();
 }
 
 function checkAddParticipantButton(e) {
@@ -128,6 +174,7 @@ function checkAddParticipantButton(e) {
         return;
     }
     handleAddParticipant(e);
+    saveTournamentData();
 }
 
 async function checkAllParticipantsAccepted(tournamentId) {
@@ -192,9 +239,6 @@ export function updateParticipantsList(participantName, status, isCreator = fals
         }
         checkAllParticipantsAccepted(localStorage.getItem('currentTournamentId'));
     } 
-    //else {
-      //  displayErrorMessage("Participant list unavailable.");
-    //}
 }
 
 async function checkUserOnlineStatus(username) {
@@ -245,7 +289,6 @@ async function userExists(username) {
                 'Content-Type': 'application/json'
             }
         });
-        //const response = await getUserIdByUsername(username);
         console.log(`Response status: ${response.status}`);
 
         if (response.status === 404) {
@@ -326,18 +369,15 @@ async function handleCreateTournament(e) {
         displayErrorMessage('Tournament name cannot be empty.');
         return;
     }
-    try { // rachel - enable the below once the tournaments are up and running
-        /*const currentTournamentId = localStorage.getItem('currentTournamentId');
-        if (currentTournamentId) {
-            displayErrorMessage('You cannot create another tournament while the previous one is not finished.');
-            return;
-        }*/
+    try {
         const response = await createTournament(tournamentName);
         console.log('Response status:', response.status);
         if (response.ok) {
             const data = await response.json();
             showNotification("Tournament created successfully", "success");
-            document.getElementById('tournamentNameInput').value = '';
+            document.getElementById('tournamentNameInput').value = tournamentName;
+            document.getElementById('tournamentNameInput').disabled = true;
+            document.getElementById('tournamentForm').querySelector('button').disabled = true;
             localStorage.setItem('currentTournamentId', data.id);
             localStorage.setItem(`tournamentName_${data.id}`, tournamentName); 
             updateParticipantsList('You (Creator)', 'invited', true); // Automatically adds the creator as a participant
@@ -347,7 +387,7 @@ async function handleCreateTournament(e) {
             const addParticipantButton = document.getElementById('addParticipantButton');
             addParticipantButton.disabled = false;
         } else {
-            const errorMessage = await response.text(); // Log the error message from the response
+            const errorMessage = await response.text();
             console.error('Error from server:', errorMessage);
             throw new Error('Failed to create tournament. Server responded with an error.');
         }
@@ -355,6 +395,7 @@ async function handleCreateTournament(e) {
         console.error('Caught error:', error);
         displayErrorMessage(error.message);
     }
+    saveTournamentData();
 }
 
 async function createTournament(tournamentName) {
@@ -380,6 +421,46 @@ async function createTournament(tournamentName) {
         throw error;
     }
 }
+
+async function startTournament(tournamentId) {
+    try {
+        const response = await fetch(`${BACKEND_URL}/api/tournaments/${tournamentId}/start_tournament/`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${getToken()}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            console.log(`Tournament ${tournamentId} started successfully`, data);
+        } else {
+            const errorData = await response.json();
+            console.error('Failed to start tournament:', errorData);
+            displayErrorMessage('Failed to start tournament: ' + errorData.message);
+        }
+    } catch (error) {
+        console.error('Error starting tournament:', error);
+        displayErrorMessage('Error starting tournament.');
+    }
+
+    window.addEventListener('beforeunload', saveTournamentData);
+}
+
+export {
+    createTournament,
+    handleCreateTournament,
+    handleAddParticipant,
+    displayNotification,
+    displayErrorMessage,
+    checkUserOnlineStatus,
+    startTournament,
+    TournamentInit,
+    saveTournamentData,
+    loadTournamentData
+};
+
 
 export function acceptTournamentInvitation(tournamentId, username) {
     if (!activeWebSockets[tournamentId] || activeWebSockets[tournamentId].readyState !== WebSocket.OPEN) {
@@ -422,40 +503,3 @@ export function rejectTournamentInvitation(tournamentId, username) {
     const modalInstance = Modal.getInstance(modalElement);
     modalInstance.hide();
 }
-
-async function startTournament(tournamentId) {
-    try {
-        const response = await fetch(`${BACKEND_URL}/api/tournaments/${tournamentId}/start_tournament/`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${getToken()}`,
-                'Content-Type': 'application/json'
-            }
-        });
-
-        if (response.ok) {
-            const data = await response.json();
-            console.log(`Tournament ${tournamentId} started successfully`, data);
-            // call goat image and sound?
-            // call Jonathan's remote players module here
-        } else {
-            const errorData = await response.json();
-            console.error('Failed to start tournament:', errorData);
-            displayErrorMessage('Failed to start tournament: ' + errorData.message);
-        }
-    } catch (error) {
-        console.error('Error starting tournament:', error);
-        displayErrorMessage('Error starting tournament.');
-    }
-}
-
-export {
-    createTournament,
-    handleCreateTournament,
-    handleAddParticipant,
-    displayNotification,
-    displayErrorMessage,
-    checkUserOnlineStatus,
-    startTournament,
-    TournamentInit
-};

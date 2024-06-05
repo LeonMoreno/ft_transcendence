@@ -13,26 +13,16 @@ export let activeWebSockets = {}; // Track multiple WebSocket connections
 
 // Filter messages based on the dest_user_id
 function filterMessagesForUser(message, userId) {
-    return message.dest_user_id === userId.toString();
+    return String(message.dest_user_id) === userId.toString();
 }
 
 function handleWebSocketMessage(message, userId) {
-    if (filterMessagesForUser(message, userId)) {
-        execute_processes_by_category(message, myUser);
-    }
+    // if (filterMessagesForUser(message, userId)) {
+    //     execute_processes_by_category(message, myUser);
+    // }
+    execute_processes_by_category(message, myUser);
 
     switch (message.event) {
-        case 'update_user_list':
-            localStorage.setItem('id_active_users', JSON.stringify(message.user_ids));
-            Chat_Update_js();
-            Friends_js();
-            Users_js();
-            break;
-        case 'update_waiting_list':
-            localStorage.setItem('update_waiting_list', JSON.stringify(message.user_ids));
-            let id = getUserIdFromJWT(localStorage.getItem('jwt'));
-            handleUpdateWaitingList(message, String(id), myUser);
-            break;
         case 'accepted_invite':
             handleAcceptedInvite(message);
             break;
@@ -141,12 +131,13 @@ export function sendTournamentInvitation(tournamentId, participantUsername, part
             tournamentId: tournamentId,
             event: "game_invite",
             type: "tournament",
-            dest_user_id: participantId
+            dest_user_id: String(participantId)
         });
+        console.log("--> participantId:", participantId);
         console.log("👋 👋 data:", data);
         // destUserId;
         // handleTournamentWebSocketMessage(data, tournamentId);
-        sendTournamentNotifications(userId, creatorUsername, participantId, tournamentId, tournamentName);
+        sendTournamentNotifications(userId, creatorUsername, String(participantId), tournamentId, tournamentName);
         // sendMessage();
     }
 
@@ -377,7 +368,27 @@ export async function connectWebSocketGlobal() {
 
     WSsocket.onmessage = function (event) {
         const message = JSON.parse(event.data);
-        handleWebSocketMessage(message, id);
+
+        console.log("--> 🎉 > 🎉 WSsocket.onmessage:", message);
+
+        if (filterMessagesForUser(message, id)){
+            handleWebSocketMessage(message, id);
+        }
+        switch (message.event) {
+            case 'update_user_list':
+                localStorage.setItem('id_active_users', JSON.stringify(message.user_ids));
+                Chat_Update_js();
+                Friends_js();
+                Users_js();
+                break;
+            case 'update_waiting_list':
+                localStorage.setItem('update_waiting_list', JSON.stringify(message.user_ids));
+                let id = getUserIdFromJWT(localStorage.getItem('jwt'));
+                handleUpdateWaitingList(message, String(id), myUser);
+                break;
+            default:
+                break;
+        }
     };
 
     WSsocket.onerror = function (error) {
