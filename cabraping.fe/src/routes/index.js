@@ -51,6 +51,7 @@ const routes = {
   //"/friends": [Friends_html, Friends_js, FriendsRender, FriendRequestsRender], // rachel
   "/tournament": [Tournament_html, TournamentInit],
   "/tournamentWaitingArea": [TournamentWaitingArea_html, initializeTournamentWaitingArea],
+  //"/tournamentWaitingArea": [TournamentWaitingArea_html, () => initializeTournamentWaitingArea(localStorage.getItem('currentTournamentId'), localStorage.getItem('username') === 'creator')],
   "/logout": [LogoutPage_js],
   "/friends": [Friends_html, Friends_js],
   "/stats": [Stat_html, Stat_js],
