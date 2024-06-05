@@ -30,7 +30,7 @@ class TournamentViewSet(viewsets.ModelViewSet):
         tournament.status = 'in_progress'
         tournament.save()
 
-        # rachel - call Jonathan's remote player module here
+        # rachel - call Jonathan's remote player module here?
 
         return Response({'message': 'Tournament started. Semifinals are set up.'})
 

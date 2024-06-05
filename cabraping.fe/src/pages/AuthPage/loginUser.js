@@ -15,14 +15,16 @@ export async function loginUser(username, password) {
       });
 
       if (!response.ok) {
-          const errorData = await response.json();
-          if (errorData.error === 'User not found') {
+        const errorData = await response.json();
+        if (errorData.error === 'User not found') {
             displayErrorMessage("You need to sign up before trying to sign in.");
+        } else if (errorData.error === 'Incorrect password') {
+            displayErrorMessage("The password you entered is incorrect. Please try again.");
         } else {
             displayErrorMessage(errorData.error || 'Incorrect username or password');
         }
-          throw new Error('Login failed');
-      }
+        return;
+    }
 
       const data = await response.json();
       console.log('Response body:', data);

@@ -1,16 +1,5 @@
-console.log('tournamentWaitingArea loaded');
-
-const TournamentWaitingArea_html = async () => {
-    return `
-        <div id="waitingArea" class="container mt-4">
-            <h1>Tournament Waiting Area</h1>
-            <div id="tournamentDetails">Waiting for more participants to join...</div>
-            <ul id="participantsList" class="list-unstyled"></ul>
-            <button id="startTournamentButton" class="btn btn-success mt-3" disabled>Let's Play!</button>
-            <button id="cancelTournamentButton" class="btn btn-danger mt-3">Cancel Tournament</button>
-        </div>
-    `;
-};
+import { getHash } from '../../utils/getHash.js';
+import { getToken } from "../../utils/get-token.js";
 
 // Fetch the list of participants from the server
 async function fetchParticipants(tournamentId) {
@@ -57,6 +46,7 @@ function updateStartButton(participants) {
     const startButton = document.getElementById('startTournamentButton');
     if (allParticipantsAccepted(participants)) {
         startButton.disabled = false;
+        //if event listener startButton, go to remote users module
     } else {
         startButton.disabled = true;
     }
@@ -73,7 +63,7 @@ function updateCancelButton(isCreator) {
 }
 
 // Initialize the Tournament Waiting Area
-async function initializeTournamentWaitingArea(tournamentId, isCreator) {
+/*async function initializeTournamentWaitingArea(tournamentId, isCreator) {
     const participants = await fetchParticipants(tournamentId);
     updateParticipantsList(participants);
     updateStartButton(participants);
@@ -85,6 +75,27 @@ async function initializeTournamentWaitingArea(tournamentId, isCreator) {
         updateParticipantsList(participants);
         updateStartButton(participants);
     }, 5000);
+} */
+
+async function initializeTournamentWaitingArea() {
+    const tournamentId = getHash() || null; // Get the tournament ID from the URL or set to null if invalid
+    if (!tournamentId) {
+        console.error("Tournament ID is null or invalid");
+        return; // Exit the function if tournamentId is not valid
+    }
+
+    const isCreator = localStorage.getItem('username') === 'creator_username'; // check
+
+    const participants = await fetchParticipants(tournamentId);
+    updateParticipantsList(participants);
+    updateStartButton(participants);
+    updateCancelButton(isCreator);
+
+    setInterval(async () => {
+        const participants = await fetchParticipants(tournamentId);
+        updateParticipantsList(participants);
+        updateStartButton(participants);
+    }, 5000);
 }
 
-export { TournamentWaitingArea_html, initializeTournamentWaitingArea };
+export { initializeTournamentWaitingArea };

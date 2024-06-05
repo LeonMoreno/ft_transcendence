@@ -15,14 +15,11 @@ import { Users_html } from "../pages/Users/html.js";
 import { Game_js } from "../pages/Game/funcions-js.js";
 import { Game_html } from "../pages/Game/html.js";
 import { Friends_html } from "../pages/Friends/html.js";
-//import { Friends_js, FriendsRender, FriendRequestsRender } from "../pages/Friends/funcions-js.js"; // rachel
 import { Tournament_html } from "../pages/Tournament/html.js";
 import { TournamentInit } from "../pages/Tournament/funcions-js.js";
-import { TournamentWaitingArea_html, initializeTournamentWaitingArea } from "../pages/Tournament/tournamentWaitingArea.js";
-
-import {
-  Friends_js,
-} from "../pages/Friends/funcions-js.js";
+import { TournamentWaitingArea_html } from "../pages/Tournament/tournamentWaitingArea_html.js";
+import { initializeTournamentWaitingArea } from "../pages/Tournament/tournamentWaitingArea.js";
+import { Friends_js } from "../pages/Friends/funcions-js.js";
 import { Chat_js, Chat_Update_js } from "../pages/Chat/funcions-js.js";
 import { Chat_html } from "../pages/Chat/html.js";
 import { Stat_js } from "../pages/Stat/functions-js.js";
@@ -30,11 +27,9 @@ import { Stat_html } from "../pages/Stat/html.js";
 import { Profile_js } from "../pages/Profile/functions-js.js";
 import { Profile_html } from "../pages/Profile/html.js";
 import resolveRoutes from "../utils/resolveRoutes.js";
-
 import { connectWebSocketGlobal  } from "../components/wcGlobal.js";
 import { Matching_html } from "../pages/Matching/html.js";
 import { Matching_js } from "../pages/Matching/funcions-js.js";
-
 
 const routes = {
   "/": [Home_html, Home_js],
@@ -46,12 +41,9 @@ const routes = {
   "/chat": [Chat_html, Chat_js],
   "/chat/:id": [Chat_html, Chat_js],
   "/user": [User_html, User_js],
-  //"/user/:id": [User_html, User_js],
   "/users": [Users_html, Users_js],
-  //"/friends": [Friends_html, Friends_js, FriendsRender, FriendRequestsRender], // rachel
   "/tournament": [Tournament_html, TournamentInit],
-  "/tournamentWaitingArea": [TournamentWaitingArea_html, initializeTournamentWaitingArea],
-  //"/tournamentWaitingArea": [TournamentWaitingArea_html, () => initializeTournamentWaitingArea(localStorage.getItem('currentTournamentId'), localStorage.getItem('username') === 'creator')],
+  "/tournamentWaitingArea/:id": [TournamentWaitingArea_html, initializeTournamentWaitingArea],
   "/logout": [LogoutPage_js],
   "/friends": [Friends_html, Friends_js],
   "/stats": [Stat_html, Stat_js],

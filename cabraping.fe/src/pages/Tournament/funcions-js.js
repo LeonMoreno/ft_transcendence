@@ -40,10 +40,11 @@ function TournamentInit() {
         console.error("Participant name input not found");
     }
 
-    const goToWaitingAreaButton = document.getElementById('goToWaitingAreaButton');
+    /*const goToWaitingAreaButton = document.getElementById('goToWaitingAreaButton');
     if (goToWaitingAreaButton) {
         goToWaitingAreaButton.addEventListener('click', () => {
             const tournamentId = localStorage.getItem('currentTournamentId');
+            console.log("Navigating to tournament waiting area with ID:", tournamentId);
             //startTournament(tournamentId);
             saveTournamentData();
             //window.location.href = '#/tournamentWaitingArea';
@@ -52,7 +53,7 @@ function TournamentInit() {
         console.log("Event listener added to go to waiting area button");
     } else {
         console.error("Go to waiting area button not found");
-    }
+    }*/
 
     // window.addEventListener('beforeunload', saveTournamentData);
 }
@@ -270,7 +271,29 @@ export function updateParticipantsList(participantName, status, isCreator = fals
         const invitedParticipants = participantsList.children.length - 1; // Exclude the creator
         const goToWaitingAreaButton = document.getElementById('goToWaitingAreaButton');
         if (goToWaitingAreaButton) {
-            goToWaitingAreaButton.disabled = invitedParticipants < 3;
+            console.log("Navigating to tournament waiting area.");
+            const isEnabled = invitedParticipants >= 3;
+            goToWaitingAreaButton.disabled = !isEnabled;
+
+            // Save the button state to local storage
+            localStorage.setItem('goToWaitingAreaButtonEnabled', isEnabled);
+
+            // Remove any existing event listeners to avoid duplicates
+            const newButton = goToWaitingAreaButton.cloneNode(true);
+            goToWaitingAreaButton.parentNode.replaceChild(newButton, goToWaitingAreaButton);
+
+            if (isEnabled && newButton) {
+                newButton.addEventListener('click', () => {
+                    const tournamentId = localStorage.getItem('currentTournamentId');
+                    console.log("Navigating to tournament waiting area with ID:", tournamentId);
+                    saveTournamentData();
+                    window.location.hash = `#/tournamentWaitingArea/${tournamentId}`;
+                    //window.location.hash = '#/tournamentWaitingArea';
+                });
+                console.log("Event listener added to go to waiting area button");
+            }
+        } else {
+            console.error("Go to waiting area button not found");
         }
     }
 }
