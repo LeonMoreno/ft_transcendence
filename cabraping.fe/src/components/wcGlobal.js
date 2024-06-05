@@ -6,7 +6,12 @@ import { updateParticipantsList, acceptTournamentInvitation, rejectTournamentInv
 import { getToken } from "../../utils/get-token.js";
 import { showModal, hideModal } from "../../utils/modal.js";
 
-const BACKEND_URL = "http://localhost:8000";
+// Extract the IP address from the URL used to access the frontend
+const frontendURL = new URL(window.location.href);
+const serverIPAddress = frontendURL.hostname;
+const serverPort = 8000; // Specify the port your backend server is running on
+const BACKEND_URL = `http://${serverIPAddress}:${serverPort}`;
+//const BACKEND_URL = "http://localhost:8000";
 let WSsocket;  // Global variable for the main WebSocket instance
 let myUser = null;
 export let activeWebSockets = {}; // Track multiple WebSocket connections

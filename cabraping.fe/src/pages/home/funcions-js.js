@@ -1,4 +1,8 @@
-const BACKEND_URL = "http://localhost:8000";
+// Extract the IP address from the URL used to access the frontend
+const frontendURL = new URL(window.location.href);
+const serverIPAddress = frontendURL.hostname;
+const serverPort = 8000; // Specify the port your backend server is running on
+const BACKEND_URL = `http://${serverIPAddress}:${serverPort}`;
 
 export function Home_js() {
   let buttonAuth = document.getElementById("button-auth");

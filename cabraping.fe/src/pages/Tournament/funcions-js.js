@@ -2,7 +2,12 @@ import { getToken } from "../../utils/get-token.js";
 import { showNotification, showNotificationPopup } from '../../components/showNotification.js';
 import { sendTournamentInvitation, activeWebSockets, handleTournamentWebSocketMessage, getUserIdByUsername } from '../../components/wcGlobal.js';
 
-const BACKEND_URL = "http://localhost:8000";
+// Extract the IP address from the URL used to access the frontend
+const frontendURL = new URL(window.location.href);
+const serverIPAddress = frontendURL.hostname;
+const serverPort = 8000; // Specify the port your backend server is running on
+const BACKEND_URL = `http://${serverIPAddress}:${serverPort}`;
+//const BACKEND_URL = "http://localhost:8000";
 //let invitedParticipants = [];  // List to keep track of invited participants
 //let acceptedParticipants = []; // List to keep track of accepted participants
 
@@ -287,7 +292,7 @@ export function updateParticipantsList(participantName, status, isCreator = fals
                     const tournamentId = localStorage.getItem('currentTournamentId');
                     console.log("Navigating to tournament waiting area with ID:", tournamentId);
                     saveTournamentData();
-                    window.location.hash = `#/tournamentWaitingArea/${tournamentId}`;
+                    window.location.href = `/#tournamentWaitingArea/${tournamentId}`;
                     //window.location.hash = '#/tournamentWaitingArea';
                 });
                 console.log("Event listener added to go to waiting area button");

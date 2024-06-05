@@ -1,6 +1,12 @@
 import { getHash } from '../../utils/getHash.js';
 import { getToken } from "../../utils/get-token.js";
 
+// Extract the IP address from the URL used to access the frontend
+const frontendURL = new URL(window.location.href);
+const serverIPAddress = frontendURL.hostname;
+const serverPort = 8000; // Specify the port your backend server is running on
+const BACKEND_URL = `http://${serverIPAddress}:${serverPort}`;
+
 // Fetch the list of participants from the server
 async function fetchParticipants(tournamentId) {
     try {
@@ -46,7 +52,7 @@ function updateStartButton(participants) {
     const startButton = document.getElementById('startTournamentButton');
     if (allParticipantsAccepted(participants)) {
         startButton.disabled = false;
-        //if event listener startButton, go to remote users module
+        //if event listener startButton click, go to remote users module
     } else {
         startButton.disabled = true;
     }
