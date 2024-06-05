@@ -7,8 +7,8 @@ import { Users_js } from "../pages/Users/funcions-js.js";
 const frontendURL = new URL(window.location.href);
 const serverIPAddress = frontendURL.hostname;
 const serverPort = 8000; // Specify the port your backend server is running on
-const BACKEND_URL = `http://${serverIPAddress}:${serverPort}`;
-const WS_URL = `ws://${serverIPAddress}:${serverPort}`;
+export var BACKEND_URL = `http://${serverIPAddress}:${serverPort}`;
+export var WS_URL = `ws://${serverIPAddress}:${serverPort}`;
 
 let WSsocket = null;  // Variable global para almacenar la instancia del WebSocket
 
@@ -82,7 +82,7 @@ export async function connectWebSocketGlobal() {
 
     const jwt = localStorage.getItem('jwt');
     if (!jwt) {
-        console.error('No JWT token found in localStorage');
+        console.log('No JWT token found in localStorage');
         return;
     }
 
@@ -101,7 +101,7 @@ export async function connectWebSocketGlobal() {
     console.log(`--> 👋 User id:${id}`);
 
     // Conectarse al WebSocket
-    const wsUrl = `${WS_URL}/ws/notifications/${id}/`;
+    const wsUrl = `${WS_URL}/ws/notifications/${id}/?token=${jwt}`;
     WSsocket = new WebSocket(wsUrl);
 
     // Manejar la conexión abierta
@@ -135,7 +135,7 @@ export async function connectWebSocketGlobal() {
 
     // Manejar errores
     WSsocket.onerror = function (error) {
-        console.error('WebSocket error:', error);
+        console.log('WebSocket error:', error);
     };
 
     // Manejar el cierre de la conexión
@@ -201,7 +201,7 @@ async function sendGameAccept_Waiting(userId, dest_user_id, myUser) {
         );
         if (!response.ok)
         {
-            console.error("error in system");
+            console.log("error in system");
         }
         sendAcceptedGameNotifications(userId, myUser.userName, dest_user_id, game.id);
         sendDelleteMatchedMessage(userId, dest_user_id);
@@ -251,7 +251,7 @@ async function handleUpdateWaitingList(message, userId, myUser) {
 export function sendChannelCreatedNotifications(userId, userName, destUserId) {
 
     if (!WSsocket || WSsocket.readyState !== WebSocket.OPEN) {
-        console.error('WebSocket is not connected');
+        console.log('WebSocket is not connected');
         return;
     }
     
@@ -270,7 +270,7 @@ export function sendChannelCreatedNotifications(userId, userName, destUserId) {
 export function sendGameInvataeNotifications(userId, userName, destUserId, text) {
 
     if (!WSsocket || WSsocket.readyState !== WebSocket.OPEN) {
-        console.error('WebSocket is not connected');
+        console.log('WebSocket is not connected');
         return;
     }
     
@@ -289,7 +289,7 @@ export function sendGameInvataeNotifications(userId, userName, destUserId, text)
 export function sendAcceptedGameNotifications(userId, userName, destUserId, game_id) {
 
     if (!WSsocket || WSsocket.readyState !== WebSocket.OPEN) {
-        console.error('WebSocket is not connected');
+        console.log('WebSocket is not connected');
         return;
     }
     
@@ -308,7 +308,7 @@ export function sendAcceptedGameNotifications(userId, userName, destUserId, game
 export function sendFriendRequestNotifications(userId, userName, destUserId) {
 
     if (!WSsocket || WSsocket.readyState !== WebSocket.OPEN) {
-        console.error('WebSocket is not connected');
+        console.log('WebSocket is not connected');
         return;
     }
 
@@ -327,7 +327,7 @@ export function sendFriendRequestNotifications(userId, userName, destUserId) {
 export function sendFriendAcceptdNotifications(userId, userName, destUserId) {
 
     if (!WSsocket || WSsocket.readyState !== WebSocket.OPEN) {
-        console.error('WebSocket is not connected');
+        console.log('WebSocket is not connected');
         return;
     }
 
@@ -345,7 +345,7 @@ export function sendFriendAcceptdNotifications(userId, userName, destUserId) {
 export function sendFriendDeletedNotifications(userId, userName, destUserId) {
 
     if (!WSsocket || WSsocket.readyState !== WebSocket.OPEN) {
-        console.error('WebSocket is not connected');
+        console.log('WebSocket is not connected');
         return;
     }
 
@@ -364,7 +364,7 @@ export function sendFriendDeletedNotifications(userId, userName, destUserId) {
 // Function to join the matchmaking queue
 export function joinMatchmakingQueue(userId, userName) {
     if (!WSsocket || WSsocket.readyState !== WebSocket.OPEN) {
-        console.error('WebSocket is not connected');
+        console.log('WebSocket is not connected');
         return;
     }
 
@@ -381,7 +381,7 @@ export function joinMatchmakingQueue(userId, userName) {
 // Función para enviar el mensaje de espera de coincidencia
 export function sendWaitMatchedMessage(userId) {
     if (!WSsocket || WSsocket.readyState !== WebSocket.OPEN) {
-        console.error('WebSocket is not connected');
+        console.log('WebSocket is not connected');
         return;
     }
 
@@ -396,7 +396,7 @@ export function sendWaitMatchedMessage(userId) {
 
 export function sendDelleteMatchedMessage(userId, otherId) {
     if (!WSsocket || WSsocket.readyState !== WebSocket.OPEN) {
-        console.error('WebSocket is not connected');
+        console.log('WebSocket is not connected');
         return;
     }
 

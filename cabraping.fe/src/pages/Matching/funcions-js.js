@@ -1,7 +1,7 @@
 import { getToken } from "../../utils/get-token.js";
-import { sendWaitMatchedMessage } from "../../components/wcGlobal.js";
+import { BACKEND_URL, sendWaitMatchedMessage } from "../../components/wcGlobal.js";
 // import { BACKEND_URL } from "../../constants";
-const BACKEND_URL = "http://localhost:8000";
+// const BACKEND_URL = "http://localhost:8000";
 
 export async function Matching_js() {
     const jwt = getToken();

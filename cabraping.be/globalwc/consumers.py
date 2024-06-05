@@ -2,6 +2,7 @@
 
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
+from django.contrib.auth.models import AnonymousUser
 
 connected_users = set()
 waiting_users = set()
@@ -9,7 +10,11 @@ waiting_channels = {}  # Maps user_id to channel_name
 
 class NotificationConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        self.user_id = self.scope['url_route']['kwargs']['user_id']
+        if isinstance(self.scope['user'], AnonymousUser):
+            await self.close()
+            return
+
+        self.user_id = str(self.scope['user'].id)  # Ensure user_id is set correctly and as a string
         self.group_name = 'notifications'
         
         # Join notifications group
@@ -43,38 +48,39 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         )
 
     async def disconnect(self, close_code):
-        # Remove user from the set of connected users and waiting users
-        connected_users.discard(self.user_id)
-        if self.user_id in waiting_users:
-            waiting_users.discard(self.user_id)
-            del waiting_channels[self.user_id]
+        if hasattr(self, 'user_id'):
+            # Remove user from the set of connected users and waiting users
+            connected_users.discard(self.user_id)
+            if self.user_id in waiting_users:
+                waiting_users.discard(self.user_id)
+                del waiting_channels[self.user_id]
 
-            # Notify waiting users that a user has left
-            await self.notify_waiting_users()
+                # Notify waiting users that a user has left
+                await self.notify_waiting_users()
 
-        # Notify all users that a user has disconnected
-        await self.channel_layer.group_send(
-            self.group_name,
-            {
-                'type': 'user_disconnected',
-                'user_id': self.user_id,
-            }
-        )
+            # Notify all users that a user has disconnected
+            await self.channel_layer.group_send(
+                self.group_name,
+                {
+                    'type': 'user_disconnected',
+                    'user_id': self.user_id,
+                }
+            )
 
-        # Send the updated list of connected users to all users
-        await self.channel_layer.group_send(
-            self.group_name,
-            {
-                'type': 'update_user_list',
-                'user_ids': list(connected_users),
-            }
-        )
+            # Send the updated list of connected users to all users
+            await self.channel_layer.group_send(
+                self.group_name,
+                {
+                    'type': 'update_user_list',
+                    'user_ids': list(connected_users),
+                }
+            )
 
-        # Leave notifications group
-        await self.channel_layer.group_discard(
-            self.group_name,
-            self.channel_name
-        )
+            # Leave notifications group
+            await self.channel_layer.group_discard(
+                self.group_name,
+                self.channel_name
+            )
 
     async def receive(self, text_data):
         text_data_json = json.loads(text_data)
@@ -273,6 +279,7 @@ class NotificationConsumer(AsyncWebsocketConsumer):
 
 # import json
 # from channels.generic.websocket import AsyncWebsocketConsumer
+# from django.contrib.auth.models import AnonymousUser
 
 # connected_users = set()
 # waiting_users = set()
@@ -280,9 +287,13 @@ class NotificationConsumer(AsyncWebsocketConsumer):
 
 # class NotificationConsumer(AsyncWebsocketConsumer):
 #     async def connect(self):
+#         if self.scope['user'].is_anonymous:
+#             await self.close()
+#             return
+
 #         self.user_id = self.scope['url_route']['kwargs']['user_id']
 #         self.group_name = 'notifications'
-
+        
 #         # Join notifications group
 #         await self.channel_layer.group_add(
 #             self.group_name,
@@ -357,6 +368,7 @@ class NotificationConsumer(AsyncWebsocketConsumer):
 #             user_id = text_data_json.get('user_id', '')
 #             user_name = text_data_json.get('user_name', '')
 #             dest_user_id = text_data_json.get('dest_user_id', '')
+#             matched_user_ids = text_data_json.get('matched_user_ids', [])
 
 #             if event_type == 'wait_matched':
 #                 # Add user to the waiting list
@@ -372,6 +384,24 @@ class NotificationConsumer(AsyncWebsocketConsumer):
 #                     'message': 'You are now waiting for a match.',
 #                     'user_id': user_id,
 #                 }))
+
+#             elif event_type == 'delete_matched' and len(matched_user_ids) == 2:
+#                 # Remove matched users from the waiting list
+#                 for matched_user_id in matched_user_ids:
+#                     waiting_users.discard(matched_user_id)
+#                     if matched_user_id in waiting_channels:
+#                         del waiting_channels[matched_user_id]
+
+#                 # Notify all waiting users
+#                 await self.notify_waiting_users()
+
+#                 # Notify the matched users
+#                 for matched_user_id in matched_user_ids:
+#                     if matched_user_id in waiting_channels:
+#                         await self.channel_layer.send(waiting_channels[matched_user_id], {
+#                             'type': 'send_matched_message',
+#                             'message': 'You have been matched and removed from the waiting list.',
+#                         })
 
 #             else:
 #                 # Send message to group
@@ -499,6 +529,15 @@ class NotificationConsumer(AsyncWebsocketConsumer):
 #             'waiting_ids': waiting_ids,
 #         }))
 
+#     async def send_matched_message(self, event):
+#         message = event['message']
+
+#         # Send matched message to WebSocket
+#         await self.send(text_data=json.dumps({
+#             'event': 'delete_matched',
+#             'message': message,
+#         }))
+
 #     async def notify_waiting_users(self):
 #         # Send the updated waiting list only to waiting users
 #         waiting_ids = list(waiting_users)
@@ -509,190 +548,3 @@ class NotificationConsumer(AsyncWebsocketConsumer):
 #                     'type': 'send_waiting_list',
 #                     'waiting_ids': waiting_ids,
 #                 })
-
-
-
-# -----------------------
-#  sin machin
-
-# # globalwc/consumers.py
-
-# import json
-# from channels.generic.websocket import AsyncWebsocketConsumer
-
-# connected_users = set()
-
-# class NotificationConsumer(AsyncWebsocketConsumer):
-#     async def connect(self):
-#         self.user_id = self.scope['url_route']['kwargs']['user_id']
-#         self.group_name = 'notifications'
-        
-#         # Join notifications group
-#         await self.channel_layer.group_add(
-#             self.group_name,
-#             self.channel_name
-#         )
-
-#         # Accept the WebSocket connection
-#         await self.accept()
-
-#         # Add user to the set of connected users
-#         connected_users.add(self.user_id)
-
-#         # Send the list of connected users to all users
-#         await self.channel_layer.group_send(
-#             self.group_name,
-#             {
-#                 'type': 'update_user_list',
-#                 'user_ids': list(connected_users),
-#             }
-#         )
-
-#         # Notify all users that a new user has connected
-#         await self.channel_layer.group_send(
-#             self.group_name,
-#             {
-#                 'type': 'user_connected',
-#                 'user_id': self.user_id,
-#             }
-#         )
-
-#     async def disconnect(self, close_code):
-#         # Remove user from the set of connected users
-#         connected_users.discard(self.user_id)
-
-#         # Notify all users that a user has disconnected
-#         await self.channel_layer.group_send(
-#             self.group_name,
-#             {
-#                 'type': 'user_disconnected',
-#                 'user_id': self.user_id,
-#             }
-#         )
-
-#         # Send the updated list of connected users to all users
-#         await self.channel_layer.group_send(
-#             self.group_name,
-#             {
-#                 'type': 'update_user_list',
-#                 'user_ids': list(connected_users),
-#             }
-#         )
-
-#         # Leave notifications group
-#         await self.channel_layer.group_discard(
-#             self.group_name,
-#             self.channel_name
-#         )
-
-#     async def receive(self, text_data):
-#         text_data_json = json.loads(text_data)
-#         event_type = text_data_json['type']
-#         message = text_data_json['message']
-#         user_id = text_data_json['user_id']
-#         user_name = text_data_json['user_name']
-#         dest_user_id = text_data_json['dest_user_id']
-
-#         # Send message to group
-#         await self.channel_layer.group_send(
-#             self.group_name,
-#             {
-#                 'type': event_type,
-#                 'message': message,
-#                 'user_id': user_id,
-#                 'user_name': user_name,
-#                 'dest_user_id': dest_user_id,
-#                 'sender_channel_name': self.channel_name,  # Add the sender's channel name
-#             }
-#         )
-
-#     async def notify(self, event):
-#         if self.channel_name != event['sender_channel_name']:
-#             message = event['message']
-#             user_id = event['user_id']
-#             user_name = event['user_name']
-#             dest_user_id = event['dest_user_id']
-
-#             # Send message to WebSocket
-#             await self.send(text_data=json.dumps({
-#                 'event': 'notify',
-#                 'message': message,
-#                 'user_id': user_id,
-#                 'user_name': user_name,
-#                 'dest_user_id': dest_user_id,
-#             }))
-
-#     async def channel_created(self, event):
-#         if self.channel_name != event['sender_channel_name']:
-#             message = event['message']
-#             user_id = event['user_id']
-#             user_name = event['user_name']
-#             dest_user_id = event['dest_user_id']
-
-#             # Send message to WebSocket
-#             await self.send(text_data=json.dumps({
-#                 'event': 'channel_created',
-#                 'message': message,
-#                 'user_id': user_id,
-#                 'user_name': user_name,
-#                 'dest_user_id': dest_user_id,
-#             }))
-
-#     async def game_invite(self, event):
-#         if self.channel_name != event['sender_channel_name']:
-#             message = event['message']
-#             user_id = event['user_id']
-#             user_name = event['user_name']
-#             dest_user_id = event['dest_user_id']
-
-#             # Send message to WebSocket
-#             await self.send(text_data=json.dumps({
-#                 'event': 'game_invite',
-#                 'message': message,
-#                 'user_id': user_id,
-#                 'user_name': user_name,
-#                 'dest_user_id': dest_user_id,
-#             }))
-
-#     async def accepted_game(self, event):
-#         if self.channel_name != event['sender_channel_name']:
-#             message = event['message']
-#             user_id = event['user_id']
-#             user_name = event['user_name']
-#             dest_user_id = event['dest_user_id']
-
-#             # Send message to WebSocket
-#             await self.send(text_data=json.dumps({
-#                 'event': 'accepted_game',
-#                 'message': message,
-#                 'user_id': user_id,
-#                 'user_name': user_name,
-#                 'dest_user_id': dest_user_id,
-#             }))
-
-#     async def user_connected(self, event):
-#         user_id = event['user_id']
-
-#         # Send message to WebSocket
-#         await self.send(text_data=json.dumps({
-#             'event': 'user_connected',
-#             'user_id': user_id,
-#         }))
-
-#     async def user_disconnected(self, event):
-#         user_id = event['user_id']
-
-#         # Send message to WebSocket
-#         await self.send(text_data=json.dumps({
-#             'event': 'user_disconnected',
-#             'user_id': user_id,
-#         }))
-
-#     async def update_user_list(self, event):
-#         user_ids = event['user_ids']
-
-#         # Send updated user list to WebSocket
-#         await self.send(text_data=json.dumps({
-#             'event': 'update_user_list',
-#             'user_ids': user_ids,
-#         }))

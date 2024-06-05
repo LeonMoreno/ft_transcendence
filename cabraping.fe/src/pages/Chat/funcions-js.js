@@ -1,18 +1,9 @@
 // import image from '../../assets/logo.svg';
 import { getHash } from "../../utils/getHash.js";
 import { showNotification, showNotificationPopup } from '../../components/showNotification.js';
-import { sendAcceptedGameNotifications, sendChannelCreatedNotifications, sendGameInvataeNotifications } from "../../components/wcGlobal.js";
+import { BACKEND_URL, sendAcceptedGameNotifications, sendChannelCreatedNotifications, sendGameInvataeNotifications, WS_URL } from "../../components/wcGlobal.js";
 
 let image = "assets/logo.svg";
-
-// Extract the IP address from the URL used to access the frontend
-const frontendURL = new URL(window.location.href);
-const serverIPAddress = frontendURL.hostname;
-const serverPort = 8000; // Specify the port your backend server is running on
-const BACKEND_URL = `http://${serverIPAddress}:${serverPort}`;
-const WS_URL = `ws://${serverIPAddress}:${serverPort}`;
-
-console.log(BACKEND_URL);
 
 let sockets = {}; // Object to store WebSocket connections
 let usersList = []; // Global variable to store the list of users
@@ -543,7 +534,7 @@ function handleButtonClick() {
         });
       })
       .catch((error) => {
-        console.error("Error fetching users:", error);
+        console.log("Error fetching users:", error);
       });
   }
 
@@ -796,7 +787,8 @@ function createWebSocketConnection(channelId) {
     return; // Already connected
   }
 
-  const ws = new WebSocket(`${WS_URL}/ws/chat/${channelId}/`);
+  const jwt = localStorage.getItem("jwt");
+  const ws = new WebSocket(`${WS_URL}/ws/chat/${channelId}/?token=${jwt}`);
   ws.addEventListener("message", (event) => {
       const message = JSON.parse(event.data);
       addMessageToChat(message);

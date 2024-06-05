@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     'users',
     'auth42',
     'dotenv',
+    'rest_framework_simplejwt.token_blacklist',  # Add this for JWT token management
 ]
 
 # CORS_ALLOWED_ORIGINS = [
