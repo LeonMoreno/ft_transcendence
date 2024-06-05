@@ -2,7 +2,7 @@ import { showNotificationPopup } from "./showNotification.js";
 import { Chat_Update_js, getUserIdFromJWT } from "../pages/Chat/funcions-js.js";
 import { Friends_js } from "../pages/Friends/funcions-js.js";
 import { Users_js } from "../pages/Users/funcions-js.js";
-import { updateParticipantsList, acceptTournamentInvitation, rejectTournamentInvitation } from "../pages/Tournament/funcions-js.js";
+import { updateParticipantsList, acceptTournamentInvitation, rejectTournamentInvitation, connectTournamentWebSocket } from "../pages/Tournament/funcions-js.js";
 import { getToken } from "../../utils/get-token.js";
 import { showModal, hideModal } from "../../utils/modal.js";
 
@@ -208,8 +208,13 @@ export async function getUserIdByUsername(username) {
 export function handleTournamentInvite(data, tournamentId) {
     console.log(`Tournament invitation received for tournament ${tournamentId}:`, data);
     // Set the message in the modal
-    const message = `${data.user_name}, you have been invited to a tournament by ${data.user_name}. Tournament name: ${data.tournament_name}`;
+    const message = `${data.user_name} invited you to the ${data.tournament_name} tournament!`;
     document.getElementById('tournamentInviteMessage').innerText = message;
+
+    // Ensure WebSocket connection for the tournament
+    if (!activeWebSockets[tournamentId] || activeWebSockets[tournamentId].readyState === WebSocket.CLOSED) {
+        connectTournamentWebSocket(tournamentId);
+    }
 
     // Show the modal
     showModal('tournamentInviteModal');
@@ -230,7 +235,7 @@ export function handleTournamentInvite(data, tournamentId) {
 
 function handleGameInvite(data) {
     console.log('Game Invite:', data);
-    showNotificationPopup(data.user_name, `, you have been invited to a game by ${data.user_name}.`);
+    showNotificationPopup(data.user_name, `You have been matched to play a game! ${data.user_name}`);
     //updateParticipantsList(data.user_name, 'invited');
 }
 

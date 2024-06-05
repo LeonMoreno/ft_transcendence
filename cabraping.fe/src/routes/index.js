@@ -18,7 +18,8 @@ import { Friends_html } from "../pages/Friends/html.js";
 //import { Friends_js, FriendsRender, FriendRequestsRender } from "../pages/Friends/funcions-js.js"; // rachel
 import { Tournament_html } from "../pages/Tournament/html.js";
 import { TournamentInit } from "../pages/Tournament/funcions-js.js";
-import { TournamentWaitingArea_html } from "../pages/Tournament/tournamentWaitingArea.js";
+import { TournamentWaitingArea_html, initializeTournamentWaitingArea } from "../pages/Tournament/tournamentWaitingArea.js";
+
 import {
   Friends_js,
 } from "../pages/Friends/funcions-js.js";
@@ -49,7 +50,7 @@ const routes = {
   "/users": [Users_html, Users_js],
   //"/friends": [Friends_html, Friends_js, FriendsRender, FriendRequestsRender], // rachel
   "/tournament": [Tournament_html, TournamentInit],
-  "/tournamentWaitingArea": [TournamentWaitingArea_html],
+  "/tournamentWaitingArea": [TournamentWaitingArea_html, initializeTournamentWaitingArea],
   "/logout": [LogoutPage_js],
   "/friends": [Friends_html, Friends_js],
   "/stats": [Stat_html, Stat_js],

@@ -1,6 +1,7 @@
 import { getToken } from "../../utils/get-token.js";
 import { showNotification, showNotificationPopup } from '../../components/showNotification.js';
 import { sendTournamentInvitation, activeWebSockets, handleTournamentWebSocketMessage, getUserIdByUsername } from '../../components/wcGlobal.js';
+import { initializeTournamentWaitingArea } from './tournamentWaitingArea.js';
 
 const BACKEND_URL = "http://localhost:8000";
 let invitedParticipants = [];  // List to keep track of invited participants
@@ -117,6 +118,7 @@ export function connectTournamentWebSocket(tournamentId) {
         tournamentSocket.onerror = function(error) {
             console.error(`WebSocket error for tournament ${tournamentId}:`, error);
         };
+        activeWebSockets[tournamentId] = tournamentSocket;
     }
 }
 
@@ -465,7 +467,7 @@ export {
 export function acceptTournamentInvitation(tournamentId, username) {
     if (!activeWebSockets[tournamentId] || activeWebSockets[tournamentId].readyState !== WebSocket.OPEN) {
         console.error('WebSocket is not connected or already closed for tournament:', tournamentId);
-        return;
+        connectTournamentWebSocket(tournamentId);
     }
 
     const message = {
@@ -485,7 +487,7 @@ export function acceptTournamentInvitation(tournamentId, username) {
 export function rejectTournamentInvitation(tournamentId, username) {
     if (!activeWebSockets[tournamentId] || activeWebSockets[tournamentId].readyState !== WebSocket.OPEN) {
         console.error('WebSocket is not connected or already closed for tournament:', tournamentId);
-        return;
+        connectTournamentWebSocket(tournamentId);
     }
 
     const message = {
@@ -498,8 +500,53 @@ export function rejectTournamentInvitation(tournamentId, username) {
         tournament_id: tournamentId
     };
 
+    console.log("Tournament invitation rejected.");
+
     activeWebSockets[tournamentId].send(JSON.stringify(message));
+    // Hide the modal
     const modalElement = document.getElementById('tournamentInviteModal');
+<<<<<<< Updated upstream
     const modalInstance = Modal.getInstance(modalElement);
     modalInstance.hide();
 }
+=======
+    modalElement.style.display = 'none';
+}
+
+async function startTournament(tournamentId) {
+    try {
+        const response = await fetch(`${BACKEND_URL}/api/tournaments/${tournamentId}/start_tournament/`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${getToken()}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            console.log(`Tournament ${tournamentId} started successfully`, data);
+            // call goat image and sound?
+            // call Jonathan's remote players module here
+        } else {
+            const errorData = await response.json();
+            console.error('Failed to start tournament:', errorData);
+            displayErrorMessage('Failed to start tournament: ' + errorData.message);
+        }
+    } catch (error) {
+        console.error('Error starting tournament:', error);
+        displayErrorMessage('Error starting tournament.');
+    }
+}
+
+export {
+    createTournament,
+    handleCreateTournament,
+    handleAddParticipant,
+    displayNotification,
+    displayErrorMessage,
+    checkUserOnlineStatus,
+    startTournament,
+    TournamentInit
+};
+>>>>>>> Stashed changes
