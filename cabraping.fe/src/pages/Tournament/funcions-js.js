@@ -1,11 +1,10 @@
 import { getToken } from "../../utils/get-token.js";
 import { showNotification, showNotificationPopup } from '../../components/showNotification.js';
 import { sendTournamentInvitation, activeWebSockets, handleTournamentWebSocketMessage, getUserIdByUsername } from '../../components/wcGlobal.js';
-import { initializeTournamentWaitingArea } from './tournamentWaitingArea.js';
 
 const BACKEND_URL = "http://localhost:8000";
-let invitedParticipants = [];  // List to keep track of invited participants
-let acceptedParticipants = []; // List to keep track of accepted participants
+//let invitedParticipants = [];  // List to keep track of invited participants
+//let acceptedParticipants = []; // List to keep track of accepted participants
 
 function TournamentInit() {
     console.log("Initializing Tournament Page");
@@ -36,21 +35,22 @@ function TournamentInit() {
             }
             saveTournamentData();
         });
-        console.log("Event listener added for Enter key on participant name input");
+        console.log("Event listener added for enter key on participant name input");
     } else {
         console.error("Participant name input not found");
     }
 
-    const startTournamentButton = document.getElementById('startTournamentButton');
-    if (startTournamentButton) {
-        startTournamentButton.addEventListener('click', () => {
+    const goToWaitingAreaButton = document.getElementById('goToWaitingAreaButton');
+    if (goToWaitingAreaButton) {
+        goToWaitingAreaButton.addEventListener('click', () => {
             const tournamentId = localStorage.getItem('currentTournamentId');
-            startTournament(tournamentId);
+            //startTournament(tournamentId);
             saveTournamentData();
+            window.location.href = '#/tournamentWaitingArea';
         });
-        console.log("Event listener added to start tournament button");
+        console.log("Event listener added to go to waiting area button");
     } else {
-        console.error("Start tournament button not found");
+        console.error("Go to waiting area button not found");
     }
 
     // window.addEventListener('beforeunload', saveTournamentData);
@@ -195,7 +195,7 @@ async function checkAllParticipantsAccepted(tournamentId) {
         if (response.ok) {
             const participants = await response.json();
             const allAccepted = participants.every(participant => participant.accepted_invite);
-            updateStartTournamentButtonState(participants);
+            //updategoToWaitingAreaButtonState(participants);
             return allAccepted;
         } else {
             console.error('Failed to fetch participants status');
@@ -207,18 +207,18 @@ async function checkAllParticipantsAccepted(tournamentId) {
     }
 }
 
-function updateStartTournamentButtonState(participants) {
-    const startTournamentButton = document.getElementById('startTournamentButton');
+/*function updategoToWaitingAreaButtonState(participants) {
+    const goToWaitingAreaButton = document.getElementById('goToWaitingAreaButton');
     const acceptedCount = participants.filter(participant => participant.accepted_invite).length;
     if (acceptedCount === 4) { // Including the creator
-        startTournamentButton.disabled = false;
+        goToWaitingAreaButton.disabled = false;
     } else {
-        startTournamentButton.disabled = true;
+        goToWaitingAreaButton.disabled = true;
     }
 }
-
+*/
 // Function to update the list of participants in the UI
-export function updateParticipantsList(participantName, status, isCreator = false) {
+/*export function updateParticipantsList(participantName, status, isCreator = false) {
     const currentUser = localStorage.getItem('username');
     if (participantName === currentUser) {
         displayErrorMessage('You cannot invite yourself to the party. Have some manners!');
@@ -242,6 +242,38 @@ export function updateParticipantsList(participantName, status, isCreator = fals
         checkAllParticipantsAccepted(localStorage.getItem('currentTournamentId'));
     } 
 }
+*/
+
+// Function to update the list of participants in the UI
+export function updateParticipantsList(participantName, status, isCreator = false) {
+    const currentUser = localStorage.getItem('username');
+    if (participantName === currentUser && !isCreator) {
+        displayErrorMessage('You cannot invite yourself to the party. Have some manners!');
+        return;
+    }
+    const participantsList = document.getElementById('participantsList');
+    if (participantsList) {
+        // Check if the participant is already in the list to avoid duplication
+        const existingParticipant = Array.from(participantsList.children).find(item => item.textContent.includes(participantName));
+        if (existingParticipant) {
+            existingParticipant.textContent = participantName + ' - ' + status;
+            if (!isCreator) displayErrorMessage('This user has been invited already. Don\'t be pushy.');
+        } else {
+            const listItem = document.createElement('li');
+            listItem.textContent = isCreator ? participantName : participantName + ' - ' + "invited";
+            participantsList.appendChild(listItem);
+            if (!isCreator) showNotification('Invitation successfully sent to ' + participantName + '.', 'success');
+        }
+
+        // Check the number of invited participants and enable the button if there are at least three (excluding the creator)
+        const invitedParticipants = participantsList.children.length - 1; // Exclude the creator
+        const goToWaitingAreaButton = document.getElementById('goToWaitingAreaButton');
+        if (goToWaitingAreaButton) {
+            goToWaitingAreaButton.disabled = invitedParticipants < 3;
+        }
+    }
+}
+
 
 async function checkUserOnlineStatus(username) {
     console.log(`Checking online status for user: ${username}`);
@@ -450,21 +482,8 @@ async function createTournament(tournamentName) {
 //     window.addEventListener('beforeunload', saveTournamentData);
 // }
 
-export {
-    createTournament,
-    handleCreateTournament,
-    handleAddParticipant,
-    displayNotification,
-    displayErrorMessage,
-    checkUserOnlineStatus,
-    startTournament,
-    TournamentInit,
-    saveTournamentData,
-    loadTournamentData
-};
 
-
-export function acceptTournamentInvitation(tournamentId, username) {
+/*export function acceptTournamentInvitation(tournamentId, username) {
     if (!activeWebSockets[tournamentId] || activeWebSockets[tournamentId].readyState !== WebSocket.OPEN) {
         console.error('WebSocket is not connected or already closed for tournament:', tournamentId);
         connectTournamentWebSocket(tournamentId);
@@ -503,36 +522,81 @@ export function rejectTournamentInvitation(tournamentId, username) {
     console.log("Tournament invitation rejected.");
 
     activeWebSockets[tournamentId].send(JSON.stringify(message));
+    
     // Hide the modal
     const modalElement = document.getElementById('tournamentInviteModal');
-    const modalInstance = Modal.getInstance(modalElement);
-    modalInstance.hide();
-// }
     modalElement.style.display = 'none';
 }
+*/
 
-async function startTournament(tournamentId) {
-    try {
-        const response = await fetch(`${BACKEND_URL}/api/tournaments/${tournamentId}/start_tournament/`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${getToken()}`,
-                'Content-Type': 'application/json'
-            }
-        });
-
-        if (response.ok) {
-            const data = await response.json();
-            console.log(`Tournament ${tournamentId} started successfully`, data);
-            // call goat image and sound?
-            // call Jonathan's remote players module here
-        } else {
-            const errorData = await response.json();
-            console.error('Failed to start tournament:', errorData);
-            displayErrorMessage('Failed to start tournament: ' + errorData.message);
-        }
-    } catch (error) {
-        console.error('Error starting tournament:', error);
-        displayErrorMessage('Error starting tournament.');
+export function acceptTournamentInvitation(tournamentId, username) {
+    if (!activeWebSockets[tournamentId] || activeWebSockets[tournamentId].readyState !== WebSocket.OPEN) {
+      console.error('WebSocket is not connected or already closed for tournament:', tournamentId);
+      connectTournamentWebSocket(tournamentId);
+      activeWebSockets[tournamentId].onopen = () => {
+        sendAcceptMessage(tournamentId, username);
+      };
+    } else {
+      sendAcceptMessage(tournamentId, username);
     }
-}
+  }
+  
+  function sendAcceptMessage(tournamentId, username) {
+    const message = {
+      type: 'tournament',
+      event: 'accepted_tournament',
+      message: `User ${username} accepted the tournament invitation for tournament ${tournamentId}`,
+      user_id: localStorage.getItem('userId'),
+      user_name: localStorage.getItem('username'),
+      dest_user_id: username,
+      tournament_id: tournamentId
+    };
+  
+    activeWebSockets[tournamentId].send(JSON.stringify(message));
+    window.location.hash = '#/tournamentWaitingArea';
+  }
+  
+  export function rejectTournamentInvitation(tournamentId, username) {
+    if (!activeWebSockets[tournamentId] || activeWebSockets[tournamentId].readyState !== WebSocket.OPEN) {
+      console.error('WebSocket is not connected or already closed for tournament:', tournamentId);
+      connectTournamentWebSocket(tournamentId);
+      activeWebSockets[tournamentId].onopen = () => {
+        sendRejectMessage(tournamentId, username);
+      };
+    } else {
+      sendRejectMessage(tournamentId, username);
+    }
+  }
+  
+  function sendRejectMessage(tournamentId, username) {
+    const message = {
+      type: 'tournament',
+      event: 'rejected_tournament',
+      message: `User ${username} rejected the tournament invitation for tournament ${tournamentId}`,
+      user_id: localStorage.getItem('userId'),
+      user_name: localStorage.getItem('username'),
+      dest_user_id: username,
+      tournament_id: tournamentId
+    };
+  
+    console.log("Tournament invitation rejected.");
+  
+    activeWebSockets[tournamentId].send(JSON.stringify(message));
+  
+    // Hide the modal
+    const modalElement = document.getElementById('tournamentInviteModal');
+    modalElement.style.display = 'none';
+  }
+  
+  export {
+    createTournament,
+    handleCreateTournament,
+    handleAddParticipant,
+    displayNotification,
+    displayErrorMessage,
+    checkUserOnlineStatus,
+    startTournament,
+    TournamentInit,
+    saveTournamentData,
+    loadTournamentData,
+};
