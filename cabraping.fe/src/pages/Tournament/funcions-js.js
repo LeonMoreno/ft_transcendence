@@ -53,7 +53,7 @@ function TournamentInit() {
         console.error("Start tournament button not found");
     }
 
-    window.addEventListener('beforeunload', saveTournamentData);
+    // window.addEventListener('beforeunload', saveTournamentData);
 }
 
 // Save tournament data to localStorage
@@ -424,31 +424,31 @@ async function createTournament(tournamentName) {
     }
 }
 
-async function startTournament(tournamentId) {
-    try {
-        const response = await fetch(`${BACKEND_URL}/api/tournaments/${tournamentId}/start_tournament/`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${getToken()}`,
-                'Content-Type': 'application/json'
-            }
-        });
+// async function startTournament(tournamentId) {
+//     try {
+//         const response = await fetch(`${BACKEND_URL}/api/tournaments/${tournamentId}/start_tournament/`, {
+//             method: 'POST',
+//             headers: {
+//                 'Authorization': `Bearer ${getToken()}`,
+//                 'Content-Type': 'application/json'
+//             }
+//         });
 
-        if (response.ok) {
-            const data = await response.json();
-            console.log(`Tournament ${tournamentId} started successfully`, data);
-        } else {
-            const errorData = await response.json();
-            console.error('Failed to start tournament:', errorData);
-            displayErrorMessage('Failed to start tournament: ' + errorData.message);
-        }
-    } catch (error) {
-        console.error('Error starting tournament:', error);
-        displayErrorMessage('Error starting tournament.');
-    }
+//         if (response.ok) {
+//             const data = await response.json();
+//             console.log(`Tournament ${tournamentId} started successfully`, data);
+//         } else {
+//             const errorData = await response.json();
+//             console.error('Failed to start tournament:', errorData);
+//             displayErrorMessage('Failed to start tournament: ' + errorData.message);
+//         }
+//     } catch (error) {
+//         console.error('Error starting tournament:', error);
+//         displayErrorMessage('Error starting tournament.');
+//     }
 
-    window.addEventListener('beforeunload', saveTournamentData);
-}
+//     window.addEventListener('beforeunload', saveTournamentData);
+// }
 
 export {
     createTournament,
@@ -505,11 +505,9 @@ export function rejectTournamentInvitation(tournamentId, username) {
     activeWebSockets[tournamentId].send(JSON.stringify(message));
     // Hide the modal
     const modalElement = document.getElementById('tournamentInviteModal');
-<<<<<<< Updated upstream
     const modalInstance = Modal.getInstance(modalElement);
     modalInstance.hide();
-}
-=======
+// }
     modalElement.style.display = 'none';
 }
 
@@ -538,15 +536,3 @@ async function startTournament(tournamentId) {
         displayErrorMessage('Error starting tournament.');
     }
 }
-
-export {
-    createTournament,
-    handleCreateTournament,
-    handleAddParticipant,
-    displayNotification,
-    displayErrorMessage,
-    checkUserOnlineStatus,
-    startTournament,
-    TournamentInit
-};
->>>>>>> Stashed changes

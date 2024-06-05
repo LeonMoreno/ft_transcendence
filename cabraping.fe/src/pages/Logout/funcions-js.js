@@ -28,8 +28,8 @@ export async function logoutUser() {
 
         showNotification("Successfully logged out", "success");
 
-        localStorage.removeItem('jwt');
-        localStorage.removeItem('username');
+        localStorage.clear(); // Limpiar todo el localStorage
+
         window.location.href = '/login';
 
     } catch (error) {

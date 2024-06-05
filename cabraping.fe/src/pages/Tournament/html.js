@@ -1,4 +1,11 @@
 const Tournament_html = async () => {
+
+    const jwt = localStorage.getItem('jwt');
+    if (!jwt) {
+        window.location.href = '/#';
+        return;
+    }
+
     return `
       <!-- Tournament.html -->
       <div id="tournament" class="container mt-4">
