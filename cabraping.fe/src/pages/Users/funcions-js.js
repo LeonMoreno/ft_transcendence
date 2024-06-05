@@ -22,6 +22,7 @@ export async function Users_js() {
 
   const responseUsers = await fetch(`${BACKEND_URL}/api/users/`);
   users = await responseUsers.json();
+  console.log("😸 🤣 users:", users);
   if (!users) return null;
 
   const responseFriendRequests = await fetch(
