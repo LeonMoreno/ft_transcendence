@@ -1,10 +1,11 @@
 import { showNotification } from "../../components/showNotification.js"
+import { BACKEND_URL } from "../../components/wcGlobal.js";
 
 // Extract the IP address from the URL used to access the frontend
-const frontendURL = new URL(window.location.href);
-const serverIPAddress = frontendURL.hostname;
-const serverPort = 8000; // Specify the port your backend server is running on
-const BACKEND_URL = `http://${serverIPAddress}:${serverPort}`;
+// const frontendURL = new URL(window.location.href);
+// const serverIPAddress = frontendURL.hostname;
+// const serverPort = 8000; // Specify the port your backend server is running on
+// const BACKEND_URL = `http://${serverIPAddress}:${serverPort}`;
 
 export function createUser(email, password) {
   const username = email.split('@')[0];

@@ -43,11 +43,11 @@ application = ProtocolTypeRouter({
     "websocket":
         JWTAuthMiddlewareStack(
             URLRouter(
-            # chat_websocket_urlpatterns +
-            # game_websocket_urlpatterns +
-            # users_websocket_urlpatterns +
-            # globalwc_websocket_urlpatterns
-            globalwc.routing.websocket_urlpatterns
+            chat_websocket_urlpatterns +
+            game_websocket_urlpatterns +
+            users_websocket_urlpatterns +
+            globalwc_websocket_urlpatterns
+            # globalwc.routing.websocket_urlpatterns
             )
     ),
 })

@@ -1,13 +1,14 @@
+import { BACKEND_URL, WS_URL } from "../../components/wcGlobal.js";
 import { getToken } from "../../utils/get-token.js";
 import { getHash } from "../../utils/getHash.js";
 
 
 // Extract the IP address from the URL used to access the frontend
-const frontendURL = new URL(window.location.href);
-const serverIPAddress = frontendURL.hostname;
-const serverPort = 8000; // Specify the port your backend server is running on
-const BACKEND_URL = `http://${serverIPAddress}:${serverPort}`;
-const WS_URL = `ws://${serverIPAddress}:${serverPort}`;
+// const frontendURL = new URL(window.location.href);
+// const serverIPAddress = frontendURL.hostname;
+// const serverPort = 8000; // Specify the port your backend server is running on
+// const BACKEND_URL = `http://${serverIPAddress}:${serverPort}`;
+// const WS_URL = `ws://${serverIPAddress}:${serverPort}`;
 
 export async function Game_js() {
   const jwt = getToken();
@@ -52,7 +53,7 @@ export async function Game_js() {
    * The game real-time connection
    */
 
-  const gameSocket = new WebSocket(`${WS_URL}/ws/game/${game.id}/`);
+  const gameSocket = new WebSocket(`${WS_URL}/ws/game/${game.id}/?token=${jwt}}`);
 
   gameSocket.onopen = function (event) {
     console.info("Game socket connected");
@@ -75,7 +76,7 @@ export async function Game_js() {
   };
 
   gameSocket.onerror = function (error) {
-    console.error(`WebSocket error: ${error.message}`);
+    console.log(`WebSocket error: ${error.message}`);
   };
 
   /**

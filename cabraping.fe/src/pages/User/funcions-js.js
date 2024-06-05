@@ -1,11 +1,12 @@
 import { showNotification } from '../../components/showNotification.js';
+import { BACKEND_URL } from '../../components/wcGlobal.js';
 import { getHash } from '../../utils/getHash.js';
 
-// Extract the IP address from the URL used to access the frontend
-const frontendURL = new URL(window.location.href);
-const serverIPAddress = frontendURL.hostname;
-const serverPort = 8000; // Specify the port your backend server is running on
-const BACKEND_URL = `http://${serverIPAddress}:${serverPort}`;
+// // Extract the IP address from the URL used to access the frontend
+// const frontendURL = new URL(window.location.href);
+// const serverIPAddress = frontendURL.hostname;
+// const serverPort = 8000; // Specify the port your backend server is running on
+// const BACKEND_URL = `http://${serverIPAddress}:${serverPort}`;
 
 let jwt;
 let myUser = null;
@@ -113,7 +114,7 @@ function FormSendData(event) {
       updateInfo();
     })
     .catch((error) => {
-      console.error('Error:', error);
+      console.log('Error:', error);
       showNotification("Error updating user! " + error.message, "error");
     });
 }
