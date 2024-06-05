@@ -41,7 +41,7 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'cabraping.settings')
 application = ProtocolTypeRouter({
     "http": get_asgi_application(),
     "websocket":
-        AuthMiddlewareStack(
+        JWTAuthMiddlewareStack(
             URLRouter(
             # chat_websocket_urlpatterns +
             # game_websocket_urlpatterns +
