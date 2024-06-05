@@ -46,7 +46,8 @@ function TournamentInit() {
             const tournamentId = localStorage.getItem('currentTournamentId');
             //startTournament(tournamentId);
             saveTournamentData();
-            window.location.href = '#/tournamentWaitingArea';
+            //window.location.href = '#/tournamentWaitingArea';
+            window.location.hash = '#/tournamentWaitingArea';
         });
         console.log("Event listener added to go to waiting area button");
     } else {
@@ -595,7 +596,7 @@ export function acceptTournamentInvitation(tournamentId, username) {
     displayNotification,
     displayErrorMessage,
     checkUserOnlineStatus,
-    startTournament,
+    //startTournament,
     TournamentInit,
     saveTournamentData,
     loadTournamentData,

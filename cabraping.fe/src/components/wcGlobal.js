@@ -222,7 +222,7 @@ export function handleTournamentInvite(data, tournamentId) {
     // Attach event listeners for modal buttons
     document.getElementById('acceptTournamentInvite').onclick = () => {
         acceptTournamentInvitation(tournamentId, data.user_name);
-        window.location.href = '#/tournamentWaitingArea';
+        window.location.hash = '#/tournamentWaitingArea';
         hideModal('tournamentInviteModal');
 
     };
