@@ -227,7 +227,6 @@ export function handleTournamentInvite(data, tournamentId) {
     // Attach event listeners for modal buttons
     document.getElementById('acceptTournamentInvite').onclick = () => {
         acceptTournamentInvitation(tournamentId, data.user_name);
-        window.location.hash = '#/tournamentWaitingArea';
         hideModal('tournamentInviteModal');
 
     };
@@ -252,7 +251,7 @@ export function create_data_for_TournamentWebSocket({tournamentId, event, type, 
     return {tournamentId: tournamentId, event: event , type: type, userName: creatorUsername, user_id: userId, dest_user_id: dest_user_id }
 }
 
-export function handleTournamentWebSocketMessage(data, tournamentId) {
+/*export function handleTournamentWebSocketMessage(data, tournamentId) {
     console.log(`Received WebSocket message for tournament ${tournamentId}:`, data);
     if (!data.event) {
         console.error('Missing event type in WebSocket message:', data);
@@ -286,7 +285,34 @@ export function handleTournamentWebSocketMessage(data, tournamentId) {
         default:
             console.log('Unknown event type:', data.event);
     }
+}*/
+
+export async function handleTournamentWebSocketMessage(data, tournamentId) {
+    console.log(`Received WebSocket message for tournament ${tournamentId}:`, data);
+    let participants = [];
+    switch (data.event) {
+        case 'game_invite':
+            if (data.type === 'tournament') {
+                handleTournamentInvite(data, tournamentId);
+            } else {
+                handleGameInvite(data);
+            }
+            break;
+        case 'accepted_invite':
+        case 'rejected_invite':
+        case 'user_connected':
+        case 'user_disconnected':
+        case 'update_user_list':
+            participants = await fetchParticipants(tournamentId);
+            updateWaitingParticipantsList(participants);
+            break;
+        default:
+            console.log('Unknown event type:', data.event);
+    }
 }
+
+
+
 
 function checkStartTournament(tournamentId) {
     const startTournamentButton = document.getElementById('startTournamentButton');

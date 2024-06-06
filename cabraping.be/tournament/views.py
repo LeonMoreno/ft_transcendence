@@ -101,6 +101,7 @@ class TournamentViewSet(viewsets.ModelViewSet):
 class ParticipantViewSet(viewsets.ModelViewSet):
     queryset = Participant.objects.all()
     serializer_class = ParticipantSerializer
+    permission_classes = [IsAuthenticated]
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
@@ -114,8 +115,12 @@ class ParticipantViewSet(viewsets.ModelViewSet):
         return Response({'id': participant.id, **serializer.data}, status=status.HTTP_201_CREATED)
 
     @action(detail=True, methods=['post'], url_path='invite')
+    #@transaction.atomic
     def invite_participant(self, request, pk=None):
         participant = self.get_object()
+        participant.received_invite = True
+        participant.save()
+
         channel_layer = get_channel_layer()
         async_to_sync(channel_layer.group_send)(
             f'tournament_{participant.tournament.id}',
@@ -125,19 +130,18 @@ class ParticipantViewSet(viewsets.ModelViewSet):
             }
         )
         async_to_sync(channel_layer.group_send)(
-            f'user_{participant.myUser.id}', 
+            f'user_{participant.user.id}', 
             {
                 'type': 'send_tournament_invitation',
                 'tournament_name': participant.tournament.name,
                 'message': f"You have been to join the tournament {participant.tournament.name}! Do you think you have what it takes to win the prestigious Chèvre Verte Award?",
-                'user_id': participant.myUser.id,
+                'user_id': participant.user.id,
                 'user_name': participant.user.username,
-                'dest_user_id': request.myUser.id,
+                'dest_user_id': request.user.id,
                 'tournament_id': participant.tournament.id
             }
         )
-        participant.received_invite = True
-        participant.save()
+       
         return Response({'message': f'Invitation successfully sent to {participant.user.username} for {participant.tournament.name}'})
 
     #@action(detail=False, methods=['GET'], url_path='status')
@@ -159,7 +163,7 @@ class ParticipantViewSet(viewsets.ModelViewSet):
             return Response({'error': 'Tournament not found'}, status=status.HTTP_404_NOT_FOUND)
 
         participants = Participant.objects.filter(tournament=tournament)
-        data = [{'id': p.id, 'accepted_invite': p.accepted_invite} for p in participants]
+        data = ParticipantSerializer(participants, many=True).data
         return Response(data)
 
     @action(detail=True, methods=['PATCH'], url_path='update-status')

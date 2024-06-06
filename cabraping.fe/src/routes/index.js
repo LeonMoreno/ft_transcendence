@@ -17,8 +17,8 @@ import { Game_html } from "../pages/Game/html.js";
 import { Friends_html } from "../pages/Friends/html.js";
 import { Tournament_html } from "../pages/Tournament/html.js";
 import { TournamentInit } from "../pages/Tournament/funcions-js.js";
-import { TournamentWaitingArea_html } from "../pages/Tournament/tournamentWaitingArea_html.js";
-import { initializeTournamentWaitingArea } from "../pages/Tournament/tournamentWaitingArea.js";
+import { TournamentWaitingArea_html } from "../pages/TournamentWaitingArea/tournamentWaitingArea_html.js";
+import { initializeTournamentWaitingArea } from "../pages/TournamentWaitingArea/tournamentWaitingArea.js";
 import { Friends_js } from "../pages/Friends/funcions-js.js";
 import { Chat_js, Chat_Update_js } from "../pages/Chat/funcions-js.js";
 import { Chat_html } from "../pages/Chat/html.js";
@@ -43,7 +43,7 @@ const routes = {
   "/user": [User_html, User_js],
   "/users": [Users_html, Users_js],
   "/tournament": [Tournament_html, TournamentInit],
-  "/tournamentWaitingArea/:id": [TournamentWaitingArea_html, initializeTournamentWaitingArea],
+  "/waitroom/:id": [TournamentWaitingArea_html, initializeTournamentWaitingArea],
   "/logout": [LogoutPage_js],
   "/friends": [Friends_html, Friends_js],
   "/stats": [Stat_html, Stat_js],

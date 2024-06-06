@@ -18,8 +18,12 @@ async function fetchParticipants(tournamentId) {
         });
 
         if (response.ok) {
-            const participants = await response.json();
-            return participants;
+            const participants = await response.json(); 
+            console.log('😸 🤣 😸 🤣Participants fetched: 😸 🤣 😸 🤣', participants);
+            return participants.map(participant => ({
+                username: participant.user.username, 
+                accepted_invite: participant.accepted_invite
+            }));
         } else {
             console.error('Failed to fetch participants status');
             return [];
@@ -31,16 +35,52 @@ async function fetchParticipants(tournamentId) {
 }
 
 // Update the participant list in the UI
-function updateParticipantsList(participants) {
-    const participantsList = document.getElementById('participantsList');
-    participantsList.innerHTML = '';
+/*export function updateWaitingParticipantsList(participants) {
+    const participantsList = document.getElementById('waitingParticipantsList');
+    if (participantsList) {
+        participantsList.innerHTML = ''; // Clear the current list
 
-    participants.forEach(participant => {
-        const listItem = document.createElement('li');
-        listItem.textContent = `${participant.username} - ${participant.accepted_invite ? 'Joined' : 'Waiting'}`;
-        participantsList.appendChild(listItem);
-    });
+        participants.forEach(participant => {
+            const participantName = participant.username || 'Unknown';
+            const status = participant.accepted_invite ? 'Joined' : 'Waiting';
+
+            const listItem = document.createElement('li');
+            listItem.textContent = `${participantName} - ${status}`;
+            participantsList.appendChild(listItem);
+        });
+
+        const startTournamentButton = document.getElementById('startTournamentButton');
+        if (startTournamentButton) {
+            const isEnabled = participants.length >= 3; // Adjust this as per your requirement
+            startTournamentButton.disabled = !isEnabled;
+        }
+    }
 }
+*/
+
+export function updateWaitingParticipantsList(participants) {
+    const participantsList = document.getElementById('waitingParticipantsList');
+    if (participantsList) {
+        participantsList.innerHTML = ''; // Clear the current list
+
+        participants.forEach(participant => {
+            const participantName = participant.user.username || 'Unknown';
+            const status = participant.accepted_invite ? 'Joined' : 'Waiting';
+            console.log(`Participant: ${participantName}, Status: ${status}`); // Debugging log
+
+            const listItem = document.createElement('li');
+            listItem.textContent = `${participantName} - ${status}`;
+            participantsList.appendChild(listItem);
+        });
+
+        const startTournamentButton = document.getElementById('startTournamentButton');
+        if (startTournamentButton) {
+            const isEnabled = participants.length >= 3; // Adjust this as per your requirement
+            startTournamentButton.disabled = !isEnabled;
+        }
+    }
+}
+
 
 // Check if all participants have accepted the invitation
 function allParticipantsAccepted(participants) {
@@ -90,16 +130,17 @@ async function initializeTournamentWaitingArea() {
         return; // Exit the function if tournamentId is not valid
     }
 
-    const isCreator = localStorage.getItem('username') === 'creator_username'; // check
+    const creatorUsername = localStorage.getItem('creatorUsername_' + tournamentId); // Get creator's username from local storage
+    const isCreator = localStorage.getItem('username') === creatorUsername;
 
     const participants = await fetchParticipants(tournamentId);
-    updateParticipantsList(participants);
+    updateWaitingParticipantsList(participants);
     updateStartButton(participants);
     updateCancelButton(isCreator);
 
     setInterval(async () => {
         const participants = await fetchParticipants(tournamentId);
-        updateParticipantsList(participants);
+        updateWaitingParticipantsList(participants);
         updateStartButton(participants);
     }, 5000);
 }

@@ -44,23 +44,6 @@ function TournamentInit() {
     } else {
         console.error("Participant name input not found");
     }
-
-    /*const goToWaitingAreaButton = document.getElementById('goToWaitingAreaButton');
-    if (goToWaitingAreaButton) {
-        goToWaitingAreaButton.addEventListener('click', () => {
-            const tournamentId = localStorage.getItem('currentTournamentId');
-            console.log("Navigating to tournament waiting area with ID:", tournamentId);
-            //startTournament(tournamentId);
-            saveTournamentData();
-            //window.location.href = '#/tournamentWaitingArea';
-            window.location.hash = '#/tournamentWaitingArea';
-        });
-        console.log("Event listener added to go to waiting area button");
-    } else {
-        console.error("Go to waiting area button not found");
-    }*/
-
-    // window.addEventListener('beforeunload', saveTournamentData);
 }
 
 // Save tournament data to localStorage
@@ -78,6 +61,8 @@ function saveTournamentData() {
         };
         localStorage.setItem('pageTournament', JSON.stringify(data));
         console.log("🥶 -> saveTournamentData:", data);
+    } else {
+        console.error('Necessary elements for saving tournament data are not available.');
     }
 }
 
@@ -154,12 +139,11 @@ async function handleAddParticipant(e) {
     if (isOnline === null) {
         displayErrorMessage("User not found. Please double-check their username.");
     } else if (isOnline) {
-        // const participantId = await getParticipantId(participantName, tournamentId);
         const participantId = await getUserIdByUsername(participantName, tournamentId);
         if (participantId) {
             console.log(`Sending tournament invitation to [${participantName}], participantId:[${participantId}]`);
             sendTournamentInvitation(tournamentId, participantName, participantId);
-            updateParticipantsList(participantName, 'invited');
+            updateParticipantsList({ username: participantName }, 'invited');
         } else {
             displayErrorMessage("Failed to get participant ID.");
         }
@@ -170,6 +154,7 @@ async function handleAddParticipant(e) {
     document.getElementById('participantNameInput').value = ''; // Clear input after adding
     saveTournamentData();
 }
+
 
 function checkAddParticipantButton(e) {
     if (e.type === 'keydown' && e.key !== 'Enter') {
@@ -252,7 +237,7 @@ async function checkAllParticipantsAccepted(tournamentId) {
 */
 
 // Function to update the list of participants in the UI
-export function updateParticipantsList(participantName, status, isCreator = false) {
+/*export function updateParticipantsList(participantName, status, isCreator = false) {
     const currentUser = localStorage.getItem('username');
     if (participantName === currentUser && !isCreator) {
         displayErrorMessage('You cannot invite yourself to the party. Have some manners!');
@@ -292,8 +277,62 @@ export function updateParticipantsList(participantName, status, isCreator = fals
                     const tournamentId = localStorage.getItem('currentTournamentId');
                     console.log("Navigating to tournament waiting area with ID:", tournamentId);
                     saveTournamentData();
-                    window.location.href = `/#tournamentWaitingArea/${tournamentId}`;
-                    //window.location.hash = '#/tournamentWaitingArea';
+                    window.location.href = `/#waitroom/${tournamentId}`;
+                });
+                console.log("Event listener added to go to waiting area button");
+            }
+        } else {
+            console.error("Go to waiting area button not found");
+        }
+    }
+}
+
+*/
+
+export function updateParticipantsList(participantNameOrObject, status, isCreator = false) {
+    const participantName = typeof participantNameOrObject === 'object' ? participantNameOrObject.username || participantNameOrObject.name : participantNameOrObject;
+    const currentUser = localStorage.getItem('username');
+
+    if (participantName === currentUser && !isCreator) {
+        displayErrorMessage('You cannot invite yourself to the party. Have some manners!');
+        return;
+    }
+
+    const participantsList = document.getElementById('participantsList');
+    if (participantsList) {
+        // Check if the participant is already in the list to avoid duplication
+        const existingParticipant = Array.from(participantsList.children).find(item => item.textContent.includes(participantName));
+        if (existingParticipant) {
+            existingParticipant.textContent = participantName + ' - ' + status;
+            if (!isCreator) displayErrorMessage('This user has been invited already. Don\'t be pushy.');
+        } else {
+            const listItem = document.createElement('li');
+            listItem.textContent = isCreator ? participantName : participantName + ' - ' + "invited";
+            participantsList.appendChild(listItem);
+            if (!isCreator) showNotification('Invitation successfully sent to ' + participantName + '.', 'success');
+        }
+
+        // Check the number of invited participants and enable the button if there are at least three (excluding the creator)
+        const invitedParticipants = participantsList.children.length - 1; // Exclude the creator
+        const goToWaitingAreaButton = document.getElementById('goToWaitingAreaButton');
+        if (goToWaitingAreaButton) {
+            console.log("Navigating to tournament waiting area.");
+            const isEnabled = invitedParticipants >= 3;
+            goToWaitingAreaButton.disabled = !isEnabled;
+
+            // Save the button state to local storage
+            localStorage.setItem('goToWaitingAreaButtonEnabled', isEnabled);
+
+            // Remove any existing event listeners to avoid duplicates
+            const newButton = goToWaitingAreaButton.cloneNode(true);
+            goToWaitingAreaButton.parentNode.replaceChild(newButton, goToWaitingAreaButton);
+
+            if (isEnabled && newButton) {
+                newButton.addEventListener('click', () => {
+                    const tournamentId = localStorage.getItem('currentTournamentId');
+                    console.log("Navigating to tournament waiting area with ID:", tournamentId);
+                    saveTournamentData();
+                    window.location.href = `/#waitroom/${tournamentId}`;
                 });
                 console.log("Event listener added to go to waiting area button");
             }
@@ -443,6 +482,7 @@ async function handleCreateTournament(e) {
             document.getElementById('tournamentForm').querySelector('button').disabled = true;
             localStorage.setItem('currentTournamentId', data.id);
             localStorage.setItem(`tournamentName_${data.id}`, tournamentName); 
+            localStorage.setItem('creatorUsername_' + data.id, localStorage.getItem('username')); // Store creator's username
             updateParticipantsList('You (Creator)', 'invited', true); // Automatically adds the creator as a participant
             
             connectTournamentWebSocket(data.id);
@@ -582,7 +622,17 @@ export function acceptTournamentInvitation(tournamentId, username) {
     };
   
     activeWebSockets[tournamentId].send(JSON.stringify(message));
-    window.location.hash = '#/tournamentWaitingArea';
+    
+    // Save data only if elements are available
+    const tournamentNameInput = document.getElementById('tournamentNameInput');
+    const participantsList = document.getElementById('participantsList');
+    if (tournamentNameInput && participantsList) {
+        saveTournamentData();
+    } else {
+        console.log("Skipping saveTournamentData as elements are not available.");
+    }
+
+    window.location.href = `/#waitroom/${tournamentId}`;
   }
   
   export function rejectTournamentInvitation(tournamentId, username) {
