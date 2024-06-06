@@ -25,15 +25,41 @@ class TournamentViewSet(viewsets.ModelViewSet):
         if len(participants) != 4:
             return Response({'error': 'Tournament must have exactly 4 participants.'}, status=400)
 
+        if not all(participant.ready for participant in participants):
+            return Response({'error': 'Not all participants are ready'}, status=400)
+
         semifinal1 = Match.objects.create(tournament=tournament, participant1=participants[0], participant2=participants[1])
         semifinal2 = Match.objects.create(tournament=tournament, participant1=participants[2], participant2=participants[3])
         tournament.status = 'in_progress'
         tournament.save()
 
-        # rachel - call Jonathan's remote player module here?
+        # rachel - call Jonathan's remote player module here:
+        #start_remote_users_module(tournament.id) // or whatever it is called
 
         return Response({'message': 'Tournament started. Semifinals are set up.'})
 
+    @action(detail=True, methods=['post'])
+    def set_ready(self, request, pk=None):
+        tournament = self.get_object()
+        user = request.user
+        participant = get_object_or_404(Participant, tournament=tournament, user=user)
+        participant.ready = True
+        participant.save()
+
+        # Check if all participants are ready
+        participants = tournament.participants.all()
+        if all(participant.ready for participant in participants):
+            channel_layer = get_channel_layer()
+            async_to_sync(channel_layer.group_send)(
+                f'tournament_{tournament.id}',
+                {
+                    'type': 'send_update',
+                    'event': 'all_ready',
+                    'tournament_id': tournament.id
+                }
+            )
+
+        return Response({'status': 'Participant marked as ready'})
 
     def progress_tournament(self, tournament):
         matches = Match.objects.filter(tournament=tournament)
@@ -97,6 +123,25 @@ class TournamentViewSet(viewsets.ModelViewSet):
         tournament.save()  # Save the tournament after adding the participant
         serializer = self.get_serializer(tournament)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+    @action(detail=True, methods=['post'], url_path='cancel')
+    def cancel_tournament(self, request, pk=None):
+        tournament = self.get_object()
+        tournament.status = 'canceled'
+        tournament.save()
+
+        # Notify participants of the cancellation
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            f'tournament_{tournament.id}',
+            {
+                'type': 'tournament_canceled',
+                'message': 'The tournament has been canceled by the system.',
+                'tournament_id': tournament.id
+            }
+        )
+
+        return Response({'message': 'Tournament has been canceled.'}, status=status.HTTP_200_OK)
 
 class ParticipantViewSet(viewsets.ModelViewSet):
     queryset = Participant.objects.all()
@@ -115,34 +160,37 @@ class ParticipantViewSet(viewsets.ModelViewSet):
         return Response({'id': participant.id, **serializer.data}, status=status.HTTP_201_CREATED)
 
     @action(detail=True, methods=['post'], url_path='invite')
-    #@transaction.atomic
+    @transaction.atomic
     def invite_participant(self, request, pk=None):
         participant = self.get_object()
         participant.received_invite = True
         participant.save()
 
+        tournament = participant.tournament
+        tournament.participants.add(participant.user)
+
         channel_layer = get_channel_layer()
         async_to_sync(channel_layer.group_send)(
-            f'tournament_{participant.tournament.id}',
+            f'tournament_{tournament.id}',
             {
                 'type': 'send_update',
-                'participants': ParticipantSerializer(participant.tournament.tournament_participants.all(), many=True).data
+                'participants': ParticipantSerializer(tournament.tournament_participants.all(), many=True).data
             }
         )
         async_to_sync(channel_layer.group_send)(
             f'user_{participant.user.id}', 
             {
                 'type': 'send_tournament_invitation',
-                'tournament_name': participant.tournament.name,
-                'message': f"You have been to join the tournament {participant.tournament.name}! Do you think you have what it takes to win the prestigious Chèvre Verte Award?",
+                'tournament_name': tournament.name,
+                'message': f"You have been to join the tournament {tournament.name}! Do you think you have what it takes to win the prestigious Chèvre Verte Award?",
                 'user_id': participant.user.id,
                 'user_name': participant.user.username,
                 'dest_user_id': request.user.id,
-                'tournament_id': participant.tournament.id
+                'tournament_id': tournament.id
             }
         )
        
-        return Response({'message': f'Invitation successfully sent to {participant.user.username} for {participant.tournament.name}'})
+        return Response({'message': f'Invitation successfully sent to {participant.user.username} for {tournament.name}'})
 
     #@action(detail=False, methods=['GET'], url_path='status')
     #def get_participants_status(self, request):

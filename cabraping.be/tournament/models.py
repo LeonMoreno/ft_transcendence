@@ -14,7 +14,7 @@ class Tournament(models.Model):
     name = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
-    participants = models.ManyToManyField(CustomUser, related_name='tournaments') # rachel 
+    participants = models.ManyToManyField(CustomUser, related_name='tournaments') 
     champion = models.ForeignKey(CustomUser, related_name='won_tournaments', null=True, blank=True, on_delete=models.SET_NULL)
     #id is automatically handled by django - no need to add a field here
 
@@ -26,6 +26,7 @@ class Participant(models.Model):
     tournament = models.ForeignKey(Tournament, related_name='tournament_participants', on_delete=models.CASCADE)
     received_invite = models.BooleanField(default=False)
     accepted_invite = models.BooleanField(default=False)
+    ready = models.BooleanField(default=False) 
 
 class Match(models.Model):
     tournament = models.ForeignKey(Tournament, related_name='matches', on_delete=models.CASCADE)

@@ -64,7 +64,7 @@ export function updateWaitingParticipantsList(participants) {
         participantsList.innerHTML = ''; // Clear the current list
 
         participants.forEach(participant => {
-            const participantName = participant.user.username || 'Unknown';
+            const participantName = participant.username || 'Unknown';
             const status = participant.accepted_invite ? 'Joined' : 'Waiting';
             console.log(`Participant: ${participantName}, Status: ${status}`); // Debugging log
 
@@ -75,7 +75,8 @@ export function updateWaitingParticipantsList(participants) {
 
         const startTournamentButton = document.getElementById('startTournamentButton');
         if (startTournamentButton) {
-            const isEnabled = participants.length >= 3; // Adjust this as per your requirement
+            //const isEnabled = participants.length >= 3; // Adjust this as per your requirement
+            const isEnabled = participants.filter(p => p.accepted_invite).length >= 4; // Ensure at least 4 participants have accepted
             startTournamentButton.disabled = !isEnabled;
         }
     }
@@ -92,11 +93,37 @@ function updateStartButton(participants) {
     const startButton = document.getElementById('startTournamentButton');
     if (allParticipantsAccepted(participants)) {
         startButton.disabled = false;
-        //if event listener startButton click, go to remote users module
+        if (!startButton.dataset.listenerAttached) {
+            startButton.addEventListener('click', async function() {
+                try {
+                    const response = await fetch(`${BACKEND_URL}/api/tournament/${tournamentId}/set_ready/`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${getToken()}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            tournament_id: tournamentId,
+                            user_id: userId
+                        })
+                    });
+
+                    if (response.ok) {
+                        console.log('User is ready for the tournament');
+                    } else {
+                        console.error('Failed to notify the server about readiness');
+                    }
+                } catch (error) {
+                    console.error('Error notifying the server about readiness:', error);
+                }
+            });
+            startButton.dataset.listenerAttached = true;
+        }
     } else {
         startButton.disabled = true;
     }
 }
+
 
 // Enable or disable the cancel button based on user role
 function updateCancelButton(isCreator) {
@@ -138,11 +165,29 @@ async function initializeTournamentWaitingArea() {
     updateStartButton(participants);
     updateCancelButton(isCreator);
 
+    const socket = new WebSocket(`ws://${window.location.host}/ws/tournament/${tournamentId}/`);
+    socket.onmessage = function(event) {
+        const data = JSON.parse(event.data);
+        if (data.type === 'tournament_canceled') {
+            handleTournamentCanceled(data.message);
+        }
+    };
+
     setInterval(async () => {
         const participants = await fetchParticipants(tournamentId);
         updateWaitingParticipantsList(participants);
         updateStartButton(participants);
     }, 5000);
+}
+
+function handleTournamentCanceled(message) {
+    alert(message);
+    window.location.href = '/#'; 
+}
+
+function startTournament() {
+    console.log('All participants are ready. Starting the tournament...');
+   // window.location.href = `/tournament/${tournamentId}/remote-users`;
 }
 
 export { initializeTournamentWaitingArea };

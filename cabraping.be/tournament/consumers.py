@@ -1,5 +1,6 @@
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
+from channels.layers import get_channel_layer
 
 class TournamentConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -22,6 +23,9 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             self.channel_name
         )
         print(f'WebSocket connection closed for tournament {self.tournament_id}: {close_code}')
+
+         # Handle participant disconnection
+        await self.handle_participant_disconnect()
 
     async def receive(self, text_data):
         data = json.loads(text_data)
@@ -50,6 +54,20 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                 'dest_user_id': data['dest_user_id']
             }
         )
+
+    async def handle_participant_disconnect(self):
+        channel_layer = get_channel_layer()
+        await channel_layer.group_send(
+            self.group_name,
+            {
+                'type': 'tournament_canceled',
+                'message': 'A participant has disconnected. The tournament is canceled.',
+                'tournament_id': self.tournament_id
+            }
+        )
+
+    async def tournament_canceled(self, event):
+        await self.send(text_data=json.dumps(event))
 
     async def handle_accepted_invite(self, data):
         print(f'Handling accepted invite: {data}')

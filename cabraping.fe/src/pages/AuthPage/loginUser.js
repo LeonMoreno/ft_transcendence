@@ -7,6 +7,7 @@ const frontendURL = new URL(window.location.href);
 const serverIPAddress = frontendURL.hostname;
 const serverPort = 8000; // Specify the port your backend server is running on
 const BACKEND_URL = `http://${serverIPAddress}:${serverPort}`;
+//const BACKEND_URL = "http://localhost:8000";
 
 export async function loginUser(username, password) {
   try {
