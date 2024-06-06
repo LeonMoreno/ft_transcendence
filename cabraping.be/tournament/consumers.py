@@ -39,7 +39,8 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             await self.handle_accepted_invite(data)
         elif event == 'rejected_invite':
             await self.handle_rejected_invite(data)
-        # Add other event handlers as needed
+        elif event == 'tournament_canceled':
+            await self.tournament_canceled(data)
 
     async def handle_game_invite(self, data):
         print(f'Handling game invite: {data}')
@@ -54,21 +55,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                 'dest_user_id': data['dest_user_id']
             }
         )
-
-    async def handle_participant_disconnect(self):
-        channel_layer = get_channel_layer()
-        await channel_layer.group_send(
-            self.group_name,
-            {
-                'type': 'tournament_canceled',
-                'message': 'A participant has disconnected. The tournament is canceled.',
-                'tournament_id': self.tournament_id
-            }
-        )
-
-    async def tournament_canceled(self, event):
-        await self.send(text_data=json.dumps(event))
-
+ 
     async def handle_accepted_invite(self, data):
         print(f'Handling accepted invite: {data}')
         await self.channel_layer.group_send(
@@ -94,6 +81,32 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                 'dest_user_id': data['dest_user_id']
             }
         )
+
+    async def handle_participant_disconnect(self):
+        channel_layer = get_channel_layer()
+        await channel_layer.group_send(
+            self.group_name,
+            {
+                'type': 'tournament_canceled',
+                'event': 'tournament_canceled',
+                'message': 'A participant has disconnected. The tournament is canceled.',
+                'tournament_id': self.tournament_id
+            }
+        )
+
+    async def handle_tournament_canceled(self, data):
+        await self.channel_layer.group_send(
+            self.group_name,
+            {
+                'type': 'tournament_canceled',
+                'event': 'tournament_canceled',
+                'message': data['message'],
+                'tournament_id': data['tournament_id']
+            }
+        )
+
+    async def tournament_canceled(self, event):
+        await self.send(text_data=json.dumps(event))
 
     # Event handler functions that send messages to WebSocket clients
     async def game_invite(self, event):

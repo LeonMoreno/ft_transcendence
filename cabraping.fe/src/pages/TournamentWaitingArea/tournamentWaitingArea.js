@@ -1,5 +1,7 @@
 import { getHash } from '../../utils/getHash.js';
 import { getToken } from "../../utils/get-token.js";
+import { showNotificationPopup } from '../../components/showNotification.js';
+import { handleTournamentWebSocketMessage, activeWebSockets, connectWebSocketGlobal } from '../../components/wcGlobal.js';
 
 // Extract the IP address from the URL used to access the frontend
 const frontendURL = new URL(window.location.href);
@@ -90,6 +92,11 @@ function allParticipantsAccepted(participants) {
 
 // Enable or disable the start button based on participant status
 function updateStartButton(participants) {
+    const tournamentId = getHash() || null;
+    if (!tournamentId) {
+        console.error("Tournament ID is null or invalid");
+        return;
+    }
     const startButton = document.getElementById('startTournamentButton');
     if (allParticipantsAccepted(participants)) {
         startButton.disabled = false;
@@ -130,10 +137,25 @@ function updateCancelButton(isCreator) {
     const cancelButton = document.getElementById('cancelTournamentButton');
     if (isCreator) {
         cancelButton.disabled = false;
+        if (!cancelButton.dataset.listenerAttached) {
+            cancelButton.addEventListener('click', function() {
+                const tournamentId = localStorage.getItem('currentTournamentId');
+                const message = {
+                    type: 'tournament_canceled',
+                    event: 'tournament_canceled',
+                    message: 'The tournament has been canceled by the creator.',
+                    tournament_id: tournamentId
+                };
+                //activeWebSockets[tournamentId].send(JSON.stringify(message));
+                WSsocket.send(JSON.stringify(message));
+            });
+            cancelButton.dataset.listenerAttached = true;
+        }
     } else {
         cancelButton.disabled = true;
     }
 }
+
 
 // Initialize the Tournament Waiting Area
 /*async function initializeTournamentWaitingArea(tournamentId, isCreator) {
@@ -149,15 +171,14 @@ function updateCancelButton(isCreator) {
         updateStartButton(participants);
     }, 5000);
 } */
-
 async function initializeTournamentWaitingArea() {
-    const tournamentId = getHash() || null; // Get the tournament ID from the URL or set to null if invalid
+    const tournamentId = getHash() || null;
     if (!tournamentId) {
         console.error("Tournament ID is null or invalid");
-        return; // Exit the function if tournamentId is not valid
+        return;
     }
 
-    const creatorUsername = localStorage.getItem('creatorUsername_' + tournamentId); // Get creator's username from local storage
+    const creatorUsername = localStorage.getItem('creatorUsername_' + tournamentId);
     const isCreator = localStorage.getItem('username') === creatorUsername;
 
     const participants = await fetchParticipants(tournamentId);
@@ -165,13 +186,10 @@ async function initializeTournamentWaitingArea() {
     updateStartButton(participants);
     updateCancelButton(isCreator);
 
-    const socket = new WebSocket(`ws://${window.location.host}/ws/tournament/${tournamentId}/`);
-    socket.onmessage = function(event) {
-        const data = JSON.parse(event.data);
-        if (data.type === 'tournament_canceled') {
-            handleTournamentCanceled(data.message);
-        }
-    };
+    // Ensure WebSocket connection
+    if (!activeWebSockets[tournamentId] || activeWebSockets[tournamentId].readyState === WebSocket.CLOSED) {
+        connectTournamentWebSocket(tournamentId);
+    }
 
     setInterval(async () => {
         const participants = await fetchParticipants(tournamentId);
@@ -180,9 +198,12 @@ async function initializeTournamentWaitingArea() {
     }, 5000);
 }
 
-function handleTournamentCanceled(message) {
-    alert(message);
-    window.location.href = '/#'; 
+export function handleTournamentCanceled(message, tournamentId) {
+    const creatorUsername = localStorage.getItem('creatorUsername_' + tournamentId);
+    showNotificationPopup(creatorUsername, message);
+    setTimeout(() => {
+        window.location.href = '/#'; 
+    }, 3000);
 }
 
 function startTournament() {

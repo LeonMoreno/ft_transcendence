@@ -46,6 +46,9 @@ function handleWebSocketMessage(message, userId) {
             console.log("🍀--> tournament_invite🍀:", message);
             handleTournamentInvite(message, message.tournament_id);
             break;
+        case 'tournament_canceled':
+            handleTournamentCanceled(message, message.tournamentId);
+            break;
         default:
             console.log('Unknown event type:', message.event);
     }
