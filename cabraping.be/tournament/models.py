@@ -1,6 +1,5 @@
 from django.db import models
 from users.models import CustomUser
-
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -14,9 +13,8 @@ class Tournament(models.Model):
     name = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
-    participants = models.ManyToManyField(CustomUser, related_name='tournaments') # rachel 
+    participants = models.ManyToManyField(User, related_name='tournaments')
     champion = models.ForeignKey(CustomUser, related_name='won_tournaments', null=True, blank=True, on_delete=models.SET_NULL)
-    #id is automatically handled by django - no need to add a field here
 
     def __str__(self):
         return self.name
@@ -33,4 +31,3 @@ class Match(models.Model):
     participant2 = models.ForeignKey(Participant, related_name='matches_as_participant2', null=True, on_delete=models.SET_NULL)
     winner = models.ForeignKey(Participant, related_name='won_matches', null=True, blank=True, on_delete=models.SET_NULL)
     next_match = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='previous_matches')
-   

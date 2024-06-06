@@ -11,11 +11,29 @@ from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 from users.models import CustomUser
 
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+import json
+
+# permission_classes = [IsAuthenticated]
+
 class TournamentViewSet(viewsets.ModelViewSet):
     queryset = Tournament.objects.all()
     serializer_class = TournamentSerializer
-    permission_classes = [IsAuthenticated]
-    
+
+    @action(detail=True, methods=['post'])
+    def add_participant(self, request, pk=None):
+        user_id = request.data.get('user_id')
+        tournament = get_object_or_404(Tournament, pk=pk)
+        user = get_object_or_404(CustomUser, pk=user_id)
+        participant, created = Participant.objects.get_or_create(user=user, tournament=tournament, defaults={'received_invite': True})
+
+        if not created:
+            participant.received_invite = True
+            participant.save()
+
+        return Response({'status': 'success', 'message': 'Participant added successfully' if created else 'Participant already exists, invite received updated'})
+
     @action(detail=True, methods=['post'])
     @transaction.atomic
     def start_tournament(self, request, pk=None):
@@ -175,6 +193,27 @@ class ParticipantViewSet(viewsets.ModelViewSet):
             participant.save()
             return Response({'message': 'Status updated successfully'})
         return Response({'error': 'Status not provided'}, status=400)
+
+
+
+    @action(detail=True, methods=['post'])
+    def update_accepted_invite(self, request, pk=None):
+        participant = get_object_or_404(Participant, pk=pk)
+        accepted_invite = request.data.get('accepted_invite')
+
+        if accepted_invite is not None:
+            participant.accepted_invite = accepted_invite
+            participant.save()
+
+            if not accepted_invite:
+                tournament = participant.tournament
+                user = participant.user
+                tournament.participants.remove(user)
+                participant.delete()
+
+            return Response({'status': 'success', 'message': 'Participant invite status updated successfully'})
+        else:
+            return Response({'status': 'fail', 'message': 'accepted_invite field is required'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class MatchViewSet(viewsets.ModelViewSet):
