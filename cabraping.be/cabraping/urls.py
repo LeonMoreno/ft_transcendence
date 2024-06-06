@@ -38,6 +38,7 @@ urlpatterns = [
     path('api/users/<str:username>/status/', check_user_status, name='check_user_status'),
     path('delete/<str:username>/', delete_user, name='delete_user'),
     path('api/participants/status/', ParticipantViewSet.as_view({'get': 'status'}), name='participant-status'),
+   # path('api/tournaments/<int:tournament_id>/set_ready/', set_ready, name='set_ready'),
     path("api/", include(router.urls)),
     path('channels/', ChannelListView.as_view(), name='channel-list'),
     path('channels/create/', ChannelCreateView.as_view(), name='channel-create'),

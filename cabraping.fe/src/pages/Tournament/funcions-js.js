@@ -67,7 +67,7 @@ function saveTournamentData() {
 }
 
 // Load tournament data from localStorage
-function loadTournamentData() {
+/*function loadTournamentData() {
     const data = JSON.parse(localStorage.getItem('pageTournament'));
     console.log("🥶 loadTournamentData:", data);
     console.log("🥶 loadTournamentData:", (document.getElementById('tournamentNameInput').value !== ""));
@@ -84,7 +84,43 @@ function loadTournamentData() {
         });
         document.getElementById('addParticipantButton').disabled = false;
     }
+}*/
+
+// Load tournament data from localStorage
+function loadTournamentData() {
+    const data = JSON.parse(localStorage.getItem('pageTournament'));
+    console.log("🥶 loadTournamentData:", data);
+
+    if (data && data.tournamentName) {
+        const tournamentNameInput = document.getElementById('tournamentNameInput');
+        const tournamentFormButton = document.getElementById('tournamentForm').querySelector('button');
+        const participantsList = document.getElementById('participantsList');
+        const addParticipantButton = document.getElementById('addParticipantButton');
+
+        // Set and disable the tournament name input
+        tournamentNameInput.value = data.tournamentName;
+        tournamentNameInput.disabled = true;
+        
+        // Disable the tournament form button
+        tournamentFormButton.disabled = true;
+        
+        // Clear the current participants list and update with stored participants
+        participantsList.innerHTML = '';
+        data.participants.forEach(participant => {
+            const listItem = document.createElement('li');
+            listItem.textContent = `${participant.name} - ${participant.status}`;
+            participantsList.appendChild(listItem);
+        });
+
+        // Enable the add participant button
+        addParticipantButton.disabled = false;
+
+        console.log("🥶 loadTournamentData: Tournament data loaded successfully");
+    } else {
+        console.log("🥶 loadTournamentData: No tournament data found in localStorage or tournamentName is empty");
+    }
 }
+
 
 // Establecer conexión WebSocket
 export function connectTournamentWebSocket(tournamentId) {

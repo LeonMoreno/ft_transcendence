@@ -25,6 +25,7 @@ function handleWebSocketMessage(message, userId) {
     // if (filterMessagesForUser(message, userId)) {
     //     execute_processes_by_category(message, myUser);
     // }
+    const myUser = userId;
     execute_processes_by_category(message, myUser);
 
     switch (message.event) {
@@ -44,6 +45,9 @@ function handleWebSocketMessage(message, userId) {
         case 'tournament_invite':
             console.log("🍀--> tournament_invite🍀:", message);
             handleTournamentInvite(message, message.tournament_id);
+            break;
+        case 'tournament_canceled':
+            handleTournamentCanceled(message, message.tournamentId);
             break;
         default:
             console.log('Unknown event type:', message.event);
@@ -306,13 +310,13 @@ export async function handleTournamentWebSocketMessage(data, tournamentId) {
             participants = await fetchParticipants(tournamentId);
             updateWaitingParticipantsList(participants);
             break;
+        case 'all_ready':  // New case for handling all participants being ready
+            startTournament();
+            break;
         default:
             console.log('Unknown event type:', data.event);
     }
 }
-
-
-
 
 function checkStartTournament(tournamentId) {
     const startTournamentButton = document.getElementById('startTournamentButton');

@@ -139,7 +139,7 @@ DATABASES = {
 # < Docker ----------------------------------------------------------------------------------------------------------------------------
 
 #---> Local
-#CHANNEL_LAYERS = {
+# CHANNEL_LAYERS = {
 #    'default': {
 #        'BACKEND': 'channels_redis.core.RedisChannelLayer',
 #        'CONFIG': {
@@ -147,9 +147,9 @@ DATABASES = {
 #            "hosts": [('127.0.0.1', 6379)],  # Cambia si tu servidor Redis está en una ubicación diferente
 #        },
 #    },
-#}
+# }
 
-#DATABASES = {
+# DATABASES = {
 #    'default': {
 #        'ENGINE': 'django.db.backends.postgresql',
 #        'NAME': 'transcendence_db',
@@ -159,7 +159,7 @@ DATABASES = {
 #        'HOST': 'localhost',
 #        'PORT': '5432',
 #    }
-#}
+# }
 
 # < Local ----------------------------------------------------------------------------------------------------------------------------
 

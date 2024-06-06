@@ -12,6 +12,7 @@ export async function TournamentWaitingArea_html() {
             <ul id="waitingParticipantsList" class="list-unstyled"></ul>
             <button id="startTournamentButton" class="btn btn-success mt-3 mb-5" disabled>Let's Play!</button>
             <button id="cancelTournamentButton" class="btn btn-danger mt-3 mb-5">Cancel Tournament</button>
+            <div style="height: 200px;"></div> <!-- Spacer element -->
         </div>
     `;
 };
