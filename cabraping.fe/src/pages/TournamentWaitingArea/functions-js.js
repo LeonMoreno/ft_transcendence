@@ -1,7 +1,8 @@
 import { getHash } from '../../utils/getHash.js';
 import { getToken } from "../../utils/get-token.js";
 import { showNotificationPopup } from '../../components/showNotification.js';
-import { handleTournamentWebSocketMessage, activeWebSockets, connectWebSocketGlobal } from '../../components/wcGlobal.js';
+import { fetchParticipants, handleTournamentWebSocketMessage, activeWebSockets, connectWebSocketGlobal } from '../../components/wcGlobal.js';
+import { connectTournamentWebSocket } from "../Tournament/funcions-js.js";
 
 // Extract the IP address from the URL used to access the frontend
 const frontendURL = new URL(window.location.href);
@@ -10,7 +11,7 @@ const serverPort = 8000; // Specify the port your backend server is running on
 const BACKEND_URL = `http://${serverIPAddress}:${serverPort}`;
 
 // Fetch the list of participants from the server
-export async function fetchParticipants(tournamentId) {
+/*export async function fetchParticipants(tournamentId) {
     try {
         const response = await fetch(`${BACKEND_URL}/api/participants/status/?tournament_id=${tournamentId}`, {
             headers: {
@@ -34,7 +35,7 @@ export async function fetchParticipants(tournamentId) {
         console.error('Error fetching participants:', error);
         return [];
     }
-}
+}*/
 
 // Update the participant list in the UI
 /*export function updateWaitingParticipantsList(participants) {

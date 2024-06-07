@@ -3,10 +3,10 @@ import { Chat_Update_js, getUserIdFromJWT } from "../pages/Chat/funcions-js.js";
 import { Friends_js } from "../pages/Friends/funcions-js.js";
 import { Users_js } from "../pages/Users/funcions-js.js";
 import { updateParticipantsList, acceptTournamentInvitation, rejectTournamentInvitation, connectTournamentWebSocket } from "../pages/Tournament/funcions-js.js";
-import { getToken } from "../../utils/get-token.js";
-import { showModal, hideModal } from "../../utils/modal.js";
+import { getToken } from "../utils/get-token.js";
+import { showModal, hideModal } from "../utils/modal.js";
 import { handleTournamentCanceled } from "../pages/TournamentWaitingArea/functions-js.js";
-import { fetchParticipants, updateWaitingParticipantsList } from "../pages/TournamentWaitingArea/functions-js.js";
+import { updateWaitingParticipantsList } from "../pages/TournamentWaitingArea/functions-js.js";
 
 // Extract the IP address from the URL used to access the frontend
 const frontendURL = new URL(window.location.href);
@@ -244,23 +244,23 @@ async function updateInviteStatus(tournamentId, accepted) {
         if (!response.ok) {
             const errorText = await response.text();
             console.error('Error updating invite status:', errorText);
-            showNotificationPopup('Error', 'Error updating invite status: ' + errorText);
+            showNotificationPopup('Error.', 'Error updating invite status: ' + errorText);
             return false;
         }
 
         const data = await response.json();
         console.log('Invite status updated successfully:', data);
-        showNotificationPopup('Success', 'Invite status updated successfully');
+        //showNotificationPopup('Success.', 'Invite status updated successfully');
         return true;
 
     } catch (error) {
         console.error('Network error:', error);
-        showNotificationPopup('Error', 'Network error: ' + error.message);
+        showNotificationPopup('Error.', 'Network error: ' + error.message);
         return false;
     }
 }
 
-async function fetchParticipants(tournamentId) {
+export async function fetchParticipants(tournamentId) {
     try {
         const response = await fetch(`${BACKEND_URL}/api/tournaments/${tournamentId}/`, {
             headers: {

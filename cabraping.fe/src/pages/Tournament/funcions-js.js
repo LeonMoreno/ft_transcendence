@@ -239,7 +239,7 @@ async function addParticipantToTournament(tournamentId, userId) {
 
         const data = await response.json();
         console.log('Participant added successfully:', data);
-        showNotification('Participant added successfully 🇲🇽', 'success');
+        //showNotification('Participant added successfully 🇲🇽', 'success');
         return true;
 
     } catch (error) {

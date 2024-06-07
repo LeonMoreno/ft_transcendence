@@ -35,7 +35,7 @@ const Tournament_html = async () => {
           <button id="goToWaitingAreaButton" class="btn btn-success mt-3 mb-5" disabled>Go To Tournament Waiting Area</button>
       </div>
   
-      <!-- Modals for Invitations and Notifications -->
+      <!-- Modal for notifications -->
       <div id="notificationModal" class="modal" tabindex="-1" role="dialog">
           <div class="modal-dialog" role="document">
               <div class="modal-content">
