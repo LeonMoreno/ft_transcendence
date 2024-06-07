@@ -27,6 +27,18 @@ class TournamentConsumer(AsyncWebsocketConsumer):
          # Handle participant disconnection
         await self.handle_participant_disconnect()
 
+    async def handle_participant_disconnect(self):
+        channel_layer = get_channel_layer()
+        await channel_layer.group_send(
+            self.group_name,
+            {
+                'type': 'tournament_canceled',
+                'event': 'tournament_canceled',
+                'message': 'A participant has disconnected. The tournament is canceled.',
+                'tournament_id': self.tournament_id
+            }
+        )
+
     async def receive(self, text_data):
         data = json.loads(text_data)
         event = data.get('event')
@@ -40,7 +52,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         elif event == 'rejected_invite':
             await self.handle_rejected_invite(data)
         elif event == 'tournament_canceled':
-            await self.tournament_canceled(data)
+            await self.handle_tournament_canceled(data)
 
     async def handle_game_invite(self, data):
         print(f'Handling game invite: {data}')
@@ -81,27 +93,14 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                 'dest_user_id': data['dest_user_id']
             }
         )
-
-    async def handle_participant_disconnect(self):
-        channel_layer = get_channel_layer()
-        await channel_layer.group_send(
+    async def handle_tournament_canceled(self, data):
+        print(f'Handling tournament canceled: {data}')
+        await self.channel_layer.group_send(
             self.group_name,
             {
                 'type': 'tournament_canceled',
                 'event': 'tournament_canceled',
-                'message': 'A participant has disconnected. The tournament is canceled.',
-                'tournament_id': self.tournament_id
-            }
-        )
-
-    async def handle_tournament_canceled(self):
-        channel_layer = get_channel_layer()
-        await channel_layer.group_send(
-            self.group_name,
-            {
-                'type': 'tournament_canceled',
-                'event': 'tournament_canceled',
-                'message': 'The creator has canceled the tournament. Redirecting you to the homepage.',
+                'message': data.get('message', 'The tournament has been canceled.'),
                 'tournament_id': self.tournament_id
             }
         )

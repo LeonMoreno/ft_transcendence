@@ -147,7 +147,7 @@ export function connectTournamentWebSocket(tournamentId) {
         tournamentSocket.onerror = function(error) {
             console.error(`WebSocket error for tournament ${tournamentId}:`, error);
         };
-        activeWebSockets[tournamentId] = tournamentSocket;
+        //activeWebSockets[tournamentId] = tournamentSocket;
     }
 }
 

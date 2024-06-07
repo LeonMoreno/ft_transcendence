@@ -49,7 +49,7 @@ function handleWebSocketMessage(message, userId) {
             handleTournamentInvite(message, message.tournament_id);
             break;
         case 'tournament_canceled':
-            handleTournamentCanceled(message, message.tournamentId);
+            handleTournamentCanceled(message);
             break;
         default:
             console.log('Unknown event type:', message.event);
@@ -389,15 +389,14 @@ export async function handleTournamentWebSocketMessage(data, tournamentId) {
         case 'user_connected':
         case 'user_disconnected':
         case 'update_user_list':
-        case 'tournament_canceled':
             participants = await fetchParticipants(tournamentId);
             updateWaitingParticipantsList(participants);
             break;
         case 'all_ready':  // New case for handling all participants being ready
             startTournament();
             break;
-       // case 'tournament_canceled':
-         //   handleTournamentCanceled(data, tournamentId);
+       case 'tournament_canceled':
+            handleTournamentCanceled(data, tournamentId);
             break;
         default:
             console.log('Unknown event type:', data.event);

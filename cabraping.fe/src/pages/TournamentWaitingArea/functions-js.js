@@ -133,7 +133,7 @@ function updateStartButton(participants) {
 
 
 // Enable or disable the cancel button based on user role
-function updateCancelButton(isCreator) {
+/*function updateCancelButton(isCreator) {
     const cancelButton = document.getElementById('cancelTournamentButton');
     if (isCreator) {
         cancelButton.disabled = false;
@@ -155,7 +155,39 @@ function updateCancelButton(isCreator) {
     } else {
         cancelButton.disabled = true;
     }
+}*/
+
+function updateCancelButton() {
+    const cancelButton = document.getElementById('cancelTournamentButton');
+    cancelButton.disabled = false; // Enable the button for all participants
+
+    if (!cancelButton.dataset.listenerAttached) {
+        cancelButton.addEventListener('click', function() {
+            const tournamentId = localStorage.getItem('currentTournamentId');
+            const creatorUsername = localStorage.getItem(`creatorUsername_${tournamentId}`);
+            const currentUsername = localStorage.getItem('username');
+
+            if (currentUsername === creatorUsername) {
+                console.log("Creator canceled the tournament.");
+                const message = {
+                    type: 'tournament_canceled',
+                    event: 'tournament_canceled',
+                    message: 'The tournament has been canceled by the creator.',
+                    tournament_id: tournamentId
+                };
+                if (activeWebSockets[tournamentId]) {
+                    activeWebSockets[tournamentId].send(JSON.stringify(message));
+                } else {
+                    console.error("WebSocket connection not found for tournament", tournamentId);
+                }
+            } else {
+                showNotificationPopup('Cancellation Failed', 'Only the creator can cancel the tournament.');
+            }
+        });
+        cancelButton.dataset.listenerAttached = true;
+    }
 }
+
 
 document.addEventListener('DOMContentLoaded', () => {
     // Set up the event listener for the start button
@@ -197,16 +229,22 @@ document.addEventListener('DOMContentLoaded', () => {
     if (cancelButton) {
         cancelButton.addEventListener('click', function() {
             const tournamentId = localStorage.getItem('currentTournamentId');
-            const message = {
-                type: 'tournament_canceled',
-                event: 'tournament_canceled',
-                message: 'The tournament has been canceled by the creator.',
-                tournament_id: tournamentId
-            };
-            if (activeWebSockets[tournamentId]) {
-                activeWebSockets[tournamentId].send(JSON.stringify(message));
+            const creatorUsername = localStorage.getItem(`creatorUsername_${tournamentId}`);
+            const currentUsername = localStorage.getItem('username');
+            if (currentUsername === creatorUsername) {
+                const message = {
+                    type: 'tournament_canceled',
+                    event: 'tournament_canceled',
+                    message: 'The tournament has been canceled by the creator.',
+                    tournament_id: tournamentId
+                };
+                if (activeWebSockets[tournamentId]) {
+                    activeWebSockets[tournamentId].send(JSON.stringify(message));
+                } else {
+                    console.error("WebSocket connection not found for tournament", tournamentId);
+                }
             } else {
-                console.error("WebSocket connection not found for tournament", tournamentId);
+                showNotificationPopup('Cancelation failed.', 'Only the creator can cancel the tournament.');
             }
         });
     }
@@ -265,8 +303,13 @@ async function initializeTournamentWaitingArea() {
 
 export function handleTournamentCanceled(data) {
     const { message, tournament_id } = data;
-    showNotificationPopup('Tournament Canceled', message);
-     //delete all tournament data or update status and save data?
+    showNotificationPopup('Tournament canceled.', message);
+    
+    // Remove tournament data from local storage
+    localStorage.removeItem('pageTournament');
+    localStorage.removeItem(`creatorUsername_${tournament_id}`);
+    localStorage.removeItem('currentTournamentId');
+    
     setTimeout(() => {
         window.location.href = '/#';
     }, 3000);
