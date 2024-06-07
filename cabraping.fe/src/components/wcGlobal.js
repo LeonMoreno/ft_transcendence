@@ -214,6 +214,73 @@ export async function getUserIdByUsername(username) {
     }
 }
 
+// Function to send a POST request to update the invite status
+async function updateInviteStatus(tournamentId, accepted) {
+
+    const participants = await fetchParticipants(tournamentId);
+    const currentUserId = localStorage.getItem('userId');
+    const participant = participants.find(p => p.user.id.toString() === currentUserId);
+
+    console.log("---------------");
+    console.log("participant:", participant);
+    if (!participant)
+        return;
+
+    const url = `${BACKEND_URL}/api/participants/${participant.id}/update_accepted_invite/`;
+    const body = JSON.stringify({ accepted_invite: accepted });
+
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${getToken()}`,
+                'Content-Type': 'application/json'
+            },
+            body: body
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Error updating invite status:', errorText);
+            showNotificationPopup('Error', 'Error updating invite status: ' + errorText);
+            return false;
+        }
+
+        const data = await response.json();
+        console.log('Invite status updated successfully:', data);
+        showNotificationPopup('Success', 'Invite status updated successfully');
+        return true;
+
+    } catch (error) {
+        console.error('Network error:', error);
+        showNotificationPopup('Error', 'Network error: ' + error.message);
+        return false;
+    }
+}
+
+async function fetchParticipants(tournamentId) {
+    try {
+        const response = await fetch(`${BACKEND_URL}/api/tournaments/${tournamentId}/`, {
+            headers: {
+                'Authorization': `Bearer ${getToken()}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            console.error('Error fetching tournament participants:', response.statusText);
+            return null;
+        }
+
+        const tournament = await response.json();
+        return tournament.participants || [];
+    } catch (error) {
+        console.error('Network error fetching tournament participants:', error);
+        return null;
+    }
+}
+
+
 export function handleTournamentInvite(data, tournamentId) {
     console.log(`Tournament invitation received for tournament ${tournamentId}:`, data);
     // Set the message in the modal
@@ -229,12 +296,25 @@ export function handleTournamentInvite(data, tournamentId) {
     showModal('tournamentInviteModal');
 
     // Attach event listeners for modal buttons
-    document.getElementById('acceptTournamentInvite').onclick = () => {
-        acceptTournamentInvitation(tournamentId, data.user_name);
-        hideModal('tournamentInviteModal');
+    document.getElementById('acceptTournamentInvite').onclick = async () => {
+
+        // acceptTournamentInvitation
+        const success = await updateInviteStatus(tournamentId, true);
+
+        console.log("😆 updateInviteStatus:", success);
+
+        // if (success) {
+            acceptTournamentInvitation(tournamentId, data.user_name);
+            hideModal('tournamentInviteModal');
+        // }
 
     };
-    document.getElementById('rejectTournamentInvite').onclick = () => {
+    document.getElementById('rejectTournamentInvite').onclick = async () => {
+
+        const success = await updateInviteStatus(tournamentId, false);
+
+        console.log("😆 updateInviteStatus:", success);
+
         rejectTournamentInvitation(tournamentId, data.user_name);
         hideModal('tournamentInviteModal');
     };

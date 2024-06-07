@@ -1,6 +1,7 @@
 import { getToken } from "../../utils/get-token.js";
 import { showNotification, showNotificationPopup } from '../../components/showNotification.js';
 import { sendTournamentInvitation, activeWebSockets, handleTournamentWebSocketMessage, getUserIdByUsername } from '../../components/wcGlobal.js';
+import { getUserIdFromJWT } from "../Chat/funcions-js.js";
 
 // Extract the IP address from the URL used to access the frontend
 const frontendURL = new URL(window.location.href);
@@ -178,6 +179,12 @@ async function handleAddParticipant(e) {
         const participantId = await getUserIdByUsername(participantName, tournamentId);
         if (participantId) {
             console.log(`Sending tournament invitation to [${participantName}], participantId:[${participantId}]`);
+
+            const jwt = localStorage.getItem('jwt');
+            let tournamentId = localStorage.getItem('currentTournamentId');
+            console.log("💡💡💡 --> user_id:", participantId, ", tournamentId:", tournamentId);
+            addParticipantToTournament(tournamentId, participantId);
+
             sendTournamentInvitation(tournamentId, participantName, participantId);
             updateParticipantsList({ username: participantName }, 'invited');
         } else {
@@ -205,7 +212,43 @@ function checkAddParticipantButton(e) {
     }
     handleAddParticipant(e);
     saveTournamentData();
+    // Diego send request "http://localhost:8000/api/tournaments/1/addparticipant/"  
+    // addParticipantToTournament(tournamentId, userId);
 }
+
+async function addParticipantToTournament(tournamentId, userId) {
+    const url = `${BACKEND_URL}/api/tournaments/${tournamentId}/addparticipant/`;
+    const body = JSON.stringify({ user_id: userId });
+
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${getToken()}`,
+                'Content-Type': 'application/json'
+            },
+            body: body
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Error adding participant:', errorText);
+            displayErrorMessage('Error adding participant: ' + errorText);
+            return false;
+        }
+
+        const data = await response.json();
+        console.log('Participant added successfully:', data);
+        showNotification('Participant added successfully 🇲🇽', 'success');
+        return true;
+
+    } catch (error) {
+        console.error('Network error:', error);
+        displayErrorMessage('Network error: ' + error.message);
+        return false;
+    }
+}
+
 
 async function checkAllParticipantsAccepted(tournamentId) {
     try {
