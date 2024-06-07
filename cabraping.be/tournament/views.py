@@ -154,7 +154,7 @@ class TournamentViewSet(viewsets.ModelViewSet):
             f'tournament_{tournament.id}',
             {
                 'type': 'tournament_canceled',
-                'message': 'The tournament has been canceled by the system.',
+                'message': f'The tournament has been canceled by {request.user.username}.',
                 'tournament_id': tournament.id
             }
         )
