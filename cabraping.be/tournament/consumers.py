@@ -94,14 +94,15 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             }
         )
 
-    async def handle_tournament_canceled(self, data):
-        await self.channel_layer.group_send(
+    async def handle_tournament_canceled(self):
+        channel_layer = get_channel_layer()
+        await channel_layer.group_send(
             self.group_name,
             {
                 'type': 'tournament_canceled',
                 'event': 'tournament_canceled',
-                'message': data['message'],
-                'tournament_id': data['tournament_id']
+                'message': 'The creator has canceled the tournament. Redirecting you to the homepage.',
+                'tournament_id': self.tournament_id
             }
         )
 

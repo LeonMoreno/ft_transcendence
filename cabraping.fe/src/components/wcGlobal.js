@@ -5,6 +5,8 @@ import { Users_js } from "../pages/Users/funcions-js.js";
 import { updateParticipantsList, acceptTournamentInvitation, rejectTournamentInvitation, connectTournamentWebSocket } from "../pages/Tournament/funcions-js.js";
 import { getToken } from "../../utils/get-token.js";
 import { showModal, hideModal } from "../../utils/modal.js";
+import { handleTournamentCanceled } from "../pages/TournamentWaitingArea/functions-js.js";
+import { fetchParticipants, updateWaitingParticipantsList } from "../pages/TournamentWaitingArea/functions-js.js";
 
 // Extract the IP address from the URL used to access the frontend
 const frontendURL = new URL(window.location.href);
@@ -387,11 +389,15 @@ export async function handleTournamentWebSocketMessage(data, tournamentId) {
         case 'user_connected':
         case 'user_disconnected':
         case 'update_user_list':
+        case 'tournament_canceled':
             participants = await fetchParticipants(tournamentId);
             updateWaitingParticipantsList(participants);
             break;
         case 'all_ready':  // New case for handling all participants being ready
             startTournament();
+            break;
+       // case 'tournament_canceled':
+         //   handleTournamentCanceled(data, tournamentId);
             break;
         default:
             console.log('Unknown event type:', data.event);
@@ -464,7 +470,7 @@ export async function connectWebSocketGlobal() {
 
     const jwt = localStorage.getItem('jwt');
     if (!jwt) {
-        console.error('No JWT token found in localStorage');
+        console.log('No JWT token found in localStorage'); // rachel - I changed this to log from error because it was bugging me on the console, ha!
         return;
     }
 

@@ -10,7 +10,7 @@ const serverPort = 8000; // Specify the port your backend server is running on
 const BACKEND_URL = `http://${serverIPAddress}:${serverPort}`;
 
 // Fetch the list of participants from the server
-async function fetchParticipants(tournamentId) {
+export async function fetchParticipants(tournamentId) {
     try {
         const response = await fetch(`${BACKEND_URL}/api/participants/status/?tournament_id=${tournamentId}`, {
             headers: {
@@ -139,6 +139,7 @@ function updateCancelButton(isCreator) {
         cancelButton.disabled = false;
         if (!cancelButton.dataset.listenerAttached) {
             cancelButton.addEventListener('click', function() {
+                console.log("Creator canceled the tournament.");
                 const tournamentId = localStorage.getItem('currentTournamentId');
                 const message = {
                     type: 'tournament_canceled',
@@ -146,8 +147,8 @@ function updateCancelButton(isCreator) {
                     message: 'The tournament has been canceled by the creator.',
                     tournament_id: tournamentId
                 };
-                //activeWebSockets[tournamentId].send(JSON.stringify(message));
-                WSsocket.send(JSON.stringify(message));
+                activeWebSockets[tournamentId].send(JSON.stringify(message));
+                //WSsocket.send(JSON.stringify(message));
             });
             cancelButton.dataset.listenerAttached = true;
         }
@@ -156,6 +157,60 @@ function updateCancelButton(isCreator) {
     }
 }
 
+document.addEventListener('DOMContentLoaded', () => {
+    // Set up the event listener for the start button
+    const startButton = document.getElementById('startTournamentButton');
+    if (startButton) {
+        startButton.addEventListener('click', async function() {
+            const tournamentId = getHash() || null;
+            if (!tournamentId) {
+                console.error("Tournament ID is null or invalid");
+                return;
+            }
+
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/tournament/${tournamentId}/set_ready/`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${getToken()}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        tournament_id: tournamentId,
+                        user_id: localStorage.getItem('userId')
+                    })
+                });
+
+                if (response.ok) {
+                    console.log('User is ready for the tournament');
+                } else {
+                    console.error('Failed to notify the server about readiness');
+                }
+            } catch (error) {
+                console.error('Error notifying the server about readiness:', error);
+            }
+        });
+    }
+
+    // Set up the event listener for the cancel button
+    const cancelButton = document.getElementById('cancelTournamentButton');
+    if (cancelButton) {
+        cancelButton.addEventListener('click', function() {
+            const tournamentId = localStorage.getItem('currentTournamentId');
+            const message = {
+                type: 'tournament_canceled',
+                event: 'tournament_canceled',
+                message: 'The tournament has been canceled by the creator.',
+                tournament_id: tournamentId
+            };
+            if (activeWebSockets[tournamentId]) {
+                activeWebSockets[tournamentId].send(JSON.stringify(message));
+            } else {
+                console.error("WebSocket connection not found for tournament", tournamentId);
+            }
+        });
+    }
+});
 
 // Initialize the Tournament Waiting Area
 /*async function initializeTournamentWaitingArea(tournamentId, isCreator) {
@@ -181,10 +236,10 @@ async function initializeTournamentWaitingArea() {
     const creatorUsername = localStorage.getItem('creatorUsername_' + tournamentId);
     const isCreator = localStorage.getItem('username') === creatorUsername;
 
-    const participants = await fetchParticipants(tournamentId);
-    updateWaitingParticipantsList(participants);
-    updateStartButton(participants);
-    updateCancelButton(isCreator);
+    //const participants = await fetchParticipants(tournamentId);
+    //updateWaitingParticipantsList(participants);
+    //updateStartButton(participants);
+   // updateCancelButton(isCreator);
 
     // Ensure WebSocket connection
     if (!activeWebSockets[tournamentId] || activeWebSockets[tournamentId].readyState === WebSocket.CLOSED) {
@@ -195,14 +250,25 @@ async function initializeTournamentWaitingArea() {
         const participants = await fetchParticipants(tournamentId);
         updateWaitingParticipantsList(participants);
         updateStartButton(participants);
+        updateCancelButton(isCreator);
     }, 5000);
 }
 
-export function handleTournamentCanceled(message, tournamentId) {
+/*export function handleTournamentCanceled(message, tournamentId) {
     const creatorUsername = localStorage.getItem('creatorUsername_' + tournamentId);
     showNotificationPopup(creatorUsername, message);
+    //delete all tournament data or update status and save data?
     setTimeout(() => {
         window.location.href = '/#'; 
+    }, 3000);
+}*/
+
+export function handleTournamentCanceled(data) {
+    const { message, tournament_id } = data;
+    showNotificationPopup('Tournament Canceled', message);
+     //delete all tournament data or update status and save data?
+    setTimeout(() => {
+        window.location.href = '/#';
     }, 3000);
 }
 
