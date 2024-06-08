@@ -2,19 +2,22 @@ import { showNotificationPopup } from "./showNotification.js";
 import { Chat_Update_js, getUserIdFromJWT } from "../pages/Chat/funcions-js.js";
 import { Friends_js } from "../pages/Friends/funcions-js.js";
 import { Users_js } from "../pages/Users/funcions-js.js";
+
 import { updateParticipantsList, acceptTournamentInvitation, rejectTournamentInvitation, connectTournamentWebSocket } from "../pages/Tournament/funcions-js.js";
 import { getToken } from "../utils/get-token.js";
 import { showModal, hideModal } from "../utils/modal.js";
 import { handleTournamentCanceled } from "../pages/TournamentWaitingArea/functions-js.js";
 import { updateWaitingParticipantsList } from "../pages/TournamentWaitingArea/functions-js.js";
 
-// Extract the IP address from the URL used to access the frontend
+import { sendAcceptedGameNotifications, sendTournamentNotifications, sendDelleteMatchedMessage, handleUpdateWaitingList } from "./wcGlobal-funcions-send-message.js";
+
 const frontendURL = new URL(window.location.href);
 const serverIPAddress = frontendURL.hostname;
 const serverPort = 8000; // Specify the port your backend server is running on
-const BACKEND_URL = `http://${serverIPAddress}:${serverPort}`;
-//const BACKEND_URL = "http://localhost:8000";
-let WSsocket;  // Global variable for the main WebSocket instance
+export var BACKEND_URL = `http://${serverIPAddress}:${serverPort}`;
+export var WS_URL = `ws://${serverIPAddress}:${serverPort}`;
+export let WSsocket = null;  // Variable global para almacenar la instancia del WebSocket
+
 let myUser = null;
 export let activeWebSockets = {}; // Track multiple WebSocket connections
 
@@ -30,6 +33,7 @@ function handleWebSocketMessage(message, userId) {
     const myUser = userId;
     execute_processes_by_category(message, myUser);
 
+    // Rachel tournament
     switch (message.event) {
         case 'accepted_invite':
             handleAcceptedInvite(message);
@@ -40,7 +44,12 @@ function handleWebSocketMessage(message, userId) {
         case 'game_invite':
             if (message.type === 'tournament') {
                 handleTournamentInvite(message, message.tournament_id);
-            } else {
+            }
+            else if (message.message === 'system')
+            {
+                return;
+            }
+            else {
                 handleGameInvite(message);
             }
             break;
@@ -55,36 +64,6 @@ function handleWebSocketMessage(message, userId) {
             console.log('Unknown event type:', message.event);
     }
 }
-
-/*function handleTournamentWebSocketMessage(data, tournamentId) {
-    console.log(`Received WebSocket message for tournament ${tournamentId}:`, data);
-    switch (data.event) {
-        case 'game_invite':
-            if (data.type === 'tournament') {
-                handleTournamentInvite(data, tournamentId);
-            } else {
-                handleGameInvite(data);
-            }
-            break;
-        case 'accepted_invite':
-            handleAcceptedInvite(data, tournamentId);
-            break;
-        case 'rejected_invite':
-            handleRejectedInvite(data, tournamentId);
-            break;
-        case 'user_connected':
-            updateParticipantsList(data.user_id, 'connected', tournamentId);
-            break;
-        case 'user_disconnected':
-            updateParticipantsList(data.user_id, 'disconnected', tournamentId);
-            break;
-        case 'update_user_list':
-            updateParticipantsList(data.user_ids, 'updated', tournamentId);
-            break;
-        default:
-            console.log('Unknown event type:', data.event);
-    }
-}*/
 
 function handleAcceptedInvite(message, tournamentId) {
     console.log(`Invitation accepted by ${message.user_name}`);
@@ -105,12 +84,14 @@ export function sendTournamentInvitation(tournamentId, participantUsername, part
     const tournamentName = localStorage.getItem(`tournamentName_${tournamentId}`);
     const creatorUsername = localStorage.getItem('username');
     const userId = localStorage.getItem('userId');
-    
+
     console.log(` 😰 activeWebSockets:`, activeWebSockets);
     console.log(` 😰 activeWebSockets[tournamentId]:`, activeWebSockets[tournamentId]);
 
     if (!activeWebSockets[tournamentId] || activeWebSockets[tournamentId].readyState === WebSocket.CLOSED) {
-        const wsUrl = `ws://localhost:8000/ws/tournament/${tournamentId}/`;
+        // const wsUrl = `ws://localhost:8000/ws/tournament/${tournamentId}/`;
+        let jwt = getToken();
+        const wsUrl = `ws://localhost:8000/ws/tournament/${tournamentId}/?token=${jwt}`;
         const tournamentSocket = new WebSocket(wsUrl);
         console.log(`🤖 tournamentSocket:`, tournamentSocket);
 
@@ -321,7 +302,9 @@ export function handleTournamentInvite(data, tournamentId) {
         hideModal('tournamentInviteModal');
     };
 
-    updateParticipantsList(data.user_id, 'invited', tournamentId);
+    const jwt = localStorage.getItem('jwt');
+    let user_id = getUserIdFromJWT(jwt);
+    updateParticipantsList(data, 'invited', tournamentId);
 }
 
 
@@ -414,6 +397,7 @@ function checkStartTournament(tournamentId) {
     });
 }
 
+// function execute_processes_by_category(message, myUser) {
 function execute_processes_by_category(message, myUser) {
     switch (message.event) {
         case "channel_created":
@@ -423,7 +407,13 @@ function execute_processes_by_category(message, myUser) {
         case "game_invite":
             if (message.message !== 'system') {
                 showNotificationPopup(message.user_name, message.message);
+            }
+            else if (message.type && message.type === 'tournament') {
+                return;
             } else {
+                console.log("-> Matching showNotificationPopup");
+                console.log("-> Matching showNotificationPopup message:", message,);
+                console.log("-> Matching showNotificationPopup myUser:", myUser,);
                 sendGameAccept_Waiting(message.dest_user_id, message.user_id, myUser);
             }
             break;
@@ -486,7 +476,8 @@ export async function connectWebSocketGlobal() {
 
     console.log(`--> 👋 User id:${id}`);
 
-    const wsUrl = `ws://localhost:8000/ws/notifications/${id}/`;
+    // Conectarse al WebSocket
+    const wsUrl = `${WS_URL}/ws/notifications/${id}/?token=${jwt}`;
     WSsocket = new WebSocket(wsUrl);
 
     WSsocket.onopen = function () {
@@ -509,7 +500,8 @@ export async function connectWebSocketGlobal() {
                 Users_js();
                 break;
             case 'update_waiting_list':
-                localStorage.setItem('update_waiting_list', JSON.stringify(message.user_ids));
+                console.log("--> Matching: 🍀 update_waiting_list 🍀", message);
+                localStorage.setItem('update_waiting_list', JSON.stringify(message.waiting_ids));
                 let id = getUserIdFromJWT(localStorage.getItem('jwt'));
                 handleUpdateWaitingList(message, String(id), myUser);
                 break;
@@ -519,7 +511,7 @@ export async function connectWebSocketGlobal() {
     };
 
     WSsocket.onerror = function (error) {
-        console.error('WebSocket error:', error);
+        console.log('WebSocket error:', error);
     };
 
     WSsocket.onclose = function (event) {
@@ -536,9 +528,13 @@ async function sendGameAccept_Waiting(userId, dest_user_id, myUser) {
         return;
     }
 
+    console.log("----> Matching: in sendGameAccept_Waiting:", update_waiting_list);
+
     const waitingIds = JSON.parse(update_waiting_list);
     if (waitingIds.length >= 2) {
         for (let i = 0; i + 1 < waitingIds.length; i += 2) {
+            console.log("-----> Matching: if 1:", (Number(waitingIds[i]) === Number(userId)) );
+            console.log("-----> Matching: if 2:", (Number(waitingIds[i + 1]) === Number(dest_user_id)) );
             if (Number(waitingIds[i]) === Number(userId) && Number(waitingIds[i + 1]) === Number(dest_user_id)) {
                 find_me = true;
                 break;
@@ -546,14 +542,17 @@ async function sendGameAccept_Waiting(userId, dest_user_id, myUser) {
         }
     }
 
-    if (find_me) {
+    console.log("----> Matching: find_me:", find_me);
+    if (!find_me) {
         return;
     }
+
 
     const payload = jwt.split('.')[1];
     const decodedPayload = JSON.parse(atob(payload));
     let my_id = decodedPayload.user_id;
 
+    console.log("----> Matching: userId:", userId, ", dest_user_id:", dest_user_id);
     const responseGames = await fetch(`${BACKEND_URL}/api/games/`, {
         headers: { Authorization: `Bearer ${jwt}` },
     });
@@ -578,7 +577,7 @@ async function sendGameAccept_Waiting(userId, dest_user_id, myUser) {
             }
         );
         if (!response.ok) {
-            console.error("error in system");
+            console.log("error in system");
         }
         sendAcceptedGameNotifications(userId, myUser.userName, dest_user_id, game.id);
         sendDelleteMatchedMessage(userId, dest_user_id);
@@ -586,76 +585,6 @@ async function sendGameAccept_Waiting(userId, dest_user_id, myUser) {
     }
 }
 
-async function sendGameInitate_Waiting(userId, inviteId) {
-    const jwt = localStorage.getItem('jwt');
-
-    const response = await fetch(`${BACKEND_URL}/api/games/`, {
-        method: "POST",
-        headers: {
-            Authorization: `Bearer ${jwt}`,
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-            invitationStatus: "PENDING",
-            inviter: userId,
-            invitee: inviteId,
-        }),
-    });
-
-    return response;
-}
-
-// Función para manejar el evento "update_waiting_list"
-async function handleUpdateWaitingList(message, userId, myUser) {
-    const waitingIds = message.waiting_ids;
-    if (waitingIds.length >= 2) {
-        for (let i = 1; i < waitingIds.length; i += 2) {
-            if (waitingIds[i] === userId) {
-                let status = await sendGameInitate_Waiting(userId, waitingIds[i - 1]);
-                if (status.ok) {
-                    sendGameInvataeNotifications(userId, myUser.userName, waitingIds[i - 1], "system");
-                }
-                break;
-            }
-        }
-    }
-}
-
-// Función para enviar un mensaje específico al WebSocket
-export function sendChannelCreatedNotifications(userId, userName, destUserId) {
-    if (!WSsocket || WSsocket.readyState !== WebSocket.OPEN) {
-        console.error('WebSocket is not connected');
-        return;
-    }
-
-    const message = {
-        type: "channel_created",
-        message: "has created a new channel.",
-        user_id: String(userId),
-        user_name: userName,
-        dest_user_id: String(destUserId)
-    };
-
-    WSsocket.send(JSON.stringify(message));
-}
-
-// Función para enviar un mensaje específico al WebSocket
-export function sendGameInvataeNotifications(userId, userName, destUserId, text) {
-    if (!WSsocket || WSsocket.readyState !== WebSocket.OPEN) {
-        console.error('WebSocket is not connected');
-        return;
-    }
-
-    const message = {
-        type: "game_invite",
-        message: text,
-        user_id: String(userId),
-        user_name: userName,
-        dest_user_id: String(destUserId)
-    };
-
-    WSsocket.send(JSON.stringify(message));
-}
 
 // rachel - function to send tournament invitation
 /*export function sendTournamentInvitation(tournamentId, username) {
@@ -707,142 +636,3 @@ export function sendGameInvataeNotifications(userId, userName, destUserId, text)
 }
 
 */
-
-
-
-// Función para enviar un mensaje específico al WebSocket
-export function sendAcceptedGameNotifications(userId, userName, destUserId, game_id) {
-    if (!WSsocket || WSsocket.readyState !== WebSocket.OPEN) {
-        console.error('WebSocket is not connected');
-        return;
-    }
-
-    const message = {
-        type: "accepted_game",
-        message: String(game_id),
-        user_id: String(userId),
-        user_name: userName,
-        dest_user_id: String(destUserId)
-    };
-
-    WSsocket.send(JSON.stringify(message));
-}
-
-export function sendTournamentNotifications(userId, userName, destUserId, tournament_id, tournament_name) {
-    if (!WSsocket || WSsocket.readyState !== WebSocket.OPEN) {
-        console.error('WebSocket is not connected');
-        return;
-    }
-
-    const message = {
-        type: 'tournament_invite',
-        message: 'You have been invited to join the tournament!',
-        user_id: userId,
-        user_name: userName,
-        dest_user_id: destUserId,
-        tournament_id: tournament_id,
-        tournament_name: tournament_name
-    };
-
-    WSsocket.send(JSON.stringify(message));
-}
-
-// Función para enviar un mensaje específico al WebSocket
-export function sendFriendRequestNotifications(userId, userName, destUserId) {
-    if (!WSsocket || WSsocket.readyState !== WebSocket.OPEN) {
-        console.error('WebSocket is not connected');
-        return;
-    }
-
-    const message = {
-        type: "notify",
-        message: "Send friend request",
-        user_id: String(userId),
-        user_name: userName,
-        dest_user_id: String(destUserId)
-    };
-
-    WSsocket.send(JSON.stringify(message));
-}
-
-// Función para enviar un mensaje específico al WebSocket
-export function sendFriendAcceptdNotifications(userId, userName, destUserId) {
-    if (!WSsocket || WSsocket.readyState !== WebSocket.OPEN) {
-        console.error('WebSocket is not connected');
-        return;
-    }
-
-    const message = {
-        type: "notify",
-        message: "Send accept friend",
-        user_id: String(userId),
-        user_name: userName,
-        dest_user_id: String(destUserId)
-    };
-
-    WSsocket.send(JSON.stringify(message));
-}
-
-export function sendFriendDeletedNotifications(userId, userName, destUserId) {
-    if (!WSsocket || WSsocket.readyState !== WebSocket.OPEN) {
-        console.error('WebSocket is not connected');
-        return;
-    }
-
-    const message = {
-        type: "notify",
-        message: "Send accept friend",
-        user_id: String(userId),
-        user_name: userName,
-        dest_user_id: String(destUserId)
-    };
-
-    WSsocket.send(JSON.stringify(message));
-}
-
-// Function to join the matchmaking queue
-export function joinMatchmakingQueue(userId, userName) {
-    if (!WSsocket || WSsocket.readyState !== WebSocket.OPEN) {
-        console.error('WebSocket is not connected');
-        return;
-    }
-
-    const message = {
-        type: "join_queue",
-        user_id: String(userId),
-        user_name: userName,
-    };
-
-    WSsocket.send(JSON.stringify(message));
-}
-
-// Función para enviar el mensaje de espera de coincidencia
-export function sendWaitMatchedMessage(userId) {
-    if (!WSsocket || WSsocket.readyState !== WebSocket.OPEN) {
-        console.error('WebSocket is not connected');
-        return;
-    }
-
-    const message = {
-        type: "wait_matched",
-        message: "You are now waiting for a match.",
-        user_id: String(userId)
-    };
-
-    WSsocket.send(JSON.stringify(message));
-}
-
-export function sendDelleteMatchedMessage(userId, otherId) {
-    if (!WSsocket || WSsocket.readyState !== WebSocket.OPEN) {
-        console.error('WebSocket is not connected');
-        return;
-    }
-
-    const message = {
-        "type": "delete_matched",
-        "matched_user_ids": [String(userId), String(otherId)]
-    }
-
-    WSsocket.send(JSON.stringify(message));
-}
-

@@ -9,7 +9,8 @@ import { User_js } from "../pages/User/funcions-js.js";
 import { User_html } from "../pages/User/html.js";
 import { Error404_js } from "../pages/Error404/funcions-js.js";
 import { Error404_html } from "../pages/Error404/html.js";
-import { LogoutPage_js, initializeLogoutButtons } from "../pages/Logout/funcions-js.js"; 
+// import { LogoutPage_js, initializeLogoutButtons } from "../pages/Logout/funcions-js.js";
+import { LogoutPage_js } from "../pages/Logout/funcions-js.js";
 import { Users_js } from "../pages/Users/funcions-js.js";
 import { Users_html } from "../pages/Users/html.js";
 import { Game_js } from "../pages/Game/funcions-js.js";
@@ -73,7 +74,7 @@ const router = async () => {
       }
     }
   }
-  initializeLogoutButtons();
+  // initializeLogoutButtons();
 
   if (user_location[0] !== 'chat') {
     await Chat_Update_js();

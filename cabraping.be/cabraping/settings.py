@@ -33,8 +33,8 @@ SECRET_KEY = 'django-insecure-*)1aavai#%e5)83n)o9)@xwx&67gx=^#w&op3kxyqe&5w*x7e*
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-#ALLOWED_HOSTS = []
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['*']
+
 
 # Application definition
 
@@ -57,15 +57,18 @@ INSTALLED_APPS = [
     'users',
     'auth42',
     'dotenv',
+    'rest_framework_simplejwt.token_blacklist',  # Add this for JWT token management
     'tournament',
 ]
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:8080",
-    "https://api.intra.42.fr",
-    "http://127.0.0.1:8080",
-    "http://127.0.0.1",
-]
+# CORS_ALLOWED_ORIGINS = [
+#     "http://localhost:8080",
+#     "https://api.intra.42.fr",
+#     "http://127.0.0.1:8080",
+#     "http://127.0.0.1",
+# ]
+
+CORS_ALLOW_ALL_ORIGINS = True
 
 # For development purposes, you can also use
 CORS_ALLOW_ALL_ORIGINS = True
@@ -89,7 +92,6 @@ CORS_ALLOW_ALL_ORIGINS = True
 AUTH_USER_MODEL = 'users.CustomUser'
 
 AUTHENTICATION_BACKENDS = ['users.backends.EmailBackend']
-
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (

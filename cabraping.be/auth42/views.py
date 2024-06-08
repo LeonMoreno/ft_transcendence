@@ -25,6 +25,21 @@ UID = os.getenv("UID")
 SECRET = os.getenv("SECRET")
 PW42 = os.getenv("PASSWORD_42")
 
+# Helper function to get backend URL dynamically
+
+
+def get_backend_url(request):
+    scheme = request.scheme
+    host = request.get_host().split(':')[0]  # Get the hostname without port
+    port = 8000  # Default port for backend
+    return f"{scheme}://{host}:{port}"
+
+def get_frontend_url(request):
+    scheme = request.scheme
+    host = request.get_host().split(':')[0]  # Get the hostname without port
+    port = 8080  # Default port for backend
+    return f"{scheme}://{host}:{port}"
+
 @api_view(['GET'])
 def get_config(request):
     # Define the environment variables you want to expose
@@ -42,7 +57,7 @@ def callback(request):
         return JsonResponse({'error': 'No authorization code provided'}, status=400)
 
     token_url = "https://api.intra.42.fr/oauth/token"
-    redirect_uri = "http://localhost:8000/callback/"  # Backend redirect URI
+    redirect_uri =  f"{get_backend_url(request)}/callback/"  # Backend redirect URI
     client_id = UID
     client_secret = SECRET
 
@@ -99,7 +114,7 @@ def callback(request):
     # Make a POST request to create the user in the Django backend
     try:
         user_create_response = requests.post(
-            'http://127.0.0.1:8000/api/users/',
+             f'{get_backend_url(request)}/api/users/',
             headers={'Content-Type': 'application/json'},
             json=user_data
         )
@@ -114,7 +129,7 @@ def callback(request):
 
     try:
         token_response = requests.post(
-            'http://127.0.0.1:8000/api/token/',
+             f'{get_backend_url(request)}/api/token/',
             json=token_data
         )
         token_response.raise_for_status()
@@ -129,7 +144,9 @@ def callback(request):
     # For debugging purposes, return the user_info JSON response directly
     #return JsonResponse(user_info)
     # Redirect to the frontend with the tokens
-    frontend_redirect_url = f"http://localhost:8080?access_token={access_token}&refresh_token={refresh_token}&username={username}"
+    # frontend_redirect_url = f"http://localhost:8080?access_token={access_token}&refresh_token={refresh_token}&username={username}"
+    frontend_redirect_url = f"http://localhost:8080?access_token={access_token}&refresh_token={refresh_token}"
+
     return redirect(frontend_redirect_url)
 
 

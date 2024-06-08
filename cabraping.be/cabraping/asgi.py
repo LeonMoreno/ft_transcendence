@@ -20,6 +20,7 @@ https://docs.djangoproject.com/en/4.1/howto/deployment/asgi/
 
 # myproject/asgi.py
 import os
+
 from django.core.asgi import get_asgi_application
 from channels.auth import AuthMiddlewareStack
 from channels.routing import ProtocolTypeRouter, URLRouter
@@ -29,17 +30,25 @@ from tournament.routing import websocket_urlpatterns as tournament_websocket_url
 from globalwc.routing import websocket_urlpatterns as globalwc_websocket_urlpatterns
 from users.routing import websocket_urlpatterns as users_websocket_urlpatterns
 
+# from globalwc.middleware import JWTAuthMiddleware  # Import the custom middleware
+from cabraping.middleware import JWTAuthMiddlewareStack  # Import the custom middleware
+from channels.auth import AuthMiddlewareStack
+
+import globalwc.routing
+
+
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'cabraping.settings')
 
 application = ProtocolTypeRouter({
     "http": get_asgi_application(),
-    "websocket": AuthMiddlewareStack(
-        URLRouter(
+    "websocket":
+        JWTAuthMiddlewareStack(
+            URLRouter(
             chat_websocket_urlpatterns +
             game_websocket_urlpatterns +
             tournament_websocket_urlpatterns + # rachel - check if needed, given the two lines below
             users_websocket_urlpatterns +
             globalwc_websocket_urlpatterns
-        )
+            )
     ),
 })

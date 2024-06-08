@@ -1,14 +1,15 @@
 import { getToken } from "../../utils/get-token.js";
-import { sendWaitMatchedMessage } from "../../components/wcGlobal.js";
+import { BACKEND_URL } from "../../components/wcGlobal.js";
+import { sendWaitMatchedMessage } from "../../components/wcGlobal-funcions-send-message.js";
 // import { BACKEND_URL } from "../../constants";
-// Extract the IP address from the URL used to access the frontend
-const frontendURL = new URL(window.location.href);
-const serverIPAddress = frontendURL.hostname;
-const serverPort = 8000; // Specify the port your backend server is running on
-const BACKEND_URL = `http://${serverIPAddress}:${serverPort}`;
+// const BACKEND_URL = "http://localhost:8000";
 
 export async function Matching_js() {
     const jwt = getToken();
+
+    if (!jwt) {
+        return;
+    }
     const payload = jwt.split('.')[1];
     const decodedPayload = JSON.parse(atob(payload));
     const userId = decodedPayload.user_id;

@@ -1,7 +1,12 @@
+import { BACKEND_URL } from "../../components/wcGlobal.js";
 import { Stat_html } from "./html.js";
 
+// Extract the IP address from the URL used to access the frontend
+// const frontendURL = new URL(window.location.href);
+// const serverIPAddress = frontendURL.hostname;
+// const serverPort = 8000; // Specify the port your backend server is running on
+// const BACKEND_URL = `http://${serverIPAddress}:${serverPort}`;
 
-const BACKEND_URL = "http://localhost:8000";
 let users = [];
 
 // Function to fetch and display user statistics
@@ -31,7 +36,7 @@ export async function Stat_js() {
     
     setupNavigation();
   } catch (error) {
-    console.error('Error fetching data:', error);
+    console.log('Error fetching data:', error);
   }
 }
 
@@ -145,7 +150,7 @@ function populateLeaderBoard(users, userStats) {
       }
       return await response.json();
     } catch (error) {
-      console.error(`Failed to fetch ${url}: ${error}`);
+      console.log(`Failed to fetch ${url}: ${error}`);
       return null;
     }
   }

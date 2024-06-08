@@ -9,18 +9,18 @@ export function Game_html() {
         <section class="col-12 d-flex justify-content-center">
           <div>
             <header class="d-flex justify-content-between">
-              <h3>
-                <span>Player A: </span>
-                <span id="left-paddle-score">0</span>
-              </h3>
-              <h3>
+              <h4>
+                <span id="left-paddle-name"></span>
+                <span id="left-paddle-score"></span>
+              </h4>
+              <h4>
                 <span>Game ID: </span>
                 <span id="game-id"> </span>
-              </h3>
-              <h3>
-                <span>Player B: </span>
-                <span id="right-paddle-score">0</span>
-              </h3>
+              </h4>
+              <h4>
+                <span id="right-paddle-name"></span>
+                <span id="right-paddle-score"></span>
+              </h4>
             </header>
 
             <div class="bg-dark w-100 h-100 d-flex align-items-center justify-content-center p-5" >

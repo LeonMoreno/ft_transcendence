@@ -1,12 +1,18 @@
 import { showNotification } from "../../components/showNotification.js"
+import { BACKEND_URL } from "../../components/wcGlobal.js";
+
+// Extract the IP address from the URL used to access the frontend
+// const frontendURL = new URL(window.location.href);
+// const serverIPAddress = frontendURL.hostname;
+// const serverPort = 8000; // Specify the port your backend server is running on
+// const BACKEND_URL = `http://${serverIPAddress}:${serverPort}`;
 
 export function createUser(email, password) {
   const username = email.split('@')[0];
 
   const img = "https://i.pinimg.com/736x/22/d8/71/22d8716223532ec51ea7b0ea471bbe67.jpg"
 
-//   fetch('http://127.0.0.1:8000/api/users/', {
-  fetch('http://localhost:8000/api/users/', {
+  fetch(`${BACKEND_URL}/api/users/`, {
       method: 'POST',
       headers: {
           'Content-Type': 'application/json'

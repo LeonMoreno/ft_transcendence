@@ -1,8 +1,10 @@
 // Extract the IP address from the URL used to access the frontend
-const frontendURL = new URL(window.location.href);
-const serverIPAddress = frontendURL.hostname;
-const serverPort = 8000; // Specify the port your backend server is running on
-const BACKEND_URL = `http://${serverIPAddress}:${serverPort}`;
+// const frontendURL = new URL(window.location.href);
+// const serverIPAddress = frontendURL.hostname;
+// const serverPort = 8000; // Specify the port your backend server is running on
+// const BACKEND_URL = `http://${serverIPAddress}:${serverPort}`;
+
+import { BACKEND_URL } from "../../components/wcGlobal.js";
 
 export function Home_js() {
   let buttonAuth = document.getElementById("button-auth");
@@ -15,7 +17,7 @@ export function Home_js() {
 }
 
 async function redirect42() {
-  const redirectURI = encodeURIComponent("http://localhost:8000/callback/");
+  const redirectURI = encodeURIComponent(`${BACKEND_URL}/callback/`);
 
   try {
     // Fetch configuration from backend
@@ -36,10 +38,10 @@ async function redirect42() {
       // Redirect the browser to the constructed API URL
       window.location.href = api_url;
     } else {
-      console.error("Failed to fetch config.");
+      console.log("Failed to fetch config.");
     }
   } catch (error) {
-    console.error("Error fetching config:", error);
+    console.log("Error fetching config:", error);
     // Handle error (e.g., show error message or fallback behavior)
   }
 }

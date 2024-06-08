@@ -1,5 +1,6 @@
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
+from django.contrib.auth.models import AnonymousUser
 
 connected_users = set()
 waiting_users = set()
@@ -8,7 +9,11 @@ user_channels = {}  # Maps user_id to channel_name
 
 class NotificationConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        self.user_id = self.scope['url_route']['kwargs']['user_id']
+        if isinstance(self.scope['user'], AnonymousUser):
+            await self.close()
+            return
+
+        self.user_id = str(self.scope['user'].id)  # Ensure user_id is set correctly and as a string
         self.group_name = 'notifications'
         
         # Join notifications group
@@ -43,42 +48,43 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         )
 
     async def disconnect(self, close_code):
-        # Remove user from the set of connected users and waiting users
-        connected_users.discard(self.user_id)
-        if self.user_id in waiting_users:
-            waiting_users.discard(self.user_id)
-            del waiting_channels[self.user_id]
+        if hasattr(self, 'user_id'):
+            # Remove user from the set of connected users and waiting users
+            connected_users.discard(self.user_id)
+            if self.user_id in waiting_users:
+                waiting_users.discard(self.user_id)
+                del waiting_channels[self.user_id]
 
-        # Remove the user from the user_channels mapping
-        if self.user_id in user_channels:
-            del user_channels[self.user_id]
+            # Remove the user from the user_channels mapping Rachel - remove for diego
+            # if self.user_id in user_channels:
+            #     del user_channels[self.user_id]
 
-        # Notify waiting users that a user has left
-        await self.notify_waiting_users()
+            # Notify waiting users that a user has left
+            await self.notify_waiting_users()
 
-        # Notify all users that a user has disconnected
-        await self.channel_layer.group_send(
-            self.group_name,
-            {
-                'type': 'user_disconnected',
-                'user_id': self.user_id,
-            }
-        )
+            # Notify all users that a user has disconnected
+            await self.channel_layer.group_send(
+                self.group_name,
+                {
+                    'type': 'user_disconnected',
+                    'user_id': self.user_id,
+                }
+            )
 
-        # Send the updated list of connected users to all users
-        await self.channel_layer.group_send(
-            self.group_name,
-            {
-                'type': 'update_user_list',
-                'user_ids': list(connected_users),
-            }
-        )
+            # Send the updated list of connected users to all users
+            await self.channel_layer.group_send(
+                self.group_name,
+                {
+                    'type': 'update_user_list',
+                    'user_ids': list(connected_users),
+                }
+            )
 
-        # Leave notifications group
-        await self.channel_layer.group_discard(
-            self.group_name,
-            self.channel_name
-        )
+            # Leave notifications group
+            await self.channel_layer.group_discard(
+                self.group_name,
+                self.channel_name
+            )
 
     async def receive(self, text_data):
         text_data_json = json.loads(text_data)
@@ -333,6 +339,7 @@ class NotificationConsumer(AsyncWebsocketConsumer):
 
 # import json
 # from channels.generic.websocket import AsyncWebsocketConsumer
+# from django.contrib.auth.models import AnonymousUser
 
 # connected_users = set()
 # waiting_users = set()
@@ -340,6 +347,10 @@ class NotificationConsumer(AsyncWebsocketConsumer):
 
 # class NotificationConsumer(AsyncWebsocketConsumer):
 #     async def connect(self):
+#         if self.scope['user'].is_anonymous:
+#             await self.close()
+#             return
+
 #         self.user_id = self.scope['url_route']['kwargs']['user_id']
 #         self.group_name = 'notifications'
         

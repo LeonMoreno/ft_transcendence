@@ -126,7 +126,8 @@ function loadTournamentData() {
 // Establecer conexión WebSocket
 export function connectTournamentWebSocket(tournamentId) {
     if (!activeWebSockets[tournamentId] || activeWebSockets[tournamentId].readyState === WebSocket.CLOSED) {
-        const wsUrl = `ws://localhost:8000/ws/tournament/${tournamentId}/`;
+        let jwt = getToken();
+        const wsUrl = `ws://localhost:8000/ws/tournament/${tournamentId}/?token=${jwt}`;
         const tournamentSocket = new WebSocket(wsUrl);
 
         tournamentSocket.onopen = function() {
@@ -369,6 +370,8 @@ async function checkAllParticipantsAccepted(tournamentId) {
 */
 
 export function updateParticipantsList(participantNameOrObject, status, isCreator = false) {
+
+    console.log("🚨 🚨participantNameOrObject:", participantNameOrObject);
     const participantName = typeof participantNameOrObject === 'object' ? participantNameOrObject.username || participantNameOrObject.name : participantNameOrObject;
     const currentUser = localStorage.getItem('username');
 

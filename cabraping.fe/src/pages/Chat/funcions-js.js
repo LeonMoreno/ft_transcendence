@@ -1,15 +1,16 @@
 // import image from '../../assets/logo.svg';
 import { getHash } from "../../utils/getHash.js";
 import { showNotification, showNotificationPopup } from '../../components/showNotification.js';
-import { sendAcceptedGameNotifications, sendChannelCreatedNotifications, sendGameInvataeNotifications } from "../../components/wcGlobal.js";
+import { BACKEND_URL, WS_URL } from "../../components/wcGlobal.js";
+import { sendAcceptedGameNotifications, sendChannelCreatedNotifications, sendGameInvataeNotifications } from "../../components/wcGlobal-funcions-send-message.js";
 
 let image = "assets/logo.svg";
 
-// Extract the IP address from the URL used to access the frontend
-const frontendURL = new URL(window.location.href);
-const serverIPAddress = frontendURL.hostname;
-const serverPort = 8000; // Specify the port your backend server is running on
-const BACKEND_URL = `http://${serverIPAddress}:${serverPort}`;
+// // Extract the IP address from the URL used to access the frontend
+// const frontendURL = new URL(window.location.href);
+// const serverIPAddress = frontendURL.hostname;
+// const serverPort = 8000; // Specify the port your backend server is running on
+// const BACKEND_URL = `http://${serverIPAddress}:${serverPort}`;
 
 let sockets = {}; // Object to store WebSocket connections
 let usersList = []; // Global variable to store the list of users
@@ -33,7 +34,7 @@ export async function Chat_Update_js() {
   }
 
   // Extract user_id from JWT
-  user_id = getUserIdFromJWT;
+  user_id = getUserIdFromJWT(jwt);
 
   const responseMyUser = await fetch(`${BACKEND_URL}/api/me/`, {
     headers: { Authorization: `Bearer ${jwt}` },
@@ -253,7 +254,7 @@ async function inviteGame(jwt) {
   async function checkRequestGame() {
 
     const jwt = localStorage.getItem('jwt');
-    if (!jwt) {
+    if (!jwt || communication_user_id == -1) {
         return;
     }
 
@@ -266,6 +267,7 @@ async function inviteGame(jwt) {
     });
     const games = await responseGames.json();
 
+    console.log("--> 🎮🎮  my_id:", my_id, ", communication_user_id:", communication_user_id);
     console.log("--> 🎮 games:", games);
 
     const game = games.find(
@@ -283,6 +285,7 @@ async function inviteGame(jwt) {
 
     console.log("--> 🎮 game:", game);
     if(game){
+      console.log("game_ACCEPTED 🥶🥶🥶");
       gameId = game.id;
       // const acceptGameButton = document.getElementById('acceptGameButton');
       // if (acceptGameButton) acceptGameButton.disabled = false;
@@ -299,6 +302,7 @@ async function inviteGame(jwt) {
       );
 
     if (game_ACCEPTED){
+      console.log("game_ACCEPTED 🥶🥶");
       window.location.href = `/#game/${game_ACCEPTED.id}`;
     }
 
@@ -309,10 +313,12 @@ async function inviteGame(jwt) {
         game.invitationStatus === "PENDING"
     );
 
-    // if(game_pending){
-      // showNotificationPopup(game_pending.inviter.username, "I send you an invitation to the game");
-    // }
-
+    if (game_pending)
+    {
+      console.log("game_pending 🥶");
+      const acceptGameButton = document.getElementById('acceptGameButton');
+      if (acceptGameButton) acceptGameButton.disabled = false;
+    }
 }
 
   async function acceptGame() {
@@ -462,10 +468,6 @@ function handleSendClick() {
 function addMessageToChat(message) {
 
   saveMessageToLocalStorage(message);
-
-  // console.log("--> 🎉message.channel:", message.channel);
-  // console.log("--> 🎉channel:", channel_now);
-  // console.log("--> 🎉condicion:",message.channel === channel_now)
   if (message.channel === channel_now) {
     const messageList = document.getElementById("messageList");
     if (messageList) {
@@ -539,7 +541,7 @@ function handleButtonClick() {
         });
       })
       .catch((error) => {
-        console.error("Error fetching users:", error);
+        console.log("Error fetching users:", error);
       });
   }
 
@@ -553,14 +555,9 @@ function handleButtonClick() {
 
 // Function to update the channels list UI with a selector
 function updateChannelList(channels) {
-  // console.log("---> 🎉 channels");
-  // console.log(channels);
-  // Get the channels dropdown element
-  // const channelsDropdown = document.getElementById('channelsDropdown');
   const channelsDiv = document.getElementById('chanelsLists');
   if (channelsDiv){
     // Clear previous options
-    // channelsDropdown.innerHTML = '';
     channelsDiv.innerHTML = '';
 
     const defaultValue = document.createElement('option');
@@ -577,14 +574,7 @@ function updateChannelList(channels) {
         blockUsersList.some(blockedUser => blockedUser.id === member.id)
     );
 
-
-      // console.log("💡 isBlocked:");
-      // console.log(isBlocked);
-
       if (!isBlocked){
-        // const option = document.createElement('option');
-        // option.value = channel.id;
-        // const option_component = document.createElement('button');
         const option_component = document.createElement('div');
         option_component.className = 'd-flex align-items-center p-2 border-bottom chat-item';
         option_component.style.cursor = 'pointer';
@@ -653,7 +643,6 @@ function updateChannelList(channels) {
 }
 
 function switchChannel(newChannelId) {
-  // console.log("--> switchChannel:", newChannelId);
   // Update the current channel
   channel_now = newChannelId;
 
@@ -689,8 +678,6 @@ function switchChannel(newChannelId) {
      // Update the channel title to reflect no channel is selected
     const channelHeader = document.getElementById('channel-title');
     if (channelHeader) channelHeader.textContent = "No Channel Selected";
-
-    // console.log("---- restar");
 
   }
   else{
@@ -793,14 +780,11 @@ function changeNameChanel(channel) {
     communication_user_id = channel.members.find(member => member.username !== UserName).id;
   }
 
-  // console.log("----> change communication_user_id:");
-  // console.log(communication_user_id);
   // Update the header with the selected channel's name
   const channelHeader = document.getElementById("channel-title");
   if (channelHeader) {
     channelHeader.textContent = `${channel_title}`;
   }
-  // console.log("---> 🤖🤖🤖 change name :", channel_title);
 }
 
 // Function to create a WebSocket connection
@@ -810,7 +794,8 @@ function createWebSocketConnection(channelId) {
     return; // Already connected
   }
 
-  const ws = new WebSocket(`ws://127.0.0.1:8000/ws/chat/${channelId}/`);
+  const jwt = localStorage.getItem("jwt");
+  const ws = new WebSocket(`${WS_URL}/ws/chat/${channelId}/?token=${jwt}`);
   ws.addEventListener("message", (event) => {
       const message = JSON.parse(event.data);
       addMessageToChat(message);
@@ -830,8 +815,6 @@ function handleSaveChannelClick() {
   );
 
   selectedUsersMember.push(user_id);
-
-  // console.log("selectedUsersMember: ", selectedUsersMember);
 
   // Extract the user name using user_id
   const userName =
@@ -860,14 +843,11 @@ function handleSaveChannelClick() {
   };
 
   // Displays the information in the console
-  // console.log("channelData: ", channelData);
 
   // Perform POST request
   fetch(url, requestOptions)
     .then((response) => response.json())
     .then((data) => {
-      // console.log("--> response");
-      // console.log(data.name);
       if (data.name) {
         // Verify that the response status is 200 or 201.
         showNotification("Channel successfully created", "success");

@@ -1,5 +1,23 @@
 # Backend API Docs
 
+## Deployment
+
+Ideal deployment:
+
+1. Clone the repo somewhere
+2. Prepare for the database itself: PostgreSQL and Redis
+3. Configure the backend settings to use those databases
+4. Install the dependencies
+5. Run the migrations for the database
+6. Run the app
+
+Temporary deployment using Ngrok:
+
+1. Run the app
+2. Forward/proxy to have our app accessible on the Internet
+
+## Endpoints
+
 | Method | Endpoint       | Description         |
 | ------ | -------------- | ------------------- |
 | GET    | /              |                     |
