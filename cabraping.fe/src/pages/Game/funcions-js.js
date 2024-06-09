@@ -18,6 +18,12 @@ import { getHash } from "../../utils/getHash.js";
 
 export async function Game_js() {
   const jwt = getToken();
+
+  if (!jwt)
+  {
+    window.location.replace("/#");
+  }
+
   const gameId = getHash();
   if (gameId === "/") return;
 

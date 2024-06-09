@@ -240,6 +240,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Initialize the Tournament Waiting Area
 async function initializeTournamentWaitingArea() {
+
+    let jwt = localStorage.getItem('jwt');
+    if (!jwt) {
+      window.location.href = '/#';
+      return;
+    }
+
     const tournamentId = getHash() || null;
     if (!tournamentId) {
         console.error("Tournament ID is null or invalid");

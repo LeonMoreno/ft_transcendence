@@ -7,6 +7,10 @@ import { sendWaitMatchedMessage } from "../../components/wcGlobal-funcions-send-
 export async function Matching_js() {
     const jwt = getToken();
 
+    if (!jwt)
+    {
+      window.location.replace("/#");
+    }
     if (!jwt) {
         return;
     }

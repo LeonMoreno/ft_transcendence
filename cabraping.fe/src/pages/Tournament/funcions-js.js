@@ -13,6 +13,12 @@ const BACKEND_URL = `http://${serverIPAddress}:${serverPort}`;
 //let acceptedParticipants = []; // List to keep track of accepted participants
 
 async function TournamentInit() {
+
+    const jwt = getToken();
+    if (!jwt)
+    {
+      window.location.replace("/#");
+    }
     console.log("Initializing Tournament Page");
 
     // loadTournamentData();

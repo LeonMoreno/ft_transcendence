@@ -17,6 +17,11 @@ let friendRequests = [];
 export async function Friends_js() {
   const jwt = getToken();
 
+  if (!jwt)
+  {
+    window.location.replace("/#");
+  }
+
   await fetchMyUserData();
   FriendsRender();
   FriendRequestsRender();
@@ -24,6 +29,11 @@ export async function Friends_js() {
 
 export async function fetchMyUserData() {
   const jwt = getToken();
+
+  if (!jwt)
+  {
+    window.location.replace("/#");
+  }
 
   const responseMe = await fetch(`${BACKEND_URL}/api/me/`, {
     headers: { Authorization: `Bearer ${jwt}` },
