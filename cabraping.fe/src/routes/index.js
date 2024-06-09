@@ -66,9 +66,7 @@ const router = async () => {
   let user_location = location.hash.slice(1).toLocaleLowerCase().split("/");
   let render = resolveRoutes(routes, user_location);
 
-  // check the JWT and more
-  // const creatorUsername = localStorage.getItem('username');
-  // const jwt = getToken();
+
   if (getToken())
   {
     if (!localStorage.getItem('username') || !localStorage.getItem('userId')){
@@ -101,4 +99,4 @@ const router = async () => {
 
 export default router;
 window.addEventListener('load', router);
-window.addEventListener('hashchange', router); 
+window.addEventListener('hashchange', router);

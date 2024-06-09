@@ -12,10 +12,32 @@ const BACKEND_URL = `http://${serverIPAddress}:${serverPort}`;
 //let invitedParticipants = [];  // List to keep track of invited participants
 //let acceptedParticipants = []; // List to keep track of accepted participants
 
-function TournamentInit() {
+async function TournamentInit() {
     console.log("Initializing Tournament Page");
 
-    loadTournamentData();
+    // loadTournamentData();
+
+    const userId = getUserIdFromJWT();
+    const tournaments = await fetchTournaments();
+
+    // const pendingTournament = tournaments.find(t => t.status === 'pending' && t.participants[0].user.id === userId);
+    const pendingTournament = tournaments.find(t => t.status === 'pending' && t.participants.some(p => p.user.id === userId));
+
+    if (pendingTournament) {
+        const isCreator = pendingTournament.participants[0].user.id === userId;
+        if (isCreator) {
+            console.log("Found pending tournament as creator:", pendingTournament);
+            localStorage.setItem('currentTournamentId', pendingTournament.id);
+            await loadTournamentData(pendingTournament.id);
+            // Connect WebSocket for the pending tournament
+            connectTournamentWebSocket(pendingTournament.id);
+        } else {
+            console.log("Found pending tournament as participant:", pendingTournament);
+            window.location.href = `/#waitroom/${pendingTournament.id}`;
+            return;
+        }
+    }
+
 
     const tournamentForm = document.getElementById('tournamentForm');
     if (tournamentForm) {
@@ -67,58 +89,86 @@ function saveTournamentData() {
     }
 }
 
-// Load tournament data from localStorage
-/*function loadTournamentData() {
-    const data = JSON.parse(localStorage.getItem('pageTournament'));
-    console.log("🥶 loadTournamentData:", data);
-    console.log("🥶 loadTournamentData:", (document.getElementById('tournamentNameInput').value !== ""));
-    if (data && data.tournamentName !== "") {
-        document.getElementById('tournamentNameInput').value = data.tournamentName || '';
-        document.getElementById('tournamentNameInput').disabled = true;
-        document.getElementById('tournamentForm').querySelector('button').disabled = true;
-        const participantsList = document.getElementById('participantsList');
-        participantsList.innerHTML = '';
-        data.participants.forEach(participant => {
-            const listItem = document.createElement('li');
-            listItem.textContent = `${participant.name} - ${participant.status}`;
-            participantsList.appendChild(listItem);
+// Fetch all tournaments from the server
+async function fetchTournaments() {
+    try {
+        const response = await fetch(`${BACKEND_URL}/api/tournaments/`, {
+            headers: {
+                'Authorization': `Bearer ${getToken()}`,
+                'Content-Type': 'application/json'
+            }
         });
-        document.getElementById('addParticipantButton').disabled = false;
+
+        if (response.ok) {
+            return await response.json();
+        } else {
+            console.error('Failed to fetch tournaments');
+            return [];
+        }
+    } catch (error) {
+        console.error('Error fetching tournaments:', error);
+        return [];
     }
-}*/
+}
 
 // Load tournament data from localStorage
-function loadTournamentData() {
-    const data = JSON.parse(localStorage.getItem('pageTournament'));
-    console.log("🥶 loadTournamentData:", data);
-
-    if (data && data.tournamentName) {
-        const tournamentNameInput = document.getElementById('tournamentNameInput');
-        const tournamentFormButton = document.getElementById('tournamentForm').querySelector('button');
-        const participantsList = document.getElementById('participantsList');
-        const addParticipantButton = document.getElementById('addParticipantButton');
-
-        // Set and disable the tournament name input
-        tournamentNameInput.value = data.tournamentName;
-        tournamentNameInput.disabled = true;
-        
-        // Disable the tournament form button
-        tournamentFormButton.disabled = true;
-        
-        // Clear the current participants list and update with stored participants
-        participantsList.innerHTML = '';
-        data.participants.forEach(participant => {
-            const listItem = document.createElement('li');
-            listItem.textContent = `${participant.name} - ${participant.status}`;
-            participantsList.appendChild(listItem);
+// Load tournament data from the backend
+async function loadTournamentData(tournamentId) {
+    try {
+        const response = await fetch(`${BACKEND_URL}/api/tournaments/${tournamentId}/`, {
+            headers: {
+                'Authorization': `Bearer ${getToken()}`,
+                'Content-Type': 'application/json'
+            }
         });
 
-        // Enable the add participant button
-        addParticipantButton.disabled = false;
+        if (response.ok) {
+            const data = await response.json();
+            console.log("🥶 loadTournamentData:", data);
 
-        console.log("🥶 loadTournamentData: Tournament data loaded successfully");
-    } else {
-        console.log("🥶 loadTournamentData: No tournament data found in localStorage or tournamentName is empty");
+            const tournamentNameInput = document.getElementById('tournamentNameInput');
+            const tournamentFormButton = document.getElementById('tournamentForm').querySelector('button');
+            const participantsList = document.getElementById('participantsList');
+            const addParticipantButton = document.getElementById('addParticipantButton');
+
+            // Set and disable the tournament name input
+            tournamentNameInput.value = data.name;
+            tournamentNameInput.disabled = true;
+
+            // Disable the tournament form button
+            tournamentFormButton.disabled = true;
+
+            // Clear the current participants list and update with stored participants
+            participantsList.innerHTML = '';
+
+            console.log();
+            let i = 0;
+            data.participants.forEach(participant => {
+                const listItem = document.createElement('li');
+                console.log("-------> participant:", participant);
+                if (participant.status)
+                {
+                    listItem.textContent = `${participant.user.username} - ${participant.status}`;
+                }
+                else{
+                    if (i === 0)
+                        listItem.textContent = `You (Creator)`;
+                    else
+                        listItem.textContent = `${participant.user.username} - invited`;
+                }
+                participantsList.appendChild(listItem);
+                i++;
+            });
+
+            // Enable the add participant button
+            addParticipantButton.disabled = false;
+
+            console.log("🥶 loadTournamentData: Tournament data loaded successfully from backend");
+        } else {
+            console.error('Failed to load tournament data from backend');
+        }
+    } catch (error) {
+        console.error('Error loading tournament data:', error);
     }
 }
 
