@@ -256,6 +256,8 @@ export async function fetchParticipants(tournamentId) {
         }
 
         const tournament = await response.json();
+        const participants = tournament.participants || [];
+        console.log('Fetched participants:', participants); // Debugging statement
         return tournament.participants || [];
     } catch (error) {
         console.error('Network error fetching tournament participants:', error);
@@ -379,7 +381,7 @@ export async function handleTournamentWebSocketMessage(data, tournamentId) {
             startTournament();
             break;
        case 'tournament_canceled':
-            handleTournamentCanceled(data, tournamentId);
+            handleTournamentCanceled(data);
             break;
         default:
             console.log('Unknown event type:', data.event);

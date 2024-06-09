@@ -35,28 +35,6 @@ class TournamentViewSet(viewsets.ModelViewSet):
         return Response({'status': 'success', 'message': 'Participant added successfully' if created else 'Participant already exists, invite received updated'})
 
     @action(detail=True, methods=['post'])
-    @transaction.atomic
-    def start_tournament(self, request, pk=None):
-        tournament = self.get_object()
-        participants = list(tournament.participants.all())
-        
-        if len(participants) != 4:
-            return Response({'error': 'Tournament must have exactly 4 participants.'}, status=400)
-
-        if not all(participant.ready for participant in participants):
-            return Response({'error': 'Not all participants are ready'}, status=400)
-
-        semifinal1 = Match.objects.create(tournament=tournament, participant1=participants[0], participant2=participants[1])
-        semifinal2 = Match.objects.create(tournament=tournament, participant1=participants[2], participant2=participants[3])
-        tournament.status = 'in_progress'
-        tournament.save()
-
-        # rachel - call Jonathan's remote player module here:
-        #start_remote_users_module(tournament.id) // or whatever it is called
-
-        return Response({'message': 'Tournament started. Semifinals are set up.'})
-
-    @action(detail=True, methods=['post'])
     def set_ready(self, request, pk=None):
         tournament = self.get_object()
         user = request.user
@@ -67,18 +45,32 @@ class TournamentViewSet(viewsets.ModelViewSet):
         # Check if all participants are ready
         participants = tournament.participants.all()
         if all(participant.ready for participant in participants):
-            channel_layer = get_channel_layer()
-            async_to_sync(channel_layer.group_send)(
-                f'tournament_{tournament.id}',
-                {
-                    'type': 'send_update',
-                    'event': 'all_ready',
-                    'tournament_id': tournament.id
-                }
-            )
+            return self.start_tournament(request, pk)
 
         return Response({'status': 'Participant marked as ready'})
 
+    #@action(detail=True, methods=['post'])
+    @transaction.atomic
+    def start_tournament(self, request, pk=None):
+        tournament = self.get_object()
+        participants = list(tournament.participants.all())
+        
+        if len(participants) != 4:
+            return Response({'Error.': 'Tournament must have exactly 4 participants.'}, status=400)
+
+        if not all(participant.ready for participant in participants):
+            return Response({'Error.': 'Not all participants are ready'}, status=400)
+
+        semifinal1 = Match.objects.create(tournament=tournament, participant1=participants[0], participant2=participants[1])
+        semifinal2 = Match.objects.create(tournament=tournament, participant1=participants[2], participant2=participants[3])
+        tournament.status = 'in_progress'
+        tournament.save()
+
+        # rachel - call Jonathan's remote player module here:
+        #start_remote_users_module(tournament.id) // or whatever it is called
+
+        return Response({'Message.': 'Tournament started. Semifinals are set up.'})
+    
     def progress_tournament(self, tournament):
         matches = Match.objects.filter(tournament=tournament)
         completed_matches = matches.filter(winner__isnull=False)

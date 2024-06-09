@@ -9,6 +9,7 @@ class Tournament(models.Model):
         ('pending', 'Pending'),
         ('in_progress', 'In Progress'),
         ('completed', 'Completed'),
+        ('canceled', 'Canceled'),
     )
     name = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
