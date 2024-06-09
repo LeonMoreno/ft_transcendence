@@ -1,16 +1,13 @@
 import { getToken } from "../../utils/get-token.js";
 import { showNotification, showNotificationPopup } from '../../components/showNotification.js';
-import { sendTournamentInvitation, activeWebSockets, handleTournamentWebSocketMessage, getUserIdByUsername } from '../../components/wcGlobal.js';
+import { sendTournamentInvitation, activeWebSockets, handleTournamentWebSocketMessage, getUserIdByUsername, BACKEND_URL } from '../../components/wcGlobal.js';
 import { getUserIdFromJWT } from "../Chat/funcions-js.js";
 
 // Extract the IP address from the URL used to access the frontend
-const frontendURL = new URL(window.location.href);
-const serverIPAddress = frontendURL.hostname;
-const serverPort = 8000; // Specify the port your backend server is running on
-const BACKEND_URL = `http://${serverIPAddress}:${serverPort}`;
-//const BACKEND_URL = "http://localhost:8000";
-//let invitedParticipants = [];  // List to keep track of invited participants
-//let acceptedParticipants = []; // List to keep track of accepted participants
+// const frontendURL = new URL(window.location.href);
+// const serverIPAddress = frontendURL.hostname;
+// const serverPort = 8000; // Specify the port your backend server is running on
+// const BACKEND_URL = `http://${serverIPAddress}:${serverPort}`;
 
 async function TournamentInit() {
 
@@ -30,13 +27,17 @@ async function TournamentInit() {
     const pendingTournament = tournaments.find(t => t.status === 'pending' && t.participants.some(p => p.user.id === userId));
 
     if (pendingTournament) {
+
+        console.log("--> pendingTournament:", pendingTournament);
         const isCreator = pendingTournament.participants[0].user.id === userId;
+        console.log("---> isCreator:", isCreator);
         if (isCreator) {
             console.log("Found pending tournament as creator:", pendingTournament);
             localStorage.setItem('currentTournamentId', pendingTournament.id);
             await loadTournamentData(pendingTournament.id);
             // Connect WebSocket for the pending tournament
             connectTournamentWebSocket(pendingTournament.id);
+            checkGoToWaitingAreaButton(pendingTournament);
         } else {
             console.log("Found pending tournament as participant:", pendingTournament);
             window.location.href = `/#waitroom/${pendingTournament.id}`;
@@ -807,6 +808,24 @@ export function acceptTournamentInvitation(tournamentId, username) {
     modalElement.style.display = 'none';
   }
   
+
+// Nueva función para verificar y habilitar el botón
+function checkGoToWaitingAreaButton(tournament) {
+    const goToWaitingAreaButton = document.getElementById('goToWaitingAreaButton');
+    const acceptedParticipants = tournament.participants.filter(p => p.accepted_invite).length;
+
+    console.log("🤯🤯🤯 acceptedParticipants:", acceptedParticipants);
+
+    if (acceptedParticipants >= 4) {
+        goToWaitingAreaButton.disabled = false;
+        goToWaitingAreaButton.addEventListener('click', () => {
+            window.location.href = `/#waitroom/${tournament.id}`;
+        });
+    } else {
+        goToWaitingAreaButton.disabled = true;
+    }
+}
+
   export {
     createTournament,
     handleCreateTournament,
@@ -819,3 +838,5 @@ export function acceptTournamentInvitation(tournamentId, username) {
     saveTournamentData,
     loadTournamentData,
 };
+
+

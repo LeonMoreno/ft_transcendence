@@ -1,15 +1,15 @@
 import { getHash } from '../../utils/getHash.js';
 import { getToken } from "../../utils/get-token.js";
 import { showNotificationPopup } from '../../components/showNotification.js';
-import { handleTournamentWebSocketMessage, activeWebSockets, connectWebSocketGlobal } from '../../components/wcGlobal.js';
+import { handleTournamentWebSocketMessage, activeWebSockets, connectWebSocketGlobal, BACKEND_URL } from '../../components/wcGlobal.js';
 import { connectTournamentWebSocket } from "../Tournament/funcions-js.js";
 import { getUserIdFromJWT } from '../Chat/funcions-js.js';
 
 // Extract the IP address from the URL used to access the frontend
-const frontendURL = new URL(window.location.href);
-const serverIPAddress = frontendURL.hostname;
-const serverPort = 8000; // Specify the port your backend server is running on
-const BACKEND_URL = `http://${serverIPAddress}:${serverPort}`;
+// const frontendURL = new URL(window.location.href);
+// const serverIPAddress = frontendURL.hostname;
+// const serverPort = 8000; // Specify the port your backend server is running on
+// const BACKEND_URL = `http://${serverIPAddress}:${serverPort}`;
 
 // Check if all participants have accepted the invitation
 function allParticipantsAccepted(participants) {

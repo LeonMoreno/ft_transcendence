@@ -201,10 +201,16 @@ export async function getUserIdByUsername(username) {
 // Function to send a POST request to update the invite status
 async function updateInviteStatus(tournamentId, accepted) {
 
+    console.log("🚨🚨updateInviteStatus🚨🚨:", tournamentId, ", accepted:", accepted);
+
     const participants = await fetchParticipants(tournamentId);
+    console.log("🚨🚨>participants:", participants);
     // const currentUserId = localStorage.getItem('userId');
     const currentUserId = getUserIdFromJWT();
-    const participant = participants.find(p => p.user.id.toString() === currentUserId);
+    console.log("🚨🚨>currentUserId:", currentUserId);
+    const participant = participants.find(p => String(p.user.id) === String(currentUserId));
+
+    console.log("🚨🚨->participant:", participant);
 
     console.log("---------------");
     console.log("participant:", participant);
@@ -232,7 +238,7 @@ async function updateInviteStatus(tournamentId, accepted) {
         }
 
         const data = await response.json();
-        console.log('Invite status updated successfully:', data);
+        console.log('🚨🚨-->>Invite status updated successfully:', data);
         //showNotificationPopup('Success.', 'Invite status updated successfully');
         return true;
 
