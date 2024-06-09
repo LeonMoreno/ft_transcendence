@@ -173,15 +173,17 @@ async function handleAddParticipant(e) {
         return;
     }
 
+    console.log("--->Sen invitate participantName:", participantName);
     const isOnline = await checkUserOnlineStatus(participantName);
     if (isOnline === null) {
         displayErrorMessage("User not found. Please double-check their username.");
     } else if (isOnline) {
         const participantId = await getUserIdByUsername(participantName, tournamentId);
+        console.log("---->Sen invitate getUserIdByUsername:", participantId);
+
         if (participantId) {
             console.log(`Sending tournament invitation to [${participantName}], participantId:[${participantId}]`);
 
-            const jwt = localStorage.getItem('jwt');
             let tournamentId = localStorage.getItem('currentTournamentId');
             console.log("💡💡💡 --> user_id:", participantId, ", tournamentId:", tournamentId);
             addParticipantToTournament(tournamentId, participantId);
@@ -212,7 +214,7 @@ function checkAddParticipantButton(e) {
         return;
     }
     handleAddParticipant(e);
-    saveTournamentData();
+    // saveTournamentData();
     // Diego send request "http://localhost:8000/api/tournaments/1/addparticipant/"  
     // addParticipantToTournament(tournamentId, userId);
 }

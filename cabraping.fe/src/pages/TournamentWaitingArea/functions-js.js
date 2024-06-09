@@ -3,6 +3,7 @@ import { getToken } from "../../utils/get-token.js";
 import { showNotificationPopup } from '../../components/showNotification.js';
 import { handleTournamentWebSocketMessage, activeWebSockets, connectWebSocketGlobal } from '../../components/wcGlobal.js';
 import { connectTournamentWebSocket } from "../Tournament/funcions-js.js";
+import { getUserIdFromJWT } from '../Chat/funcions-js.js';
 
 // Extract the IP address from the URL used to access the frontend
 const frontendURL = new URL(window.location.href);
@@ -32,7 +33,8 @@ function updateStartButton(participants) {
         startButton.disabled = false;
         if (!startButton.dataset.listenerAttached) {
             startButton.addEventListener('click', async function() {
-                const userId = localStorage.getItem('userId'); // Ensure userId is defined
+                // const userId = localStorage.getItem('userId'); // Ensure userId is defined
+                const userId = getUserIdFromJWT(); // Ensure userId is defined
                 if (!userId) {
                     console.error("userId is not defined");
                     return;
@@ -185,7 +187,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            const userId = localStorage.getItem('userId');
+            // const userId = localStorage.getItem('userId');
+            const userId = getUserIdFromJWT();
             if (!userId) {
                 console.error("userId is not defined");
                 return;

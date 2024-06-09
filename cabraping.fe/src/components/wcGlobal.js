@@ -80,10 +80,10 @@ function handleRejectedInvite(message, tournamentId) {
 }
 
 export function sendTournamentInvitation(tournamentId, participantUsername, participantId) {
-    console.log(`😰Preparing to send tournament invitation for tournament [${tournamentId}] to [${participantUsername}]`);
+    console.log(`😰Preparing to send tournament invitation for tournament [${tournamentId}] to [${participantUsername}] and id:[${participantId}]`);
     const tournamentName = localStorage.getItem(`tournamentName_${tournamentId}`);
     const creatorUsername = localStorage.getItem('username');
-    const userId = localStorage.getItem('userId');
+    const userId = getUserIdFromJWT();
 
     console.log(` 😰 activeWebSockets:`, activeWebSockets);
     console.log(` 😰 activeWebSockets[tournamentId]:`, activeWebSockets[tournamentId]);
@@ -134,7 +134,8 @@ export function sendTournamentInvitation(tournamentId, participantUsername, part
     }
 
     async function sendMessage() {
-        const userId = localStorage.getItem('userId'); // ID of the sender
+        // const userId = localStorage.getItem('userId'); // ID of the sender
+        const userId = getUserIdFromJWT(); // ID of the sender
         const creatorUsername = localStorage.getItem('username'); // Username of the sender
         const tournamentName = localStorage.getItem(`tournamentName_${tournamentId}`);
         console.log('Fetching recipient ID for username:', participantUsername);
@@ -201,7 +202,8 @@ export async function getUserIdByUsername(username) {
 async function updateInviteStatus(tournamentId, accepted) {
 
     const participants = await fetchParticipants(tournamentId);
-    const currentUserId = localStorage.getItem('userId');
+    // const currentUserId = localStorage.getItem('userId');
+    const currentUserId = getUserIdFromJWT();
     const participant = participants.find(p => p.user.id.toString() === currentUserId);
 
     console.log("---------------");
@@ -304,8 +306,6 @@ export function handleTournamentInvite(data, tournamentId) {
         hideModal('tournamentInviteModal');
     };
 
-    const jwt = localStorage.getItem('jwt');
-    let user_id = getUserIdFromJWT(jwt);
     updateParticipantsList(data, 'invited', tournamentId);
 }
 
@@ -317,7 +317,8 @@ function handleGameInvite(data) {
 }
 
 export function create_data_for_TournamentWebSocket({tournamentId, event, type, dest_user_id} ) {
-    const userId = localStorage.getItem('userId');
+    // const userId = localStorage.getItem('userId');
+    const userId = getUserIdFromJWT();
     const creatorUsername = localStorage.getItem('username');
     return {tournamentId: tournamentId, event: event , type: type, userName: creatorUsername, user_id: userId, dest_user_id: dest_user_id }
 }
@@ -504,7 +505,7 @@ export async function connectWebSocketGlobal() {
             case 'update_waiting_list':
                 console.log("--> Matching: 🍀 update_waiting_list 🍀", message);
                 localStorage.setItem('update_waiting_list', JSON.stringify(message.waiting_ids));
-                let id = getUserIdFromJWT(localStorage.getItem('jwt'));
+                let id = getUserIdFromJWT();
                 handleUpdateWaitingList(message, String(id), myUser);
                 break;
             default:

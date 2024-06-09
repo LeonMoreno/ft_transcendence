@@ -28,9 +28,10 @@ import { Stat_html } from "../pages/Stat/html.js";
 import { Profile_js } from "../pages/Profile/functions-js.js";
 import { Profile_html } from "../pages/Profile/html.js";
 import resolveRoutes from "../utils/resolveRoutes.js";
-import { connectWebSocketGlobal  } from "../components/wcGlobal.js";
+import { BACKEND_URL, connectWebSocketGlobal  } from "../components/wcGlobal.js";
 import { Matching_html } from "../pages/Matching/html.js";
 import { Matching_js } from "../pages/Matching/funcions-js.js";
+import { getToken } from "../utils/get-token.js";
 
 const routes = {
   "/": [Home_html, Home_js],
@@ -65,7 +66,22 @@ const router = async () => {
   let user_location = location.hash.slice(1).toLocaleLowerCase().split("/");
   let render = resolveRoutes(routes, user_location);
 
- 
+  // check the JWT and more
+  // const creatorUsername = localStorage.getItem('username');
+  // const jwt = getToken();
+  if (getToken())
+  {
+    if (!localStorage.getItem('username') || !localStorage.getItem('userId')){
+      const responseMyUser = await fetch(`${BACKEND_URL}/api/me/`, {
+        headers: { Authorization: `Bearer ${getToken()}` },
+        });
+      let myUser = await responseMyUser.json();
+
+      localStorage.setItem('username', myUser.username)
+      localStorage.setItem('userId', myUser.id);
+    }
+  }
+
   content.innerHTML = await render[0]();
   if (render.length > 1) {
     for (let i = 1; i < render.length; i++) {
