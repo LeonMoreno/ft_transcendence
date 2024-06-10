@@ -22,13 +22,13 @@ export async function WS_check_the_torunament_pending() {
 
     if (pendingTournament) {
         localStorage.setItem('currentTournamentId', pendingTournament.id);
-        localStorage.setItem('system_Tournmanet_status', "in");
+        localStorage.setItem(`system_Tournmanet_status_${pendingTournament.id}`, "in");
     }
     else if (progressTournament) {
         localStorage.setItem('currentTournamentId', progressTournament.id);
-        localStorage.setItem('system_Tournmanet_status', "in");
+        localStorage.setItem(`system_Tournmanet_status_${progressTournament.id}`, "in");
     }else{
-        localStorage.setItem('system_Tournmanet_status', "no");
+        localStorage.setItem(`system_Tournmanet_status`, "no");
     }
     return true;
 }
@@ -48,6 +48,7 @@ async function TournamentInit() {
     const tournaments = await fetchTournaments();
 
     const pendingTournament = tournaments.find(t => t.status === 'pending' && t.participants.some(p => p.user.id === userId));
+    const procesTournament = tournaments.find(t => t.status === 'in_progress' && t.participants.some(p => p.user.id === userId));
 
     if (pendingTournament) {
 
@@ -66,6 +67,11 @@ async function TournamentInit() {
             window.location.href = `/#waitroom/${pendingTournament.id}`;
             return;
         }
+    }
+    if (procesTournament) {
+        console.log("--> procesTournament:", procesTournament);
+        window.location.href = `/#waitroom/${procesTournament.id}`;
+        return;
     }
 
 
@@ -295,7 +301,6 @@ function checkAddParticipantButton(e) {
     }
     handleAddParticipant(e);
     // saveTournamentData();
-    // Diego send request "http://localhost:8000/api/tournaments/1/addparticipant/"  
     // addParticipantToTournament(tournamentId, userId);
 }
 

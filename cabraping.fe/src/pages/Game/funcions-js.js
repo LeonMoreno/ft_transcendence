@@ -1,6 +1,7 @@
 import { BACKEND_URL, WS_URL } from "../../components/wcGlobal.js";
 import { getToken } from "../../utils/get-token.js";
 import { getHash } from "../../utils/getHash.js";
+import { Send_data_bacnd_the_winer } from "./tournament-logic.js";
 
 
 // Extract the IP address from the URL used to access the frontend
@@ -215,6 +216,10 @@ export async function Game_js() {
       );
 
       const result = response.json;
+
+      // Diego - save data in the banckend
+      await Send_data_bacnd_the_winer(game.inviter.id, game.invitee.id, winnerId);
+      // Diego - sen the winer
 
       return; // Stop further rendering
     }

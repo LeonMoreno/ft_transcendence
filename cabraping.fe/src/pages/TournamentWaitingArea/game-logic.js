@@ -77,6 +77,66 @@ export async function sendGameAcceptTournament_Waiting(new_userId, dest_user_id,
     }
 }
 
+export async function sendGameAcceptTournament_final_Waiting(new_userId, dest_user_id, new_myUserName) {
+
+    console.log("?????????????????????????");
+    console.log("??> sendGameAcceptTournament_final_Waiting:");
+    let find_me = false;
+    const jwt = localStorage.getItem('jwt');
+    const update_waiting_list = await list_of_Tournament(getUserIdFromJWT(jwt));
+    if (!jwt || !update_waiting_list) {
+        return;
+    }
+
+    console.log("----> final: in sendGameAccept_Waiting:", update_waiting_list);
+    console.log("----> final: in new_userId:", new_userId);
+    console.log("----> final: in dest_user_id:", dest_user_id);
+
+    // Verificar si ambos IDs existen en `waitingIds`
+    const waitingIds = update_waiting_list;
+    if (waitingIds.includes(Number(new_userId)) && waitingIds.includes(Number(dest_user_id))) {
+        find_me = true;
+    }
+
+    console.log("----> final: find_me:", find_me);
+    if (!find_me) {
+        return;
+    }
+
+    console.log("----> final: userId:", new_userId, ", dest_user_id:", dest_user_id);
+    const responseGames = await fetch(`${BACKEND_URL}/api/games/`, {
+        headers: { Authorization: `Bearer ${jwt}` },
+    });
+    const games = await responseGames.json();
+
+    const game = games.find(
+        (game) =>
+            game.invitee.id === Number(new_userId) &&
+            game.inviter.id === Number(dest_user_id) &&
+            game.invitationStatus === "PENDING"
+    );
+
+    if (game) {
+        const response = await fetch(
+            `${BACKEND_URL}/api/games/${game.id}/accept_game/`,
+            {
+                method: "PUT",
+                headers: {
+                    Authorization: `Bearer ${jwt}`,
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+        if (!response.ok) {
+            console.log("error in system");
+        }
+        // sendAcceptedGameNotifications(new_userId, new_myUserName, dest_user_id, game.id);
+        sendAcceptedGameNotifications(new_userId, new_myUserName, dest_user_id, game.id);
+        sendDelleteMatchedMessage(new_userId, dest_user_id);
+        window.location.href = `/#game/${game.id}`;
+    }
+}
+
 async function list_of_Tournament(id) {
 
     let tem_list = []
@@ -146,6 +206,6 @@ export async function handle_Tournmanet_game_invitte(tournament_id) {
     {
         console.log("----> _Tournmanet handle_Tournmanet_game_invitte");
         sendGameInvataeTournamentNotifications(userId, myUserName, 0, `system_Tournmanet_${tournament_id}`);
-        localStorage.setItem('system_Tournmanet_status', "in");
+        localStorage.setItem(`system_Tournmanet_status_${tournament_id}`, "in");
     }
 }

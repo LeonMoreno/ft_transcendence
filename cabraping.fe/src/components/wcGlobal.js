@@ -10,7 +10,7 @@ import { handleTournamentCanceled } from "../pages/TournamentWaitingArea/functio
 import { updateWaitingParticipantsList } from "../pages/TournamentWaitingArea/functions-js.js";
 
 import { sendAcceptedGameNotifications, sendTournamentNotifications, sendDelleteMatchedMessage, handleUpdateWaitingList } from "./wcGlobal-funcions-send-message.js";
-import { sendGameAcceptTournament_Waiting, system_invitte_game_Tournmanet } from "../pages/TournamentWaitingArea/game-logic.js";
+import { sendGameAcceptTournament_final_Waiting, sendGameAcceptTournament_Waiting, system_invitte_game_Tournmanet } from "../pages/TournamentWaitingArea/game-logic.js";
 
 const frontendURL = new URL(window.location.href);
 const serverIPAddress = frontendURL.hostname;
@@ -43,7 +43,7 @@ function handleWebSocketMessage(message, userId) {
             if (message.type === 'tournament') {
                 handleTournamentInvite(message, message.tournament_id);
             }
-            else if (message.message === 'system' || message.message === 'system-tournament')
+            else if (message.message === 'system' || message.message === 'system-tournament' || message.message === 'system-tournament-final')
             {
                 return;
             }
@@ -327,42 +327,6 @@ export function create_data_for_TournamentWebSocket({tournamentId, event, type, 
     return {tournamentId: tournamentId, event: event , type: type, userName: creatorUsername, user_id: userId, dest_user_id: dest_user_id }
 }
 
-/*export function handleTournamentWebSocketMessage(data, tournamentId) {
-    console.log(`Received WebSocket message for tournament ${tournamentId}:`, data);
-    if (!data.event) {
-        console.error('Missing event type in WebSocket message:', data);
-        return;
-    }
-
-    switch (data.event) {
-        case 'game_invite':
-            if (data.type === 'tournament') {
-                console.log(" 💡 tournament 💡 ");
-                handleTournamentInvite(data, tournamentId);
-            } else {
-                handleGameInvite(data);
-            }
-            break;
-        case 'accepted_invite':
-            handleAcceptedInvite(data, tournamentId);
-            break;
-        case 'rejected_invite':
-            handleRejectedInvite(data, tournamentId);
-            break;
-        case 'user_connected':
-            updateParticipantsList(data.user_id, 'connected', tournamentId);
-            break;
-        case 'user_disconnected':
-            updateParticipantsList(data.user_id, 'disconnected', tournamentId);
-            break;
-        case 'update_user_list':
-            updateParticipantsList(data.user_ids, 'updated', tournamentId);
-            break;
-        default:
-            console.log('Unknown event type:', data.event);
-    }
-}*/
-
 export async function handleTournamentWebSocketMessage(data, tournamentId) {
     console.log(`Received WebSocket message for tournament ${tournamentId}:`, data);
     let participants = [];
@@ -427,6 +391,15 @@ function execute_processes_by_category_message(message, myUser) {
                 console.log("-> system-tournament - Matching showNotificationPopup message.dest_user_id:", message.dest_user_id, ", message.user_id:", message.user_id);
                 sendGameAcceptTournament_Waiting(message.dest_user_id, message.user_id, myUser)
                 // sendGameAccept_Waiting(message.dest_user_id, message.user_id, myUser);
+            } else if (message.message === 'system-tournament-final'){
+                console.log("-> system-tournament - final showNotificationPopup");
+                console.log("-> system-tournament - final showNotificationPopup message:", message,);
+                console.log("-> system-tournament - final showNotificationPopup myUser:", myUser,);
+                console.log("-> system-tournament - final showNotificationPopup message.dest_user_id:", message.dest_user_id, ", message.user_id:", message.user_id);
+                // diego - aceptarjuego
+                // sendGameAcceptTournament_Waiting(message.dest_user_id, message.user_id, myUser)
+                // sendGameAcceptTournament_final_Waiting
+                sendGameAcceptTournament_final_Waiting(message.dest_user_id, message.user_id, myUser);
             }else{
                 showNotificationPopup(message.user_name, message.message);
             }
@@ -545,17 +518,30 @@ async function Torunament_game_diego(message) {
     // WS_check_the_torunament_pending
     let value = await WS_check_the_torunament_pending();
     if (!value)
+    {
         return;
+    }
     console.log("🎃 String(message.dest_user_id) === '0':", (message.dest_user_id === "0"), message);
-    if (message.dest_user_id === "0")
+    if (message.dest_user_id === "0" || message.dest_user_id === 0)
     {
         console.log("🎃🎃🎃🎃🎃🎃🎃🎃🎃🎃🎃🎃🎃🎃🎃🎃🎃🎃🎃🎃🎃🎃🎃🎃🎃🎃🎃");
 
         let tournament_id = localStorage.getItem("currentTournamentId");
-        console.log("🎃🎃 tournament_id:", tournament_id);
+        console.log("🎃 🎃 tournament_id:", tournament_id);
+
         if (`system_Tournmanet_${tournament_id}` === message.message){
-            console.log("system_Tournmanet:", tournament_id);
+            console.log("🎃🎃 🎃🎃system_Tournmanet:", tournament_id);
             system_invitte_game_Tournmanet();
+        }
+
+        const words = message.message.split(':');
+        console.log("🎃 🎃 > words:", words);
+        console.log("🎃 🎃 > words.length:", length);
+
+        if (words.length === 2 && `system_Tournmanet_${tournament_id}` === words[0]){
+            console.log("🎃🎃 🎃🎃 🎃🎃system_Tournmanet:", tournament_id);
+            localStorage.setItem(`system_Tournmanet_${tournament_id}_winner`, words[1]);
+            localStorage.setItem(`system_Tournmanet_status_${tournament_id}_final`, "final");
         }
     }
 }
