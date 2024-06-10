@@ -30,15 +30,13 @@ PW42 = os.getenv("PASSWORD_42")
 
 def get_backend_url(request):
     scheme = request.scheme
-    host = request.get_host().split(':')[0]  # Get the hostname without port
-    #port = 8000  # Default port for backend
+    host = request.get_host()  # Get the full hostname
     return f"{scheme}://{host}"
     # return f"{scheme}://{host}:{port}"
 
 def get_frontend_url(request):
     scheme = request.scheme
-    host = request.get_host().split(':')[0]  # Get the hostname without port
-    #port = 8080  # Default port for backend
+    host = request.get_host()  # Get the full hostname
     return f"{scheme}://{host}"
 
 @api_view(['GET'])
@@ -62,6 +60,7 @@ def callback(request):
     client_id = UID
     client_secret = SECRET
 
+    print(redirect_uri)
     data = {
         'grant_type': 'authorization_code',
         'client_id': client_id,
