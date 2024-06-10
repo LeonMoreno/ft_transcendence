@@ -33,16 +33,22 @@ export async function Send_data_bacnd_the_winer(first_player, secong_player, win
 
     // localStorage.setItem('currentTournamentId', pendingTournament.id);
     let tournament_id = localStorage.getItem("currentTournamentId");
+    console.log("-----------------------------");
+    console.log("-> tournament_id:", tournament_id);
 
-    if (tournament_id)
+    if (!tournament_id)
         return;
-
+    
     const tournaments = await fetchTournaments();
-    if (tournaments)
+    console.log("-> tournaments:", tournaments);
+    if (!tournaments)
         return;
 
     let userId = getUserIdFromJWT();
     const pendingTournament = tournaments.find(t => t.status === 'in_progress' && t.participants.some(p => p.user.id === userId));
+
+    console.log("-> pendingTournament:", pendingTournament);
+    console.log("-----------------------------");
 
     if (!pendingTournament) {
         return;
