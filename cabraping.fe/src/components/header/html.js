@@ -1,12 +1,14 @@
-import { BACKEND_URL, WS_URL } from "../wcGlobal.js";
+
+
+import { BACKEND_URL,  WS_URL } from "../wcGlobal.js";
 
 // import image from "../../assets/logo.svg";
 let image = "assets/logo.svg";
 
 // Extract the IP address from the URL used to access the frontend
-// const frontendURL = new URL(window.location.href);
-// const serverIPAddress = frontendURL.hostname;
-// const serverPort = 8000; // Specify the port your backend server is running on
+const frontendURL = new URL(window.location.href);
+const serverIPAddress = frontendURL.hostname;
+const serverPort = 8000; // Specify the port your backend server is running on
 // const BACKEND_URL = `http://${serverIPAddress}:${serverPort}`;
 // const WS_URL = `ws://${serverIPAddress}:${serverPort}`;
 

@@ -3,13 +3,14 @@ import { Chat_Update_js, getUserIdFromJWT } from "../pages/Chat/funcions-js.js";
 import { Friends_js } from "../pages/Friends/funcions-js.js";
 import { Users_js } from "../pages/Users/funcions-js.js";
 
-import { updateParticipantsList, acceptTournamentInvitation, rejectTournamentInvitation, connectTournamentWebSocket } from "../pages/Tournament/funcions-js.js";
+import { updateParticipantsList, acceptTournamentInvitation, rejectTournamentInvitation, connectTournamentWebSocket, WS_check_the_torunament_pending } from "../pages/Tournament/funcions-js.js";
 import { getToken } from "../utils/get-token.js";
 import { showModal, hideModal } from "../utils/modal.js";
 import { handleTournamentCanceled } from "../pages/TournamentWaitingArea/functions-js.js";
 import { updateWaitingParticipantsList } from "../pages/TournamentWaitingArea/functions-js.js";
 
 import { sendAcceptedGameNotifications, sendTournamentNotifications, sendDelleteMatchedMessage, handleUpdateWaitingList } from "./wcGlobal-funcions-send-message.js";
+import { sendGameAcceptTournament_Waiting, system_invitte_game_Tournmanet } from "../pages/TournamentWaitingArea/game-logic.js";
 
 const frontendURL = new URL(window.location.href);
 const serverIPAddress = frontendURL.hostname;
@@ -27,11 +28,8 @@ function filterMessagesForUser(message, userId) {
 }
 
 function handleWebSocketMessage(message, userId) {
-    // if (filterMessagesForUser(message, userId)) {
-    //     execute_processes_by_category(message, myUser);
-    // }
     const myUser = userId;
-    execute_processes_by_category(message, myUser);
+    execute_processes_by_category_message(message, myUser);
 
     // Rachel tournament
     switch (message.event) {
@@ -45,7 +43,7 @@ function handleWebSocketMessage(message, userId) {
             if (message.type === 'tournament') {
                 handleTournamentInvite(message, message.tournament_id);
             }
-            else if (message.message === 'system')
+            else if (message.message === 'system' || message.message === 'system-tournament')
             {
                 return;
             }
@@ -407,26 +405,34 @@ function checkStartTournament(tournamentId) {
 }
 
 // function execute_processes_by_category(message, myUser) {
-function execute_processes_by_category(message, myUser) {
+function execute_processes_by_category_message(message, myUser) {
     switch (message.event) {
         case "channel_created":
             showNotificationPopup(message.user_name, message.message);
             Chat_Update_js();
             break;
         case "game_invite":
-            if (message.message !== 'system') {
-                showNotificationPopup(message.user_name, message.message);
-            }
-            else if (message.type && message.type === 'tournament') {
+            console.log("💩 game_invite:", message);
+            if (message.type && message.type === 'tournament') {
                 return;
-            } else {
+            } else if (message.message === 'system'){
                 console.log("-> Matching showNotificationPopup");
                 console.log("-> Matching showNotificationPopup message:", message,);
                 console.log("-> Matching showNotificationPopup myUser:", myUser,);
                 sendGameAccept_Waiting(message.dest_user_id, message.user_id, myUser);
+            } else if (message.message === 'system-tournament'){
+                console.log("-> system-tournament - Matching showNotificationPopup");
+                console.log("-> system-tournament - Matching showNotificationPopup message:", message,);
+                console.log("-> system-tournament - Matching showNotificationPopup myUser:", myUser,);
+                console.log("-> system-tournament - Matching showNotificationPopup message.dest_user_id:", message.dest_user_id, ", message.user_id:", message.user_id);
+                sendGameAcceptTournament_Waiting(message.dest_user_id, message.user_id, myUser)
+                // sendGameAccept_Waiting(message.dest_user_id, message.user_id, myUser);
+            }else{
+                showNotificationPopup(message.user_name, message.message);
             }
             break;
         case "accepted_game":
+            console.log("💩 accepted_game:", message);
             Chat_Update_js();
             window.location.href = `/#game/${message.message}`;
             break;
@@ -437,6 +443,7 @@ function execute_processes_by_category(message, myUser) {
 }
 
 function run_processes_per_message(message) {
+
     switch (message.message) {
         case "Send friend request":
             Friends_js();
@@ -501,6 +508,7 @@ export async function connectWebSocketGlobal() {
         if (filterMessagesForUser(message, id)){
             handleWebSocketMessage(message, id);
         }
+
         switch (message.event) {
             case 'update_user_list':
                 localStorage.setItem('id_active_users', JSON.stringify(message.user_ids));
@@ -517,6 +525,10 @@ export async function connectWebSocketGlobal() {
             default:
                 break;
         }
+
+        Torunament_game_diego(message);
+
+
     };
 
     WSsocket.onerror = function (error) {
@@ -527,6 +539,25 @@ export async function connectWebSocketGlobal() {
         console.log('WebSocket connection closed:', event);
         WSsocket = null;
     };
+}
+
+async function Torunament_game_diego(message) {
+    // WS_check_the_torunament_pending
+    let value = await WS_check_the_torunament_pending();
+    if (!value)
+        return;
+    console.log("🎃 String(message.dest_user_id) === '0':", (message.dest_user_id === "0"), message);
+    if (message.dest_user_id === "0")
+    {
+        console.log("🎃🎃🎃🎃🎃🎃🎃🎃🎃🎃🎃🎃🎃🎃🎃🎃🎃🎃🎃🎃🎃🎃🎃🎃🎃🎃🎃");
+
+        let tournament_id = localStorage.getItem("currentTournamentId");
+        console.log("🎃🎃 tournament_id:", tournament_id);
+        if (`system_Tournmanet_${tournament_id}` === message.message){
+            console.log("system_Tournmanet:", tournament_id);
+            system_invitte_game_Tournmanet();
+        }
+    }
 }
 
 async function sendGameAccept_Waiting(userId, dest_user_id, myUser) {

@@ -1,4 +1,4 @@
-import { showNotification } from "../../components/showNotification.js"
+import { showNotification } from "../../components/showNotification.js";
 import { BACKEND_URL } from "../../components/wcGlobal.js";
 
 // Extract the IP address from the URL used to access the frontend

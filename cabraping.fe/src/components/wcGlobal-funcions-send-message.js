@@ -138,7 +138,7 @@ export function sendDelleteMatchedMessage(userId, otherId) {
 
 
 
-async function sendGameInitate_Waiting(userId, inviteId) {
+export async function sendGameInitate_Waiting(userId, inviteId) {
     const jwt = localStorage.getItem('jwt');
 
     const response = await fetch(`${BACKEND_URL}/api/games/`, {
@@ -194,7 +194,7 @@ export function sendChannelCreatedNotifications(userId, userName, destUserId) {
     WSsocket.send(JSON.stringify(message));
 }
 
-// Función para enviar un mensaje específico al WebSocket
+// Función para enviar un mensaje específico al WebSocket Diego
 export function sendGameInvataeNotifications(userId, userName, destUserId, text) {
     if (!WSsocket || WSsocket.readyState !== WebSocket.OPEN) {
         console.log('WebSocket is not connected');
@@ -203,6 +203,45 @@ export function sendGameInvataeNotifications(userId, userName, destUserId, text)
 
     const message = {
         type: "game_invite",
+        message: text,
+        user_id: String(userId),
+        user_name: userName,
+        dest_user_id: String(destUserId)
+    };
+
+    console.log("???");
+    console.log("sendGameInvataeNotifications",message);
+
+    WSsocket.send(JSON.stringify(message));
+}
+
+// Función para enviar un mensaje específico al WebSocket
+export function sendGameInvataeTournamentNotifications(userId, userName, destUserId, text) {
+    if (!WSsocket || WSsocket.readyState !== WebSocket.OPEN) {
+        console.log('WebSocket is not connected');
+        return;
+    }
+
+    const message = {
+        type: "notify",
+        message: text,
+        user_id: String(userId),
+        user_name: userName,
+        dest_user_id: String(destUserId)
+    };
+
+    WSsocket.send(JSON.stringify(message));
+}
+
+// Función para enviar un mensaje específico al WebSocket
+export function sendGameAcceptTournamentNotifications(userId, userName, destUserId, text) {
+    if (!WSsocket || WSsocket.readyState !== WebSocket.OPEN) {
+        console.log('WebSocket is not connected');
+        return;
+    }
+
+    const message = {
+        type: "notify",
         message: text,
         user_id: String(userId),
         user_name: userName,

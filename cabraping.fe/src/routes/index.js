@@ -17,7 +17,7 @@ import { Game_js } from "../pages/Game/funcions-js.js";
 import { Game_html } from "../pages/Game/html.js";
 import { Friends_html } from "../pages/Friends/html.js";
 import { Tournament_html } from "../pages/Tournament/html.js";
-import { TournamentInit } from "../pages/Tournament/funcions-js.js";
+import { TournamentInit, WS_check_the_torunament_pending } from "../pages/Tournament/funcions-js.js";
 import { TournamentWaitingArea_html } from "../pages/TournamentWaitingArea/html.js";
 import { initializeTournamentWaitingArea } from "../pages/TournamentWaitingArea/functions-js.js";
 import { Friends_js } from "../pages/Friends/funcions-js.js";
@@ -66,6 +66,7 @@ const router = async () => {
   let user_location = location.hash.slice(1).toLocaleLowerCase().split("/");
   let render = resolveRoutes(routes, user_location);
 
+  await WS_check_the_torunament_pending();
 
   if (getToken())
   {
@@ -88,15 +89,11 @@ const router = async () => {
       }
     }
   }
-  // initializeLogoutButtons();
 
   if (user_location[0] !== 'chat') {
     await Chat_Update_js();
   }
-
   await connectWebSocketGlobal();
 };
 
 export default router;
-window.addEventListener('load', router);
-window.addEventListener('hashchange', router);

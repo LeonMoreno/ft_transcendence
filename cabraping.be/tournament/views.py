@@ -10,6 +10,8 @@ from django.db.models import Count
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 from users.models import CustomUser
+from django.views.decorators.csrf import csrf_exempt
+
 
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -33,6 +35,21 @@ class TournamentViewSet(viewsets.ModelViewSet):
             participant.save()
 
         return Response({'status': 'success', 'message': 'Participant added successfully' if created else 'Participant already exists, invite received updated'})
+
+    @action(detail=True, methods=['put'], permission_classes=[IsAuthenticated])
+    def update_status(self, request, pk=None):
+        try:
+            tournament = Tournament.objects.get(id=pk)
+            new_status = request.data.get('status')
+            if new_status:
+                tournament.status = new_status
+                tournament.save()
+                return Response({"message": "Tournament status updated"}, status=status.HTTP_200_OK)
+            else:
+                return Response({"error": "Status not provided"}, status=status.HTTP_400_BAD_REQUEST)
+        except Tournament.DoesNotExist:
+            return Response({"error": "Tournament not found"}, status=status.HTTP_404_NOT_FOUND)
+
 
     @action(detail=True, methods=['post'])
     def set_ready(self, request, pk=None):

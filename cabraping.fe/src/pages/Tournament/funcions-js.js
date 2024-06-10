@@ -9,6 +9,30 @@ import { getUserIdFromJWT } from "../Chat/funcions-js.js";
 // const serverPort = 8000; // Specify the port your backend server is running on
 // const BACKEND_URL = `http://${serverIPAddress}:${serverPort}`;
 
+
+export async function WS_check_the_torunament_pending() {
+    
+    const userId = getUserIdFromJWT();
+    if (!userId)
+        return null
+    const tournaments = await fetchTournaments();
+
+    const pendingTournament = tournaments.find(t => t.status === 'pending' && t.participants.some(p => p.user.id === userId));
+    const progressTournament = tournaments.find(t => t.status === 'in_progress' && t.participants.some(p => p.user.id === userId));
+
+    if (pendingTournament) {
+        localStorage.setItem('currentTournamentId', pendingTournament.id);
+        localStorage.setItem('system_Tournmanet_status', "in");
+    }
+    else if (progressTournament) {
+        localStorage.setItem('currentTournamentId', progressTournament.id);
+        localStorage.setItem('system_Tournmanet_status', "in");
+    }else{
+        localStorage.setItem('system_Tournmanet_status', "no");
+    }
+    return true;
+}
+
 async function TournamentInit() {
 
     const jwt = getToken();
@@ -18,12 +42,11 @@ async function TournamentInit() {
     }
     console.log("Initializing Tournament Page");
 
-    // loadTournamentData();
+    WS_check_the_torunament_pending();
 
     const userId = getUserIdFromJWT();
     const tournaments = await fetchTournaments();
 
-    // const pendingTournament = tournaments.find(t => t.status === 'pending' && t.participants[0].user.id === userId);
     const pendingTournament = tournaments.find(t => t.status === 'pending' && t.participants.some(p => p.user.id === userId));
 
     if (pendingTournament) {
@@ -97,7 +120,7 @@ function saveTournamentData() {
 }
 
 // Fetch all tournaments from the server
-async function fetchTournaments() {
+export async function fetchTournaments() {
     try {
         const response = await fetch(`${BACKEND_URL}/api/tournaments/`, {
             headers: {

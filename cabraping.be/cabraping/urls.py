@@ -14,6 +14,8 @@ from cabraping.views import custom_404
 from django.conf import settings
 from django.conf.urls.static import static
 from users.views import UserUpdate, delete_user
+from django.views.decorators.csrf import csrf_exempt
+
 
 router = DefaultRouter()
 router.register(r"users", UserViewSet)
@@ -26,6 +28,9 @@ router.register(r'matches', MatchViewSet)
 urlpatterns = [
     path('admin/', admin.site.urls),
 
+    path('api/tournaments/<int:tournament_id>/set_ready/', TournamentViewSet.set_ready, name='set_ready'),
+
+    
     path('api/tournaments/<int:pk>/addparticipant/', TournamentViewSet.as_view({'post': 'add_participant'}), name='add_participant'),
     path('api/participants/<int:pk>/update_accepted_invite/', ParticipantViewSet.as_view({'post': 'update_accepted_invite'}), name='update_accepted_invite'),
 
@@ -38,7 +43,6 @@ urlpatterns = [
     path('api/users/<str:username>/status/', check_user_status, name='check_user_status'),
     path('delete/<str:username>/', delete_user, name='delete_user'),
     path('api/participants/status/', ParticipantViewSet.as_view({'get': 'status'}), name='participant-status'),
-    path('api/tournaments/<int:tournament_id>/set_ready/', TournamentViewSet.set_ready, name='set_ready'),
     path("api/", include(router.urls)),
     path('channels/', ChannelListView.as_view(), name='channel-list'),
     path('channels/create/', ChannelCreateView.as_view(), name='channel-create'),
