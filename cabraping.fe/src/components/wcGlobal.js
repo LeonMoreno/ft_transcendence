@@ -13,12 +13,13 @@ const serverPort = 8000; // Specify the port your backend server is running on
  */
 
 // Production with Docker: Use HTTPS and WSS
-export var BACKEND_URL = `https://localhost`;
-export var WS_URL = `wss://localhost`;
+// export var BACKEND_URL = `https://localhost`;
+// export var WS_URL = `wss://localhost`;
 
 // Local development: Use HTTP and WS
-// export var BACKEND_URL = `http://${serverIPAddress}:${serverPort}`;
-// export var WS_URL = `ws://${serverIPAddress}:${serverPort}`;
+export var BACKEND_URL = `https://${serverIPAddress}`;
+export var WS_URL = `wss://${serverIPAddress}`;
+// export var WS_URL = `wss://${serverIPAddress}:${serverPort}`;
 
 let WSsocket = null; // Variable global para almacenar la instancia del WebSocket
 
@@ -80,16 +81,22 @@ function run_processes_per_message(message) {
 
 // Función para conectar al WebSocket y escuchar mensajes
 export async function connectWebSocketGlobal() {
+  console.log(`--> 🚀🚀 Connecting to WebSocket...`);
+
   if (WSsocket && WSsocket.readyState === WebSocket.OPEN) {
     console.log("WebSocket is already connected");
     return;
   }
+
+  console.log(`--> 🚀🚀 Connecting to WebSocket...`);
 
   const jwt = localStorage.getItem("jwt");
   if (!jwt) {
     console.log("No JWT token found in localStorage");
     return;
   }
+
+  console.log(`--> 🚀 Connecting to WebSocket...`);
 
   if (!myUser) {
     const responseMyUser = await fetch(`${BACKEND_URL}/api/me/`, {
@@ -104,9 +111,11 @@ export async function connectWebSocketGlobal() {
 
   console.log(`--> 👋 User id:${id}`);
 
-  // Conectarse al WebSocket
+  //   // Conectarse al WebSocket
   const wsUrl = `${WS_URL}/ws/notifications/${id}/?token=${jwt}`;
   WSsocket = new WebSocket(wsUrl);
+
+  console.log(WSsocket);
 
   // Manejar la conexión abierta
   WSsocket.onopen = function () {
@@ -124,6 +133,7 @@ export async function connectWebSocketGlobal() {
 
     if (message.event === "update_user_list") {
       localStorage.setItem("id_active_users", JSON.stringify(message.user_ids));
+      // Check error Diego
       Chat_Update_js();
       Friends_js();
       Users_js();
