@@ -170,6 +170,25 @@ class TournamentViewSet(viewsets.ModelViewSet):
 
         return Response({'message': 'Tournament has been canceled.'}, status=status.HTTP_200_OK)
 
+    def destroy(self, request, *args, **kwargs):
+        tournament = self.get_object()
+        tournament_id = tournament.id
+        tournament.delete()
+
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            f'tournament_{tournament_id}',
+            {
+                'type': 'tournament_canceled',
+                'message': 'The tournament has been deleted by the creator.',
+                'tournament_id': tournament_id
+            }
+        )
+
+        return Response({'message': 'Tournament has been deleted.'}, status=status.HTTP_200_OK)
+
+
+
 class ParticipantViewSet(viewsets.ModelViewSet):
     queryset = Participant.objects.all()
     serializer_class = ParticipantSerializer

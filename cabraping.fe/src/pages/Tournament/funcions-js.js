@@ -2,6 +2,7 @@ import { getToken } from "../../utils/get-token.js";
 import { showNotification, showNotificationPopup } from '../../components/showNotification.js';
 import { sendTournamentInvitation, activeWebSockets, handleTournamentWebSocketMessage, getUserIdByUsername, BACKEND_URL } from '../../components/wcGlobal.js';
 import { getUserIdFromJWT } from "../Chat/funcions-js.js";
+import { handleTournamentCanceled } from "../TournamentWaitingArea/functions-js.js";
 
 // Extract the IP address from the URL used to access the frontend
 // const frontendURL = new URL(window.location.href);
@@ -58,16 +59,15 @@ async function TournamentInit() {
             console.log("Found pending tournament as creator:", pendingTournament);
             localStorage.setItem('currentTournamentId', pendingTournament.id);
             await loadTournamentData(pendingTournament.id);
-            // Connect WebSocket for the pending tournament
             connectTournamentWebSocket(pendingTournament.id);
             checkGoToWaitingAreaButton(pendingTournament);
+            checkCancelCreateButton(pendingTournament);
         } else {
             console.log("Found pending tournament as participant:", pendingTournament);
             window.location.href = `/#waitroom/${pendingTournament.id}`;
             return;
         }
     }
-
 
     const tournamentForm = document.getElementById('tournamentForm');
     if (tournamentForm) {
@@ -96,6 +96,14 @@ async function TournamentInit() {
         console.log("Event listener added for enter key on participant name input");
     } else {
         console.error("Participant name input not found");
+    }
+
+    const cancelCreateButton = document.getElementById('cancelCreateButton');
+    if (cancelCreateButton) {
+        checkCancelCreateButton(pendingTournament);
+        console.log("Event listener added to cancel create button");
+    } else {
+        console.error("Cancel create button not found");
     }
 }
 
@@ -848,6 +856,133 @@ function checkGoToWaitingAreaButton(tournament) {
         goToWaitingAreaButton.disabled = true;
     }
 }
+
+
+/*function checkCancelCreateButton(tournament) {
+    const cancelCreateButton = document.getElementById('cancelCreateButton');
+
+    if (cancelCreateButton) {
+        // Remove any existing event listeners to avoid duplicates
+        const newButton = cancelCreateButton.cloneNode(true);
+        cancelCreateButton.parentNode.replaceChild(newButton, cancelCreateButton);
+
+        newButton.addEventListener('click', async () => {
+            console.log('Aborting tournament creation.');
+
+            if (tournament && tournament.id) {
+                try {
+                    const response = await fetch(`${BACKEND_URL}/api/tournaments/${tournament.id}/`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': `Bearer ${getToken()}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    if (response.ok) {
+                        console.log(`Tournament ${tournament.id} deleted successfully`);
+
+                        // Send tournament_aborted event to WebSocket
+                        const message = {
+                            type: 'tournament',
+                            event: 'tournament_aborted',
+                            message: `The tournament ${tournament.id} has been aborted.`,
+                            tournament_id: tournament.id
+                        };
+
+                        if (activeWebSockets[tournament.id] && activeWebSockets[tournament.id].readyState === WebSocket.OPEN) {
+                            activeWebSockets[tournament.id].send(JSON.stringify(message));
+                        }
+
+                        // Remove the local storage items
+                        localStorage.removeItem('pageTournament');
+                        localStorage.removeItem('currentTournamentId');
+                        localStorage.removeItem(`tournamentName_${tournament.id}`);
+                        localStorage.removeItem(`creatorUsername_${tournament.id}`);
+                    } else {
+                        console.error(`Failed to delete tournament ${tournament.id}`);
+                    }
+                } catch (error) {
+                    console.error(`Error deleting tournament ${tournament.id}:`, error);
+                }
+            } else {
+                // Remove the local storage items
+                localStorage.removeItem('pageTournament');
+                localStorage.removeItem('currentTournamentId');
+            }
+
+            window.location.href = `/#`;
+        });
+    } else {
+        console.error("Cancel create button not found");
+    }
+}*/
+
+async function checkCancelCreateButton(tournament) {
+    const cancelCreateButton = document.getElementById('cancelCreateButton');
+
+    if (cancelCreateButton) {
+        // Remove any existing event listeners to avoid duplicates
+        const newButton = cancelCreateButton.cloneNode(true);
+        cancelCreateButton.parentNode.replaceChild(newButton, cancelCreateButton);
+
+        newButton.addEventListener('click', async () => {
+            console.log('Aborting tournament creation.');
+
+            if (tournament && tournament.id) {
+                try {
+                    // Call the destroy endpoint to delete the tournament
+                    const response = await fetch(`${BACKEND_URL}/api/tournaments/${tournament.id}/cancel/`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${getToken()}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    if (response.ok) {
+                        console.log(`Tournament ${tournament.id} canceled successfully`);
+
+                        // Send tournament_canceled event to WebSocket
+                        const message = {
+                            type: 'tournament',
+                            event: 'tournament_canceled',
+                            message: `The tournament ${tournament.id} has been canceled.`,
+                            tournament_id: tournament.id
+                        };
+
+                        if (activeWebSockets[tournament.id] && activeWebSockets[tournament.id].readyState === WebSocket.OPEN) {
+                            activeWebSockets[tournament.id].send(JSON.stringify(message));
+                            activeWebSockets[tournament.id].close(); // Close the WebSocket connection
+                            delete activeWebSockets[tournament.id]; // Remove it from the active websockets list
+                        }
+
+                        // Remove the local storage items
+                        localStorage.removeItem('pageTournament');
+                        localStorage.removeItem('currentTournamentId');
+                        localStorage.removeItem(`tournamentName_${tournament.id}`);
+                        localStorage.removeItem(`creatorUsername_${tournament.id}`);
+                    } else {
+                        console.error(`Failed to cancel tournament ${tournament.id}`);
+                    }
+                } catch (error) {
+                    console.error(`Error canceling tournament ${tournament.id}:`, error);
+                }
+            } else {
+                // Remove the local storage items
+                localStorage.removeItem('pageTournament');
+                localStorage.removeItem('currentTournamentId');
+            }
+
+            window.location.href = `/#`;
+        });
+    } else {
+        console.error("Cancel create button not found");
+    }
+}
+
+
+
 
   export {
     createTournament,
