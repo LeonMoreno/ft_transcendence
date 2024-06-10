@@ -13,7 +13,12 @@ import { handleTournamentCanceled } from "../TournamentWaitingArea/functions-js.
 
 export async function WS_check_the_torunament_pending() {
     
+    if(!getToken()){
+        return null
+    }
+
     const userId = getUserIdFromJWT();
+    
     if (!userId)
         return null
     const tournaments = await fetchTournaments();
@@ -136,6 +141,9 @@ function saveTournamentData() {
 // Fetch all tournaments from the server
 export async function fetchTournaments() {
     try {
+        if (!getToken()){
+            return;
+        }
         const response = await fetch(`${BACKEND_URL}/api/tournaments/`, {
             headers: {
                 'Authorization': `Bearer ${getToken()}`,
