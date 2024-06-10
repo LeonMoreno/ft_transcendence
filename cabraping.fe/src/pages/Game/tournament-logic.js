@@ -1,3 +1,4 @@
+import { showNotificationPopup } from "../../components/showNotification.js";
 import { sendGameInitate_Waiting, sendGameInvataeNotifications, sendGameInvataeTournamentNotifications, sendWinnerOfGameTournamentNotifications } from "../../components/wcGlobal-funcions-send-message.js";
 import { BACKEND_URL } from "../../components/wcGlobal.js";
 import { getToken } from "../../utils/get-token.js";
@@ -20,6 +21,7 @@ async function update_winer_of_tournament(tournamentId, winer) {
         })
     });
 
+    showNotificationPopup("You won congratulations the tournament", `success`);
     console.log("is finish!!!!!!!");
     window.location.href = `/#`;
 
@@ -33,10 +35,13 @@ export async function Send_data_bacnd_the_winer(first_player, secong_player, win
     let user_id = getUserIdFromJWT();
 
     if (winer !== user_id ){
+        showNotificationPopup("you lost good luck for the next, ", `loss`);
         console.log("🥻🥻🥻>> winer:", winer, ", user_id:", user_id);
         window.location.href = `/#`;
         return;
     }
+
+    showNotificationPopup("You won congratulations", `success`);
 
     let myUserName = localStorage.getItem("username");
 

@@ -6,7 +6,7 @@ import { Users_js } from "../pages/Users/funcions-js.js";
 import { updateParticipantsList, acceptTournamentInvitation, rejectTournamentInvitation, connectTournamentWebSocket, WS_check_the_torunament_pending } from "../pages/Tournament/funcions-js.js";
 import { getToken } from "../utils/get-token.js";
 import { showModal, hideModal } from "../utils/modal.js";
-import { handleTournamentCanceled } from "../pages/TournamentWaitingArea/functions-js.js";
+import { startTournament, handleTournamentCanceled } from "../pages/TournamentWaitingArea/functions-js.js";
 import { updateWaitingParticipantsList } from "../pages/TournamentWaitingArea/functions-js.js";
 
 import { sendAcceptedGameNotifications, sendTournamentNotifications, sendDelleteMatchedMessage, handleUpdateWaitingList } from "./wcGlobal-funcions-send-message.js";
@@ -58,6 +58,9 @@ function handleWebSocketMessage(message, userId) {
         case 'tournament_canceled':
             handleTournamentCanceled(message);
             break;
+        //case 'tournament_aborted':
+          //  handleTournamentCanceled(message);
+            //break;
         default:
             console.log('Unknown event type:', message.event);
     }
@@ -346,10 +349,11 @@ export async function handleTournamentWebSocketMessage(data, tournamentId) {
             participants = await fetchParticipants(tournamentId);
             updateWaitingParticipantsList(participants);
             break;
-        case 'all_ready':  // New case for handling all participants being ready
+        case 'all_ready':  
             startTournament();
             break;
-       case 'tournament_canceled':
+        case 'tournament_canceled':
+        //case 'tournament_aborted':
             handleTournamentCanceled(data);
             break;
         default:
