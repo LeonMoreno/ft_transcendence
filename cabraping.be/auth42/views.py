@@ -144,7 +144,9 @@ def callback(request):
     # For debugging purposes, return the user_info JSON response directly
     #return JsonResponse(user_info)
     # Redirect to the frontend with the tokens
-    frontend_redirect_url = f"{get_frontend_url(request)}?access_token={access_token}&refresh_token={refresh_token}"
+    # frontend_redirect_url = f"http://localhost:8080?access_token={access_token}&refresh_token={refresh_token}&username={username}"
+    frontend_redirect_url = f"http://localhost:8080?access_token={access_token}&refresh_token={refresh_token}"
+
     return redirect(frontend_redirect_url)
 
 

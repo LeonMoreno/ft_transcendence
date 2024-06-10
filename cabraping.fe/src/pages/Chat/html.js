@@ -1,4 +1,3 @@
-
 export  function Chat_html() {
 
   const jwt = localStorage.getItem('jwt');
@@ -44,7 +43,7 @@ export  function Chat_html() {
       <!-- Textarea for new messages -->
       <div class="mt-3">
         <textarea id="messageTextarea" class="form-control" rows="3"></textarea>
-        <button id="sendButton" class="btn btn-primary mt-2">Enviar</button>
+        <button id="sendButton" class="btn btn-primary mt-2">Send</button>
       </div>
     </div>
 

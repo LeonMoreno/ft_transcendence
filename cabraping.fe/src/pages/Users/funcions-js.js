@@ -1,4 +1,5 @@
-import { BACKEND_URL, sendFriendRequestNotifications } from "../../components/wcGlobal.js";
+import { BACKEND_URL } from "../../components/wcGlobal.js";
+import { sendFriendRequestNotifications } from "../../components/wcGlobal-funcions-send-message.js";
 import { showActiveFriends } from "../Chat/funcions-js.js";
 import { Users_html } from "./html.js";
 
@@ -27,6 +28,7 @@ export async function Users_js() {
 
   const responseUsers = await fetch(`${BACKEND_URL}/api/users/`);
   users = await responseUsers.json();
+  console.log("😸 🤣 users:", users);
   if (!users) return null;
 
   const responseFriendRequests = await fetch(

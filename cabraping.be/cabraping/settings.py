@@ -9,11 +9,9 @@ https://docs.djangoproject.com/en/4.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
-
+import os
 from pathlib import Path
 from datetime import timedelta
-
-import os
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
@@ -26,11 +24,11 @@ SECRET = os.getenv("SECRET")
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
-SECRET_KEY = os.getenv("DJANGO_KEY")
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = 'django-insecure-*)1aavai#%e5)83n)o9)@xwx&67gx=^#w&op3kxyqe&5w*x7e*'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -54,13 +52,13 @@ INSTALLED_APPS = [
     'corsheaders',
     'cabraping',
     'channels',
-    'globalwc',
     'chat',
     'game',
     'users',
     'auth42',
     'dotenv',
     'rest_framework_simplejwt.token_blacklist',  # Add this for JWT token management
+    'tournament',
 ]
 
 # CORS_ALLOWED_ORIGINS = [
@@ -72,6 +70,24 @@ INSTALLED_APPS = [
 
 CORS_ALLOW_ALL_ORIGINS = True
 
+# For development purposes, you can also use
+CORS_ALLOW_ALL_ORIGINS = True
+
+# Allow specific methods
+#CORS_ALLOW_METHODS = [
+#    'GET',
+#    'POST',
+#    'PUT',
+#    'PATCH',
+#    'DELETE',
+#    'OPTIONS'
+#]
+
+# Allow specific headers
+#CORS_ALLOW_HEADERS = [
+#    'Authorization',
+#    'Content-Type',
+#]
 
 AUTH_USER_MODEL = 'users.CustomUser'
 
@@ -126,24 +142,25 @@ DATABASES = {
 
 #---> Local
 # CHANNEL_LAYERS = {
-#     'default': {
-#         'BACKEND': 'channels_redis.core.RedisChannelLayer',
-#         'CONFIG': {
-#             "hosts": [('127.0.0.1', 6379)],  # Cambia si tu servidor Redis está en una ubicación diferente
-#             "hosts": [('127.0.0.1', 6379)],  # Cambia si tu servidor Redis está en una ubicación diferente
-#         },
-#     },
+#    'default': {
+#        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+#        'CONFIG': {
+#            "hosts": [('127.0.0.1', 6379)],  # Cambia si tu servidor Redis está en una ubicación diferente
+#            "hosts": [('127.0.0.1', 6379)],  # Cambia si tu servidor Redis está en una ubicación diferente
+#        },
+#    },
 # }
+
 # DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': 'transcendence_db',
-#         'USER': 'transcendence_user',
-#         'PASSWORD': 'transcendence_password',
-#         'HOST': 'localhost',
-#         'HOST': 'localhost',
-#         'PORT': '5432',
-#     }
+#    'default': {
+#        'ENGINE': 'django.db.backends.postgresql',
+#        'NAME': 'transcendence_db',
+#        'USER': 'transcendence_user',
+#        'PASSWORD': 'transcendence_password',
+#        'HOST': 'localhost',
+#        'HOST': 'localhost',
+#        'PORT': '5432',
+#    }
 # }
 
 # < Local ----------------------------------------------------------------------------------------------------------------------------
@@ -157,6 +174,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
 ]
 
 ROOT_URLCONF = 'cabraping.urls'
@@ -164,6 +182,7 @@ ROOT_URLCONF = 'cabraping.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        #'DIRS': [BASE_DIR / 'cabraping.fe/src/template'], # rachel - for custom 404 and 500 pages (need to fix it still)
         'DIRS': [],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -213,9 +232,20 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+
+#STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+
+# Custom error handlers
+handler404 = 'cabraping.views.custom_404'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+MEDIA_URL = '/media/'
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media') # rachel - check if correct
+
+

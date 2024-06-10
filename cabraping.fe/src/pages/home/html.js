@@ -16,7 +16,7 @@ export function Home_html() {
         <h1>CabraPing</h1>
         <p class="lead">Classic Pong: Bounce to Victory! Can you outmatch your opponent in this timeless arcade game of skill and reflexes?</p>
         <button id="button-auth" class="btn btn-warning">42 Auth</button>
-        <a href="/#auth" class="btn btn-warning">Iniciar Sesión / Registrarse</a>
+        <a href="/#auth" class="btn btn-warning">Log In / Sign Up</a>
       </div>
     </div>
   </div>

@@ -1,18 +1,19 @@
 import { BACKEND_URL } from "../../components/wcGlobal.js";
+import { getToken } from "../../utils/get-token.js";
 import { Stat_html } from "./html.js";
 
-// Extract the IP address from the URL used to access the frontend
-// const frontendURL = new URL(window.location.href);
-// const serverIPAddress = frontendURL.hostname;
-// const serverPort = 8000; // Specify the port your backend server is running on
-// const BACKEND_URL = `http://${serverIPAddress}:${serverPort}`;
 
 let users = [];
 
 // Function to fetch and display user statistics
 export async function Stat_js() {
-  const jwt = localStorage.getItem("jwt");
-  if (!jwt) return null;
+  const jwt = getToken();
+
+  if (!jwt)
+  {
+    window.location.replace("/#");
+    return;
+  }
   
   try {
     const [responseMyUser, responseUsers, responseGames] = await Promise.all([
