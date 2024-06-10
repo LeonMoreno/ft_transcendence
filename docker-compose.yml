@@ -2,7 +2,7 @@
 # --------- Deigo ---------
 # -------------------------
 
-version: '3.9'
+version: "3.9"
 
 services:
   database:
@@ -50,6 +50,17 @@ services:
       - /app/node_modules
     environment:
       - NODE_ENV=production
+
+  nginx:
+    build:
+      context: ./nginx
+    container_name: nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - backend
+      - frontend
 
 volumes:
   postgres_data:
