@@ -26,6 +26,7 @@ from channels.auth import AuthMiddlewareStack
 from channels.routing import ProtocolTypeRouter, URLRouter
 from chat.routing import websocket_urlpatterns as chat_websocket_urlpatterns
 from game.routing import websocket_urlpatterns as game_websocket_urlpatterns
+from tournament.routing import websocket_urlpatterns as tournament_websocket_urlpatterns # rachel - check if needed, given the two lines below
 from globalwc.routing import websocket_urlpatterns as globalwc_websocket_urlpatterns
 from users.routing import websocket_urlpatterns as users_websocket_urlpatterns
 
@@ -45,9 +46,9 @@ application = ProtocolTypeRouter({
             URLRouter(
             chat_websocket_urlpatterns +
             game_websocket_urlpatterns +
+            tournament_websocket_urlpatterns + # rachel - check if needed, given the two lines below
             users_websocket_urlpatterns +
             globalwc_websocket_urlpatterns
-            # globalwc.routing.websocket_urlpatterns
             )
     ),
 })

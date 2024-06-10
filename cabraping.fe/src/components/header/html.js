@@ -1,12 +1,14 @@
-import { BACKEND_URL, WS_URL } from "../wcGlobal.js";
+
+
+import { BACKEND_URL,  WS_URL } from "../wcGlobal.js";
 
 // import image from "../../assets/logo.svg";
 let image = "assets/logo.svg";
 
 // Extract the IP address from the URL used to access the frontend
-// const frontendURL = new URL(window.location.href);
-// const serverIPAddress = frontendURL.hostname;
-// const serverPort = 8000; // Specify the port your backend server is running on
+const frontendURL = new URL(window.location.href);
+const serverIPAddress = frontendURL.hostname;
+const serverPort = 8000; // Specify the port your backend server is running on
 // const BACKEND_URL = `http://${serverIPAddress}:${serverPort}`;
 // const WS_URL = `ws://${serverIPAddress}:${serverPort}`;
 
@@ -91,6 +93,7 @@ export async function Header_html() {
             <li class="nav-item"><a class="nav-link" href="#friends">Friends</a></li>
             <li class="nav-item"><a class="nav-link" href="#chat">Chats</a></li>
             <li class="nav-item"><a class="nav-link" href="#game">Games</a></li>
+            <li class="nav-item"><a class="nav-link" href="#tournament">Tournament</a></li>
             <li class="nav-item"><a class="nav-link" href="#stats">Dashboard</a></li>
             <li class="nav-item"><a class="nav-link" href="#profile">Profile</a></li>
           ` : ""}
@@ -110,7 +113,7 @@ export async function Header_html() {
           <a href="/#user" class="me-3 text-decoration-none text-dark">
             <b>${myUser.username}</b>
           </a>
-          <a href="/#logout" class="btn btn-primary">Logout</a>
+          <a href="/#logout" class="btn btn-primary" id="logoutButton">Logout</a>
         </div>
       `
           : `<a href="/#auth" class="btn btn-primary">Login</a>`

@@ -1,10 +1,17 @@
 import { getToken } from "../../utils/get-token.js";
-import { BACKEND_URL, sendWaitMatchedMessage } from "../../components/wcGlobal.js";
-// import { BACKEND_URL } from "../../constants";
-// const BACKEND_URL = "http://localhost:8000";
+import { BACKEND_URL } from "../../components/wcGlobal.js";
+import { sendWaitMatchedMessage } from "../../components/wcGlobal-funcions-send-message.js";
 
 export async function Matching_js() {
     const jwt = getToken();
+
+    if (!jwt)
+    {
+      window.location.replace("/#");
+    }
+    if (!jwt) {
+        return;
+    }
     const payload = jwt.split('.')[1];
     const decodedPayload = JSON.parse(atob(payload));
     const userId = decodedPayload.user_id;
@@ -41,21 +48,3 @@ export async function Matching_js() {
         });
     }
 }
-
-
-
-
-// import { getToken } from "../../utils/get-token.js";
-// import { sendWaitMatchedMessage } from "../../components/wcGlobal.js";
-
-// export function Matching_js() {
-//     document.getElementById('start-matching-button').addEventListener('click', async () => {
-//         const jwt = getToken();
-//         const payload = jwt.split('.')[1];
-//         const decodedPayload = JSON.parse(atob(payload));
-//         const userId = decodedPayload.user_id;
-
-//         sendWaitMatchedMessage(userId);
-//         console.log("Wait for match message sent");
-//     });
-// }

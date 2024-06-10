@@ -61,7 +61,12 @@ function calculateMyUserStats(myUser, gameResults) {
 
 export async function Profile_js() {
   const jwt = localStorage.getItem("jwt");
-  if (!jwt) return null;
+
+  if (!jwt)
+  {
+    window.location.replace("/#");
+    return;
+  }
 
 userId = getHash() || null;
 if (userId === '/') userId = null;

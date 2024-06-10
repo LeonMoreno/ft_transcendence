@@ -1,9 +1,17 @@
 // import image from '../../assets/logo.svg';
 import { getHash } from "../../utils/getHash.js";
 import { showNotification, showNotificationPopup } from '../../components/showNotification.js';
-import { BACKEND_URL, sendAcceptedGameNotifications, sendChannelCreatedNotifications, sendGameInvataeNotifications, WS_URL } from "../../components/wcGlobal.js";
+import { BACKEND_URL, WS_URL } from "../../components/wcGlobal.js";
+import { sendAcceptedGameNotifications, sendChannelCreatedNotifications, sendGameInvataeNotifications } from "../../components/wcGlobal-funcions-send-message.js";
+import { getToken } from "../../utils/get-token.js";
 
 let image = "assets/logo.svg";
+
+// // Extract the IP address from the URL used to access the frontend
+// const frontendURL = new URL(window.location.href);
+// const serverIPAddress = frontendURL.hostname;
+// const serverPort = 8000; // Specify the port your backend server is running on
+// const BACKEND_URL = `http://${serverIPAddress}:${serverPort}`;
 
 let sockets = {}; // Object to store WebSocket connections
 let usersList = []; // Global variable to store the list of users
@@ -27,7 +35,7 @@ export async function Chat_Update_js() {
   }
 
   // Extract user_id from JWT
-  user_id = getUserIdFromJWT;
+  user_id = getUserIdFromJWT();
 
   const responseMyUser = await fetch(`${BACKEND_URL}/api/me/`, {
     headers: { Authorization: `Bearer ${jwt}` },
@@ -110,7 +118,7 @@ export async function Chat_js() {
     const acceptGameButton = document.getElementById('acceptGameButton');
     if (acceptGameButton) {
       acceptGameButton.disabled = true;
-      acceptGameButton.addEventListener('click', () => acceoptGame());
+      acceptGameButton.addEventListener('click', () => acceptGame());
     }
 
     const button = document.getElementById('addChannel');
@@ -131,7 +139,7 @@ export async function Chat_js() {
       saveChannelButton.addEventListener('click', handleSaveChannelClick);
     }
 
-    let userId = getUserIdFromJWT(jwt);
+    let userId = getUserIdFromJWT();
     // const channels = await getUserChannels(userId);
     channels = await getUserChannels(userId);
 
@@ -314,7 +322,7 @@ async function inviteGame(jwt) {
     }
 }
 
-  async function acceoptGame() {
+  async function acceptGame() {
 
     const jwt = localStorage.getItem('jwt');
     if (!jwt) {
@@ -741,7 +749,15 @@ function loadMessagesFromLocalStorage(channelId) {
 }
 
 // Function to obtain the JWT user ID
-export function getUserIdFromJWT(jwt) {
+export function getUserIdFromJWT() {
+
+  // const jwt = getToken();
+  const jwt = getToken();
+
+  if (!jwt){
+    return -1;
+  }
+
   const payload = jwt.split(".")[1];
   const decodedPayload = JSON.parse(atob(payload));
   return decodedPayload.user_id;

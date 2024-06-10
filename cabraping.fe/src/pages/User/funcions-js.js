@@ -118,3 +118,21 @@ function FormSendData(event) {
       showNotification("Error updating user! " + error.message, "error");
     });
 }
+
+//just in case function:
+async function deleteUser(username) {
+    const jwt = localStorage.getItem("jwt");
+    const response = await fetch(`${BACKEND_URL}/delete/${username}/`, {
+        method: 'DELETE',
+        headers: {
+            'Authorization': `Bearer ${jwt}`,
+            'Content-Type': 'application/json'
+        }
+    });
+
+    if (response.status === 204) {
+        console.log(`User ${username} deleted successfully`);
+    } else {
+        console.error(`Failed to delete user ${username}`);
+    }
+}

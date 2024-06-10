@@ -1,5 +1,3 @@
-# globalwc/consumers.py
-
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from django.contrib.auth.models import AnonymousUser
@@ -7,6 +5,7 @@ from django.contrib.auth.models import AnonymousUser
 connected_users = set()
 waiting_users = set()
 waiting_channels = {}  # Maps user_id to channel_name
+user_channels = {}  # Maps user_id to channel_name
 
 class NotificationConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -26,8 +25,9 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         # Accept the WebSocket connection
         await self.accept()
 
-        # Add user to the set of connected users
+        # Add user to the set of connected users and map user_id to channel_name
         connected_users.add(self.user_id)
+        user_channels[self.user_id] = self.channel_name
 
         # Send the list of connected users to all users
         await self.channel_layer.group_send(
@@ -55,8 +55,12 @@ class NotificationConsumer(AsyncWebsocketConsumer):
                 waiting_users.discard(self.user_id)
                 del waiting_channels[self.user_id]
 
-                # Notify waiting users that a user has left
-                await self.notify_waiting_users()
+            # Remove the user from the user_channels mapping Rachel - remove for diego
+            # if self.user_id in user_channels:
+            #     del user_channels[self.user_id]
+
+            # Notify waiting users that a user has left
+            await self.notify_waiting_users()
 
             # Notify all users that a user has disconnected
             await self.channel_layer.group_send(
@@ -85,14 +89,14 @@ class NotificationConsumer(AsyncWebsocketConsumer):
     async def receive(self, text_data):
         text_data_json = json.loads(text_data)
         
-        # Check for the presence of required keys
         if 'type' in text_data_json:
             event_type = text_data_json['type']
             message = text_data_json.get('message', '')
             user_id = text_data_json.get('user_id', '')
             user_name = text_data_json.get('user_name', '')
             dest_user_id = text_data_json.get('dest_user_id', '')
-            matched_user_ids = text_data_json.get('matched_user_ids', [])
+            tournament_id = text_data_json.get('tournament_id', '')
+            tournament_name = text_data_json.get('tournament_name', '')
 
             if event_type == 'wait_matched':
                 # Add user to the waiting list
@@ -127,6 +131,18 @@ class NotificationConsumer(AsyncWebsocketConsumer):
                             'message': 'You have been matched and removed from the waiting list.',
                         })
 
+            elif event_type == 'tournament_invite':
+                # Send the tournament invitation to all users except the sender
+                await self.send_tournament_invitation({
+                    'type': 'send_tournament_invitation',
+                    'message': message,
+                    'tournament_name': tournament_name,
+                    'user_id': user_id,
+                    'user_name': user_name,
+                    'dest_user_id': dest_user_id,
+                    'tournament_id': tournament_id,
+                    'sender_channel_name': self.channel_name,
+                })
             else:
                 # Send message to group
                 await self.channel_layer.group_send(
@@ -137,7 +153,7 @@ class NotificationConsumer(AsyncWebsocketConsumer):
                         'user_id': user_id,
                         'user_name': user_name,
                         'dest_user_id': dest_user_id,
-                        'sender_channel_name': self.channel_name,  # Add the sender's channel name
+                        'sender_channel_name': self.channel_name,
                     }
                 )
 
@@ -231,6 +247,50 @@ class NotificationConsumer(AsyncWebsocketConsumer):
             'event': 'update_user_list',
             'user_ids': user_ids,
         }))
+    
+    # rachel
+    async def send_tournament_invitation(self, event):
+        message = event['message']
+        tournament_name = event['tournament_name']
+        user_id = event['user_id']
+        user_name = event['user_name']
+        dest_user_id = event['dest_user_id']
+        tournament_id = event['tournament_id']
+        sender_channel_name = event['sender_channel_name']
+
+        # Send message to all users except the sender
+        for uid, channel_name in user_channels.items():
+            if channel_name != sender_channel_name:
+                await self.channel_layer.send(channel_name, {
+                    'type': 'tournament_message',
+                    'message': message,
+                    'tournament_name': tournament_name,
+                    'user_id': user_id,
+                    'user_name': user_name,
+                    'dest_user_id': dest_user_id,
+                    'tournament_id': tournament_id,
+                })
+
+    async def tournament_message(self, event):
+        message = event['message']
+        tournament_name = event['tournament_name']
+        user_id = event['user_id']
+        user_name = event['user_name']
+        dest_user_id = event['dest_user_id']
+        tournament_id = event['tournament_id']
+
+        # Send message to WebSocket
+        await self.send(text_data=json.dumps({
+            'type': 'tournament',
+            'event': 'tournament_invite',
+            'message': message,
+            'tournament_name': tournament_name,
+            'user_id': user_id,
+            'user_name': user_name,
+            'dest_user_id': dest_user_id,
+            'tournament_id': tournament_id,
+        }))
+
 
     async def update_waiting_list(self, event):
         waiting_ids = event['waiting_ids']
@@ -507,6 +567,27 @@ class NotificationConsumer(AsyncWebsocketConsumer):
 #             'event': 'update_user_list',
 #             'user_ids': user_ids,
 #         }))
+    
+#     # rachel
+#     async def send_tournament_invitation(self, event):
+#         message = event['message']
+#         tournament_name = event['tournament_name']
+#         user_id = event['user_id']
+#         user_name = event['user_name']
+#         dest_user_id = event['dest_user_id']
+
+#         # Send message to WebSocket
+#         await self.send(text_data=json.dumps({
+#             'type': 'tournament',
+#             'event': 'tournament_invite',
+#             'message': message,
+#             'tournament_name': tournament_name,
+#             'user_id': user_id,
+#             'user_name': user_name,
+#             'dest_user_id': dest_user_id,
+#             'tournament_id': event['tournament_id']
+#         }))
+
 
 #     async def update_waiting_list(self, event):
 #         waiting_ids = event['waiting_ids']

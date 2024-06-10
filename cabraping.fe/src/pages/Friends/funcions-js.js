@@ -1,8 +1,5 @@
-import {
-  BACKEND_URL,
-  sendFriendAcceptdNotifications,
-  sendFriendDeletedNotifications,
-} from "../../components/wcGlobal.js";
+import {BACKEND_URL } from "../../components/wcGlobal.js";
+import { sendFriendAcceptdNotifications, sendFriendDeletedNotifications } from "../../components/wcGlobal-funcions-send-message.js";
 import { getToken } from "../../utils/get-token.js";
 import { showActiveFriends } from "../Chat/funcions-js.js";
 
@@ -20,6 +17,11 @@ let friendRequests = [];
 export async function Friends_js() {
   const jwt = getToken();
 
+  if (!jwt)
+  {
+    window.location.replace("/#");
+  }
+
   await fetchMyUserData();
   FriendsRender();
   FriendRequestsRender();
@@ -27,6 +29,11 @@ export async function Friends_js() {
 
 export async function fetchMyUserData() {
   const jwt = getToken();
+
+  if (!jwt)
+  {
+    window.location.replace("/#");
+  }
 
   const responseMe = await fetch(`${BACKEND_URL}/api/me/`, {
     headers: { Authorization: `Bearer ${jwt}` },
