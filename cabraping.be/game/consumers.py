@@ -71,9 +71,9 @@ class Game:
             self.ball_y = 50
 
         # Check for winner
-        if self.left_score == 100:
+        if self.left_score == 3:
             self.winner = "left"
-        elif self.right_score == 100:
+        elif self.right_score == 3:
             self.winner = "right"
 
     def move_paddle(self, side, dy):
