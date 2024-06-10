@@ -3,7 +3,6 @@ import { getToken } from "../../utils/get-token.js";
 import { getHash } from "../../utils/getHash.js";
 import { Send_data_bacnd_the_winer } from "./tournament-logic.js";
 
-
 // Extract the IP address from the URL used to access the frontend
 // const frontendURL = new URL(window.location.href);
 // const serverIPAddress = frontendURL.hostname;
@@ -20,8 +19,7 @@ import { Send_data_bacnd_the_winer } from "./tournament-logic.js";
 export async function Game_js() {
   const jwt = getToken();
 
-  if (!jwt)
-  {
+  if (!jwt) {
     window.location.replace("/#");
   }
 
@@ -66,7 +64,9 @@ export async function Game_js() {
    * The game real-time connection
    */
 
-  const gameSocket = new WebSocket(`${WS_URL}/ws/game/${game.id}/?token=${jwt}}`);
+  const gameSocket = new WebSocket(
+    `${WS_URL}/ws/game/${game.id}/?token=${jwt}}`
+  );
 
   gameSocket.onopen = function (event) {
     console.info("Game socket connected");
@@ -218,7 +218,11 @@ export async function Game_js() {
       const result = response.json;
 
       // Diego - save data in the banckend
-      await Send_data_bacnd_the_winer(game.inviter.id, game.invitee.id, winnerId);
+      await Send_data_bacnd_the_winer(
+        game.inviter.id,
+        game.invitee.id,
+        winnerId
+      );
       // Diego - sen the winer
 
       return; // Stop further rendering
@@ -241,12 +245,17 @@ export async function Game_js() {
 
     // Draw paddles
     context.fillStyle = "white";
-    context.fillRect(leftPaddle.x, leftPaddleY, leftPaddle.width, paddleHeight);
+    context.fillRect(
+      leftPaddle.x,
+      leftPaddleY,
+      leftPaddle.width,
+      paddleHeight + 5
+    );
     context.fillRect(
       rightPaddle.x,
       rightPaddleY,
       rightPaddle.width,
-      paddleHeight
+      paddleHeight + 5
     );
 
     // Draw ball
