@@ -1,4 +1,4 @@
-version: '3.9'
+version: "3.9"
 
 services:
   database:
@@ -17,6 +17,8 @@ services:
   redis:
     image: "redis:alpine"
     container_name: transcendence_redis
+    ports:
+      - "6379:6379"
 
 volumes:
   postgres_data:

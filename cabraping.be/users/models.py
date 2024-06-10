@@ -21,6 +21,15 @@ class CustomUser(AbstractUser):
     createdAt = models.DateTimeField(auto_now_add=True)
     updatedAt = models.DateTimeField(auto_now=True)
     friends = models.ManyToManyField("self", symmetrical=True, blank=True)
+    has_chevre_verte_award = models.BooleanField(default=False)
+    trophies = models.IntegerField(default=0)
+    is_online = models.BooleanField(default=False)
+    blocked_users = models.ManyToManyField('self', symmetrical=False, related_name='blocked_by', blank=True)
+    # game
+    # games = models.ManyToManyField('Game', related_name='games')
+    # gamesAsInviter = models.ManyToManyField('Game', related_name='invitations_sent')
+    # gamesAsInvitee = models.ManyToManyField('Game', related_name='invitations_received')
+    # gamesAsWinner = models.ManyToManyField('Game', related_name='won_games')
 
     def __str__(self):
         return self.username
