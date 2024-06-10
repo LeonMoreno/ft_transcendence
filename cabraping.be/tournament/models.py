@@ -14,8 +14,9 @@ class Tournament(models.Model):
     name = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
-    participants = models.ManyToManyField(User, related_name='tournaments') 
-    champion = models.ForeignKey(CustomUser, related_name='won_tournaments', null=True, blank=True, on_delete=models.SET_NULL)
+    participants = models.ManyToManyField(User, related_name='tournaments')
+    champion = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, related_name='championships')
+    # champion = models.ForeignKey(CustomUser, related_name='won_tournaments', null=True, blank=True, on_delete=models.SET_NULL)
 
     def __str__(self):
         return self.name

@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Tournament, Participant, Match
 from users.serializers import CustomUserSerializer
+from users.models import CustomUser
 
 class ParticipantSerializer(serializers.ModelSerializer):
     user = CustomUserSerializer()

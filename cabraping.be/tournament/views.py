@@ -39,14 +39,22 @@ class TournamentViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['put'], permission_classes=[IsAuthenticated])
     def update_status(self, request, pk=None):
         try:
-            tournament = Tournament.objects.get(id=pk)
-            new_status = request.data.get('status')
-            if new_status:
-                tournament.status = new_status
-                tournament.save()
-                return Response({"message": "Tournament status updated"}, status=status.HTTP_200_OK)
-            else:
-                return Response({"error": "Status not provided"}, status=status.HTTP_400_BAD_REQUEST)
+            tournament = self.get_object()
+            status_value = request.data.get('status')
+            champion_id = request.data.get('champion')
+
+            if status_value:
+                tournament.status = status_value
+            
+            if champion_id:
+                try:
+                    champion = CustomUser.objects.get(id=champion_id)
+                    tournament.champion = champion
+                except CustomUser.DoesNotExist:
+                    return Response({"error": "Champion not found"}, status=status.HTTP_404_NOT_FOUND)
+
+            tournament.save()
+            return Response(TournamentSerializer(tournament).data, status=status.HTTP_200_OK)
         except Tournament.DoesNotExist:
             return Response({"error": "Tournament not found"}, status=status.HTTP_404_NOT_FOUND)
 
