@@ -42,7 +42,7 @@ def get_config(request):
     }
     return JsonResponse(config)
 
-@api_view(['GET'])
+@api_view(['GET', 'POST'])
 @csrf_exempt
 def callback(request):
     authorization_code = request.GET.get('code')
@@ -110,15 +110,24 @@ def callback(request):
     }
 
     logger.error(user_data)
-    try:
-        user_create_response = requests.post(
-            f'{get_backend_url(request)}/api/users/',
-            headers={'Content-Type': 'application/json'},
-            json=user_data
-        )
-        user_create_response.raise_for_status()
-    except requests.RequestException as e:
-        return Response({'error': 'User creation failed', 'details': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    logger.error(f'{get_backend_url(request)}/api/users/')
+    #try:
+    #    user_create_response = requests.post(
+    #        f'{get_backend_url(request)}/api/users/',
+    #        headers={'Content-Type': 'application/json'},
+    #        json=user_data
+    #    )
+    #    user_create_response.raise_for_status()
+    #except requests.RequestException as e:
+    #    return Response({'error': 'User creation failed', 'details': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    serializer = UserSerializer(data=user_data)
+    if serializer.is_valid():
+        serializer.save()
+        print("User created successfully")
+    else:
+        print("User creation failed:", serializer.errors)
+    logger.debug(f'User info: {user_info}')
 
     token_data = {
         "username": email,
