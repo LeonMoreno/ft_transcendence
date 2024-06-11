@@ -2,6 +2,8 @@
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
+from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.tokens import RefreshToken
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 import requests, os, json
@@ -27,6 +29,16 @@ UID = os.getenv("UID")
 SECRET = os.getenv("SECRET")
 PW42 = os.getenv("PASSWORD_42")
 
+
+
+def generate_jwt_for_user(user):
+    refresh = RefreshToken.for_user(user)
+    access_token = refresh.access_token
+
+    return {
+        'refresh': str(refresh),
+        'access': str(access_token),
+    }
 
 def get_backend_url(request):
     host = request.get_host()
@@ -54,11 +66,6 @@ def callback(request):
     client_id = UID
     client_secret = SECRET
 
-
-    logger.error(token_url)
-    logger.error(client_id)
-    logger.error(client_secret)
-    logger.error(redirect_uri)
     data = {
         'grant_type': 'authorization_code',
         'client_id': client_id,
@@ -67,7 +74,6 @@ def callback(request):
         'redirect_uri': redirect_uri,
     }
 
-    logger.error(data)
     try:
         response = requests.post(token_url, data=data)
         response.raise_for_status()
@@ -108,45 +114,28 @@ def callback(request):
         "last_name": last_name,
         "avatarImageURL": avatar_image_url,
     }
+    try:
+        user = CustomUser.objects.get(username=username)
+        # User already exists, do not create a new one
+        logger.debug(f'User already exists: {user}')
+    except CustomUser.DoesNotExist:
+        # User does not exist, create a new one
+        logger.debug('User does not exist, creating a new one...')
 
-    logger.error(user_data)
-    logger.error(f'{get_backend_url(request)}/api/users/')
-    #try:
-    #    user_create_response = requests.post(
-    #        f'{get_backend_url(request)}/api/users/',
-    #        headers={'Content-Type': 'application/json'},
-    #        json=user_data
-    #    )
-    #    user_create_response.raise_for_status()
-    #except requests.RequestException as e:
-    #    return Response({'error': 'User creation failed', 'details': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    
     serializer = UserSerializer(data=user_data)
     if serializer.is_valid():
-        serializer.save()
+        user = serializer.save()
         print("User created successfully")
     else:
         print("User creation failed:", serializer.errors)
-    logger.debug(f'User info: {user_info}')
 
-    token_data = {
-        "username": email,
-        "password": password
-    }
+    if user:
+        token_response_data = generate_jwt_for_user(user)
+        access_token = token_response_data.get('access')
+        refresh_token = token_response_data.get('refresh')
 
-    try:
-        token_response = requests.post(
-            f'{get_backend_url(request)}/api/token/',
-            json=token_data
-        )
-        token_response.raise_for_status()
-    except requests.RequestException as e:
-        return Response({'error': 'Failed to retrieve JWT tokens', 'details': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-    token_response_data = token_response.json()
-    access_token = token_response_data.get('access')
-    refresh_token = token_response_data.get('refresh')
-
+    if not access_token:
+        return redirect(f"{get_backend_url(request)}")
     frontend_redirect_url = f"{get_backend_url(request)}?access_token={access_token}&refresh_token={refresh_token}"
 
     return redirect(frontend_redirect_url)
