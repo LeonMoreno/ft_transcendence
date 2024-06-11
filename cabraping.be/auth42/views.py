@@ -54,11 +54,11 @@ def callback(request):
     client_id = UID
     client_secret = SECRET
 
+
     logger.error(token_url)
     logger.error(client_id)
     logger.error(client_secret)
     logger.error(redirect_uri)
-
     data = {
         'grant_type': 'authorization_code',
         'client_id': client_id,
