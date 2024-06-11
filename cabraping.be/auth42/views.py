@@ -109,6 +109,7 @@ def callback(request):
         "avatarImageURL": avatar_image_url,
     }
 
+    logger.error(user_data)
     try:
         user_create_response = requests.post(
             f'{get_backend_url(request)}/api/users/',
