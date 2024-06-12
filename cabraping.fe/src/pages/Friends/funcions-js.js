@@ -122,32 +122,7 @@ export async function FriendsRender() {
         <h3>${friend.username}</h3>
         <span>${HTML_friendActive}</span>
 
-        ${
-          !hideInviteButton
-            ? `<button type="button" class="btn btn-sm btn-primary" data-action="invite-game"
-        data-id="${friend.id}">Invite to a game</button>`
-            : ""
-        }
-
-        ${
-          canGoToGame
-            ? `<a
-            href="/#game/${canGoToGame.id}"
-            class="btn btn-sm btn-primary"
-          >
-            Go to the game
-          </a>`
-            : ""
-        }
-
-       ${
-         canAccceptGame
-           ? `<button type="button"
-        class="btn btn-sm btn-primary"
-        data-action="accept-game"
-        data-id="${canAccceptGame.id}">Accept to join the game</button>`
-           : ""
-       }
+        <a href="/#chat" class="btn btn-sm btn-primary" data-action="invite-game" >Go to the chat</a>
     </li>`;
     })
     .join("");
