@@ -3,13 +3,7 @@ import { showNotification, showNotificationPopup } from '../../components/showNo
 import { sendTournamentInvitation, activeWebSockets, handleTournamentWebSocketMessage, getUserIdByUsername, BACKEND_URL } from '../../components/wcGlobal.js';
 import { getUserIdFromJWT } from "../Chat/funcions-js.js";
 import { handleTournamentCanceled } from "../TournamentWaitingArea/functions-js.js";
-
-// Extract the IP address from the URL used to access the frontend
-// const frontendURL = new URL(window.location.href);
-// const serverIPAddress = frontendURL.hostname;
-// const serverPort = 8000; // Specify the port your backend server is running on
-// const BACKEND_URL = `http://${serverIPAddress}:${serverPort}`;
-
+import { checkUsers_is_part_of_valid_tournament, getTournamentForId } from "./cancel.js";
 
 export async function WS_check_the_torunament_pending() {
     
@@ -37,6 +31,24 @@ export async function WS_check_the_torunament_pending() {
         localStorage.setItem(`system_Tournmanet_status`, "no");
     }
     return true;
+}
+
+export async function Check_if_im_the_creator_to_reload() {
+    const userId = getUserIdFromJWT();
+    const tournaments = await fetchTournaments();
+
+    const pendingTournament = tournaments.find(t => t.status === 'pending' && t.participants.some(p => p.user.id === userId));
+    const procesTournament = tournaments.find(t => t.status === 'in_progress' && t.participants.some(p => p.user.id === userId));
+
+    if (pendingTournament) {
+
+        console.log("--> pendingTournament:", pendingTournament);
+        const isCreator = pendingTournament.participants[0].user.id === userId;
+        console.log("---> isCreator:", isCreator);
+        if (isCreator) {
+            await loadTournamentData(pendingTournament.id);
+        } 
+    }
 }
 
 async function TournamentInit() {
@@ -102,7 +114,6 @@ async function TournamentInit() {
             if (event.key === 'Enter') {
                 checkAddParticipantButton(event);
             }
-            saveTournamentData();
         });
         console.log("Event listener added for enter key on participant name input");
     } else {
@@ -115,26 +126,6 @@ async function TournamentInit() {
         console.log("Event listener added to cancel create button");
     } else {
         console.error("Cancel create button not found");
-    }
-}
-
-// Save tournament data to localStorage
-function saveTournamentData() {
-    const tournamentName = document.getElementById('tournamentNameInput').value;
-    if (tournamentName)
-    {
-        const participants = Array.from(document.getElementById('participantsList').children).map(item => ({
-            name: item.textContent.split(' - ')[0],
-            status: item.textContent.split(' - ')[1]
-        }));
-        const data = {
-            tournamentName,
-            participants
-        };
-        localStorage.setItem('pageTournament', JSON.stringify(data));
-        console.log("🥶 -> saveTournamentData:", data);
-    } else {
-        console.error('Necessary elements for saving tournament data are not available.');
     }
 }
 
@@ -163,10 +154,13 @@ export async function fetchTournaments() {
     }
 }
 
-// Load tournament data from localStorage
 // Load tournament data from the backend
+let number_invitate = 0;
 async function loadTournamentData(tournamentId) {
     try {
+        const addParticipantButton = document.getElementById('addParticipantButton');
+        addParticipantButton.style.display = 'none';
+
         const response = await fetch(`${BACKEND_URL}/api/tournaments/${tournamentId}/`, {
             headers: {
                 'Authorization': `Bearer ${getToken()}`,
@@ -177,6 +171,8 @@ async function loadTournamentData(tournamentId) {
         if (response.ok) {
             const data = await response.json();
             console.log("🥶 loadTournamentData:", data);
+
+            localStorage.setItem('currentTournamentId', data.id);
 
             const tournamentNameInput = document.getElementById('tournamentNameInput');
             const tournamentFormButton = document.getElementById('tournamentForm').querySelector('button');
@@ -203,18 +199,42 @@ async function loadTournamentData(tournamentId) {
                     listItem.textContent = `${participant.user.username} - ${participant.status}`;
                 }
                 else{
+                    console.log("-------> participant else:", participant);
+                    console.log("-------> participant participant.accepted_invite:", participant.accepted_invite);
                     if (i === 0)
                         listItem.textContent = `You (Creator)`;
                     else
-                        listItem.textContent = `${participant.user.username} - invited`;
+                    {
+                        if (participant.accepted_invite === false)
+                            listItem.textContent = `${participant.user.username} - invited`;
+                        else
+                            listItem.textContent = `${participant.user.username} - accepted`;
+                    }
                 }
                 participantsList.appendChild(listItem);
                 i++;
             });
 
+            if (data.participants.length >= 4){
+                if ((number_invitate + 1) === i )
+                {
+                    showNotification("limit of people in the tournament", "success")
+                }
+                else{
+                    number_invitate = i;
+                }
+
+                console.log("addParticipantButton.style.display:", addParticipantButton.style.display);
+                addParticipantButton.style.display = 'none';
+                }else{
+                console.log("addParticipantButton.style.display:", addParticipantButton.style.display);
+                addParticipantButton.style.display = 'inline';
+            }
+
             // Enable the add participant button
             addParticipantButton.disabled = false;
 
+            checkGoToWaitingAreaButton(data);
             console.log("🥶 loadTournamentData: Tournament data loaded successfully from backend");
         } else {
             console.error('Failed to load tournament data from backend');
@@ -222,6 +242,7 @@ async function loadTournamentData(tournamentId) {
     } catch (error) {
         console.error('Error loading tournament data:', error);
     }
+
 }
 
 
@@ -258,40 +279,58 @@ async function handleAddParticipant(e) {
     e.preventDefault();
 
     const participantName = document.getElementById('participantNameInput').value.trim();
+
+    console.log("🪵 participantName:", participantName);
     if (!participantName) {
         displayErrorMessage('Participant name cannot be empty.');
         return;
     }
 
     const currentUser = localStorage.getItem('username');
+    console.log("🪵 currentUser:", currentUser);
     if (participantName === currentUser) {
         displayErrorMessage('You cannot invite yourself to the party. Have some manners!');
         return;
     }
 
     const tournamentId = localStorage.getItem('currentTournamentId');
+    console.log("🪵 tournamentId:", tournamentId)
     if (!tournamentId) {
         displayErrorMessage('No tournament ID found. Please create a tournament first.');
         return;
     }
 
-    console.log("--->Sen invitate participantName:", participantName);
     const isOnline = await checkUserOnlineStatus(participantName);
+
+
+
+    console.log("🪵 isOnline:", isOnline)
     if (isOnline === null) {
         displayErrorMessage("User not found. Please double-check their username.");
     } else if (isOnline) {
         const participantId = await getUserIdByUsername(participantName, tournamentId);
-        console.log("---->Sen invitate getUserIdByUsername:", participantId);
+        console.log("🪵 participantId:", participantId)
 
         if (participantId) {
-            console.log(`Sending tournament invitation to [${participantName}], participantId:[${participantId}]`);
 
             let tournamentId = localStorage.getItem('currentTournamentId');
-            console.log("💡💡💡 --> user_id:", participantId, ", tournamentId:", tournamentId);
-            addParticipantToTournament(tournamentId, participantId);
+
+            let response_checkuser_repeat = await checkUsers_is_part_of_valid_tournament(participantId);
+
+            if (response_checkuser_repeat === null)
+                return;
+            else if (response_checkuser_repeat === false)
+            {
+                showNotificationPopup("the user is part of a tournament in progress", "error")
+                return;
+            }
+
+            await addParticipantToTournament(tournamentId, participantId);
 
             sendTournamentInvitation(tournamentId, participantName, participantId);
-            updateParticipantsList({ username: participantName }, 'invited');
+
+            console.log("🪵🪵🪵 participantName:", participantName);
+            await loadTournamentData(tournamentId);
         } else {
             displayErrorMessage("Failed to get participant ID.");
         }
@@ -300,7 +339,9 @@ async function handleAddParticipant(e) {
         console.log("Participant is not online.");
     }
     document.getElementById('participantNameInput').value = ''; // Clear input after adding
-    saveTournamentData();
+    // saveTournamentData();
+
+    console.log("🪵 🪵 finish 🪵 🪵 :")
 }
 
 
@@ -311,12 +352,13 @@ function checkAddParticipantButton(e) {
 
     const addParticipantButton = document.getElementById('addParticipantButton');
     if (addParticipantButton.disabled) {
+        console.log("--> addParticipantButton.disabled");
         e.preventDefault();
         displayErrorMessage('Please create the tournament first before adding participants.');
         return;
     }
+    console.log("-> handleAddParticipant");
     handleAddParticipant(e);
-    // saveTournamentData();
     // addParticipantToTournament(tournamentId, userId);
 }
 
@@ -354,123 +396,33 @@ async function addParticipantToTournament(tournamentId, userId) {
 }
 
 
-async function checkAllParticipantsAccepted(tournamentId) {
-    try {
-        if (!tournamentId) {
-            console.error('Tournament ID is null or undefined');
-            return;
-        }
-        const response = await fetch(`${BACKEND_URL}/api/participants/status/?tournament_id=${tournamentId}`, {
-            headers: {
-                'Authorization': `Bearer ${getToken()}`,
-                'Content-Type': 'application/json'
-            }
-        });
+// async function checkAllParticipantsAccepted(tournamentId) {
+//     try {
+//         if (!tournamentId) {
+//             console.error('Tournament ID is null or undefined');
+//             return;
+//         }
+//         const response = await fetch(`${BACKEND_URL}/api/participants/status/?tournament_id=${tournamentId}`, {
+//             headers: {
+//                 'Authorization': `Bearer ${getToken()}`,
+//                 'Content-Type': 'application/json'
+//             }
+//         });
 
-        if (response.ok) {
-            const participants = await response.json();
-            const allAccepted = participants.every(participant => participant.accepted_invite);
-            //updategoToWaitingAreaButtonState(participants);
-            return allAccepted;
-        } else {
-            console.error('Failed to fetch participants status');
-            return false;
-        }
-    } catch (error) {
-        console.error('Error checking participants acceptance:', error);
-        return false;
-    }
-}
-
-/*function updategoToWaitingAreaButtonState(participants) {
-    const goToWaitingAreaButton = document.getElementById('goToWaitingAreaButton');
-    const acceptedCount = participants.filter(participant => participant.accepted_invite).length;
-    if (acceptedCount === 4) { // Including the creator
-        goToWaitingAreaButton.disabled = false;
-    } else {
-        goToWaitingAreaButton.disabled = true;
-    }
-}
-*/
-// Function to update the list of participants in the UI
-/*export function updateParticipantsList(participantName, status, isCreator = false) {
-    const currentUser = localStorage.getItem('username');
-    if (participantName === currentUser) {
-        displayErrorMessage('You cannot invite yourself to the party. Have some manners!');
-        return;
-    }
-    const participantsList = document.getElementById('participantsList');
-    if (participantsList) {
-        // Check if the participant is already in the list to avoid duplication
-        const existingParticipant = Array.from(participantsList.children).find(item => item.textContent.includes(participantName));
-        if (existingParticipant) {
-            existingParticipant.textContent = participantName + ' - ' + status;
-            displayErrorMessage('This user has been invited already. Don\'t be pushy.');
-        } else {
-            const listItem = document.createElement('li');
-            listItem.textContent = isCreator ? participantName : participantName + ' - ' + "invited";
-            participantsList.appendChild(listItem);
-            if (!isCreator) {
-                showNotification('Invitation successfully sent to ' + participantName + '.', 'success');
-            }
-        }
-        checkAllParticipantsAccepted(localStorage.getItem('currentTournamentId'));
-    } 
-}
-*/
-
-// Function to update the list of participants in the UI
-/*export function updateParticipantsList(participantName, status, isCreator = false) {
-    const currentUser = localStorage.getItem('username');
-    if (participantName === currentUser && !isCreator) {
-        displayErrorMessage('You cannot invite yourself to the party. Have some manners!');
-        return;
-    }
-    const participantsList = document.getElementById('participantsList');
-    if (participantsList) {
-        // Check if the participant is already in the list to avoid duplication
-        const existingParticipant = Array.from(participantsList.children).find(item => item.textContent.includes(participantName));
-        if (existingParticipant) {
-            existingParticipant.textContent = participantName + ' - ' + status;
-            if (!isCreator) displayErrorMessage('This user has been invited already. Don\'t be pushy.');
-        } else {
-            const listItem = document.createElement('li');
-            listItem.textContent = isCreator ? participantName : participantName + ' - ' + "invited";
-            participantsList.appendChild(listItem);
-            if (!isCreator) showNotification('Invitation successfully sent to ' + participantName + '.', 'success');
-        }
-
-        // Check the number of invited participants and enable the button if there are at least three (excluding the creator)
-        const invitedParticipants = participantsList.children.length - 1; // Exclude the creator
-        const goToWaitingAreaButton = document.getElementById('goToWaitingAreaButton');
-        if (goToWaitingAreaButton) {
-            console.log("Navigating to tournament waiting area.");
-            const isEnabled = invitedParticipants >= 3;
-            goToWaitingAreaButton.disabled = !isEnabled;
-
-            // Save the button state to local storage
-            localStorage.setItem('goToWaitingAreaButtonEnabled', isEnabled);
-
-            // Remove any existing event listeners to avoid duplicates
-            const newButton = goToWaitingAreaButton.cloneNode(true);
-            goToWaitingAreaButton.parentNode.replaceChild(newButton, goToWaitingAreaButton);
-
-            if (isEnabled && newButton) {
-                newButton.addEventListener('click', () => {
-                    const tournamentId = localStorage.getItem('currentTournamentId');
-                    console.log("Navigating to tournament waiting area with ID:", tournamentId);
-                    saveTournamentData();
-                    window.location.href = `/#waitroom/${tournamentId}`;
-                });
-                console.log("Event listener added to go to waiting area button");
-            }
-        } else {
-            console.error("Go to waiting area button not found");
-        }
-    }
-}
-
-*/
+//         if (response.ok) {
+//             const participants = await response.json();
+//             const allAccepted = participants.every(participant => participant.accepted_invite);
+//             //updategoToWaitingAreaButtonState(participants);
+//             return allAccepted;
+//         } else {
+//             console.error('Failed to fetch participants status');
+//             return false;
+//         }
+//     } catch (error) {
+//         console.error('Error checking participants acceptance:', error);
+//         return false;
+//     }
+// }
 
 export function updateParticipantsList(participantNameOrObject, status, isCreator = false) {
 
@@ -516,7 +468,7 @@ export function updateParticipantsList(participantNameOrObject, status, isCreato
                 newButton.addEventListener('click', () => {
                     const tournamentId = localStorage.getItem('currentTournamentId');
                     console.log("Navigating to tournament waiting area with ID:", tournamentId);
-                    saveTournamentData();
+                    // saveTournamentData();
                     window.location.href = `/#waitroom/${tournamentId}`;
                 });
                 console.log("Event listener added to go to waiting area button");
@@ -624,33 +576,33 @@ function displayErrorMessage(message) {
     displayNotification(message);
 }
 
-async function getParticipantId(username, tournamentId) {
-    try {
-        const response = await fetch(`${BACKEND_URL}/api/participants/`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${getToken()}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ username: username, tournament: tournamentId })
-        });
+// async function getParticipantId(username, tournamentId) {
+//     try {
+//         const response = await fetch(`${BACKEND_URL}/api/participants/`, {
+//             method: 'POST',
+//             headers: {
+//                 'Authorization': `Bearer ${getToken()}`,
+//                 'Content-Type': 'application/json'
+//             },
+//             body: JSON.stringify({ username: username, tournament: tournamentId })
+//         });
 
-        if (response.ok) {
-            const data = await response.json();
-            return data.id;
-        } else {
-            console.error('Failed to get participant ID');
-            return null;
-        }
-    } catch (error) {
-        console.error('Error getting participant ID:', error);
-        return null;
-    }
-}
+//         if (response.ok) {
+//             const data = await response.json();
+//             return data.id;
+//         } else {
+//             console.error('Failed to get participant ID');
+//             return null;
+//         }
+//     } catch (error) {
+//         console.error('Error getting participant ID:', error);
+//         return null;
+//     }
+// }
 
 async function handleCreateTournament(e) {
     e.preventDefault();
-    console.log("Create Tournament form submitted");
+    console.log("🍀 Create Tournament form submitted");
     const tournamentName = document.getElementById('tournamentNameInput').value.trim();
     if (!tournamentName) {
         displayErrorMessage('Tournament name cannot be empty.');
@@ -668,7 +620,7 @@ async function handleCreateTournament(e) {
             localStorage.setItem('currentTournamentId', data.id);
             localStorage.setItem(`tournamentName_${data.id}`, tournamentName); 
             localStorage.setItem('creatorUsername_' + data.id, localStorage.getItem('username')); // Store creator's username
-            updateParticipantsList('You (Creator)', 'invited', true); // Automatically adds the creator as a participant
+            // updateParticipantsList('You (Creator)', 'invited', true); // Automatically adds the creator as a participant
             
             connectTournamentWebSocket(data.id);
 
@@ -683,7 +635,6 @@ async function handleCreateTournament(e) {
         console.error('Caught error:', error);
         displayErrorMessage(error.message);
     }
-    saveTournamentData();
 }
 
 async function createTournament(tournamentName) {
@@ -710,78 +661,6 @@ async function createTournament(tournamentName) {
     }
 }
 
-// async function startTournament(tournamentId) {
-//     try {
-//         const response = await fetch(`${BACKEND_URL}/api/tournaments/${tournamentId}/start_tournament/`, {
-//             method: 'POST',
-//             headers: {
-//                 'Authorization': `Bearer ${getToken()}`,
-//                 'Content-Type': 'application/json'
-//             }
-//         });
-
-//         if (response.ok) {
-//             const data = await response.json();
-//             console.log(`Tournament ${tournamentId} started successfully`, data);
-//         } else {
-//             const errorData = await response.json();
-//             console.error('Failed to start tournament:', errorData);
-//             displayErrorMessage('Failed to start tournament: ' + errorData.message);
-//         }
-//     } catch (error) {
-//         console.error('Error starting tournament:', error);
-//         displayErrorMessage('Error starting tournament.');
-//     }
-
-//     window.addEventListener('beforeunload', saveTournamentData);
-// }
-
-
-/*export function acceptTournamentInvitation(tournamentId, username) {
-    if (!activeWebSockets[tournamentId] || activeWebSockets[tournamentId].readyState !== WebSocket.OPEN) {
-        console.error('WebSocket is not connected or already closed for tournament:', tournamentId);
-        connectTournamentWebSocket(tournamentId);
-    }
-
-    const message = {
-        type: 'tournament',
-        event: 'accepted_tournament',
-        message: `User ${username} accepted the tournament invitation for tournament ${tournamentId}`,
-        user_id: localStorage.getItem('userId'),
-        user_name: localStorage.getItem('username'),
-        dest_user_id: username,
-        tournament_id: tournamentId
-    };
-
-    activeWebSockets[tournamentId].send(JSON.stringify(message));
-    window.location.hash = '#/tournamentWaitingArea';
-}
-
-export function rejectTournamentInvitation(tournamentId, username) {
-    if (!activeWebSockets[tournamentId] || activeWebSockets[tournamentId].readyState !== WebSocket.OPEN) {
-        console.error('WebSocket is not connected or already closed for tournament:', tournamentId);
-        connectTournamentWebSocket(tournamentId);
-    }
-
-    const message = {
-        type: 'tournament',
-        event: 'rejected_tournament',
-        message: `User ${username} rejected the tournament invitation for tournament ${tournamentId}`,
-        user_id: localStorage.getItem('userId'),
-        user_name: localStorage.getItem('username'),
-        dest_user_id: username,
-        tournament_id: tournamentId
-    };
-
-    console.log("Tournament invitation rejected.");
-
-    activeWebSockets[tournamentId].send(JSON.stringify(message));
-    
-    // Hide the modal
-    const modalElement = document.getElementById('tournamentInviteModal');
-    modalElement.style.display = 'none';
-}
-*/
 
 export function acceptTournamentInvitation(tournamentId, username) {
     if (!activeWebSockets[tournamentId] || activeWebSockets[tournamentId].readyState !== WebSocket.OPEN) {
@@ -812,7 +691,7 @@ export function acceptTournamentInvitation(tournamentId, username) {
     const tournamentNameInput = document.getElementById('tournamentNameInput');
     const participantsList = document.getElementById('participantsList');
     if (tournamentNameInput && participantsList) {
-        saveTournamentData();
+        // saveTournamentData();
     } else {
         console.log("Skipping saveTournamentData as elements are not available.");
     }
@@ -859,10 +738,12 @@ function checkGoToWaitingAreaButton(tournament) {
     const acceptedParticipants = tournament.participants.filter(p => p.accepted_invite).length;
 
     console.log("🤯🤯🤯 acceptedParticipants:", acceptedParticipants);
+    console.log("🤯🤯🤯 tournament:", tournament);
 
     if (acceptedParticipants >= 4) {
         goToWaitingAreaButton.disabled = false;
         goToWaitingAreaButton.addEventListener('click', () => {
+            console.log("Diego -------------------------  nos movemos:", tournament.id);
             window.location.href = `/#waitroom/${tournament.id}`;
         });
     } else {
@@ -870,66 +751,6 @@ function checkGoToWaitingAreaButton(tournament) {
     }
 }
 
-
-/*function checkCancelCreateButton(tournament) {
-    const cancelCreateButton = document.getElementById('cancelCreateButton');
-
-    if (cancelCreateButton) {
-        // Remove any existing event listeners to avoid duplicates
-        const newButton = cancelCreateButton.cloneNode(true);
-        cancelCreateButton.parentNode.replaceChild(newButton, cancelCreateButton);
-
-        newButton.addEventListener('click', async () => {
-            console.log('Aborting tournament creation.');
-
-            if (tournament && tournament.id) {
-                try {
-                    const response = await fetch(`${BACKEND_URL}/api/tournaments/${tournament.id}/`, {
-                        method: 'DELETE',
-                        headers: {
-                            'Authorization': `Bearer ${getToken()}`,
-                            'Content-Type': 'application/json'
-                        }
-                    });
-
-                    if (response.ok) {
-                        console.log(`Tournament ${tournament.id} deleted successfully`);
-
-                        // Send tournament_aborted event to WebSocket
-                        const message = {
-                            type: 'tournament',
-                            event: 'tournament_aborted',
-                            message: `The tournament ${tournament.id} has been aborted.`,
-                            tournament_id: tournament.id
-                        };
-
-                        if (activeWebSockets[tournament.id] && activeWebSockets[tournament.id].readyState === WebSocket.OPEN) {
-                            activeWebSockets[tournament.id].send(JSON.stringify(message));
-                        }
-
-                        // Remove the local storage items
-                        localStorage.removeItem('pageTournament');
-                        localStorage.removeItem('currentTournamentId');
-                        localStorage.removeItem(`tournamentName_${tournament.id}`);
-                        localStorage.removeItem(`creatorUsername_${tournament.id}`);
-                    } else {
-                        console.error(`Failed to delete tournament ${tournament.id}`);
-                    }
-                } catch (error) {
-                    console.error(`Error deleting tournament ${tournament.id}:`, error);
-                }
-            } else {
-                // Remove the local storage items
-                localStorage.removeItem('pageTournament');
-                localStorage.removeItem('currentTournamentId');
-            }
-
-            window.location.href = `/#`;
-        });
-    } else {
-        console.error("Cancel create button not found");
-    }
-}*/
 
 async function checkCancelCreateButton(tournament) {
     const cancelCreateButton = document.getElementById('cancelCreateButton');
@@ -940,7 +761,18 @@ async function checkCancelCreateButton(tournament) {
         cancelCreateButton.parentNode.replaceChild(newButton, cancelCreateButton);
 
         newButton.addEventListener('click', async () => {
-            console.log('Aborting tournament creation.');
+
+            let tournament_id = localStorage.getItem("currentTournamentId");
+
+            console.log(">> tournament_id:", tournament_id);
+            if (!tournament_id){
+                return
+            }
+
+            tournament = await getTournamentForId(tournament_id)
+
+            console.log('Aborting tournament creation.:', tournament);
+
 
             if (tournament && tournament.id) {
                 try {
@@ -1004,10 +836,6 @@ async function checkCancelCreateButton(tournament) {
     displayNotification,
     displayErrorMessage,
     checkUserOnlineStatus,
-    //startTournament,
     TournamentInit,
-    saveTournamentData,
     loadTournamentData,
-};
-
-
+    };
