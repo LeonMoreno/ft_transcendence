@@ -1,6 +1,6 @@
 import { getToken } from "../../utils/get-token.js";
 import { showNotification, showNotificationPopup } from '../../components/showNotification.js';
-import { sendTournamentInvitation, activeWebSockets, handleTournamentWebSocketMessage, getUserIdByUsername, BACKEND_URL } from '../../components/wcGlobal.js';
+import { sendTournamentInvitation, activeWebSockets, handleTournamentWebSocketMessage, getUserIdByUsername, BACKEND_URL, WS_URL } from '../../components/wcGlobal.js';
 import { getUserIdFromJWT } from "../Chat/funcions-js.js";
 import { handleTournamentCanceled } from "../TournamentWaitingArea/functions-js.js";
 import { checkUsers_is_part_of_valid_tournament, getTournamentForId } from "./cancel.js";
@@ -250,7 +250,8 @@ async function loadTournamentData(tournamentId) {
 export function connectTournamentWebSocket(tournamentId) {
     if (!activeWebSockets[tournamentId] || activeWebSockets[tournamentId].readyState === WebSocket.CLOSED) {
         let jwt = getToken();
-        const wsUrl = `ws://localhost:8000/ws/tournament/${tournamentId}/?token=${jwt}`;
+        // const wsUrl = `ws://localhost:8000/ws/tournament/${tournamentId}/?token=${jwt}`;
+        const wsUrl = `${WS_URL}/ws/tournament/${tournamentId}/?token=${jwt}`;
         const tournamentSocket = new WebSocket(wsUrl);
 
         tournamentSocket.onopen = function() {

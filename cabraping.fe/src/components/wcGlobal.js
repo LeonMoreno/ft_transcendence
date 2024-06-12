@@ -109,7 +109,8 @@ export function sendTournamentInvitation(tournamentId, participantUsername, part
     if (!activeWebSockets[tournamentId] || activeWebSockets[tournamentId].readyState === WebSocket.CLOSED) {
         // const wsUrl = `ws://localhost:8000/ws/tournament/${tournamentId}/`;
         let jwt = getToken();
-        const wsUrl = `ws://localhost:8000/ws/tournament/${tournamentId}/?token=${jwt}`;
+        // const wsUrl = `ws://localhost:8000/ws/tournament/${tournamentId}/?token=${jwt}`;
+        const wsUrl = `${WS_URL}/ws/tournament/${tournamentId}/?token=${jwt}`;
         const tournamentSocket = new WebSocket(wsUrl);
         console.log(`🤖 tournamentSocket:`, tournamentSocket);
 
