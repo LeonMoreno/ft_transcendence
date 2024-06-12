@@ -37,11 +37,12 @@ function calculateWinsAndLosses(gameResults) {
   return userStats;
 }
 
-function calculateMyUserStats(myUser, gameResults) {
+function calculateMyUserStats(myUser, gameResults, tournaments) {
   let myUserStats = {
     played: 0,
     wins: 0,
-    losses: 0
+    losses: 0,
+    championships: 0
   };
 
   gameResults.forEach(game => {
@@ -53,6 +54,12 @@ function calculateMyUserStats(myUser, gameResults) {
       } else {
         myUserStats.losses += 1;
       }
+    }
+  });
+
+  tournaments.forEach(tournament => {
+    if (tournament.champion === myUser.id) {
+      myUserStats.championships += 1;
     }
   });
 
@@ -89,8 +96,14 @@ if (userId) {
   const games = await responseGames.json();
   if (!games) return null;
 
+  const responseChamp = await fetch(`${BACKEND_URL}/api/tournaments/`, {
+    headers: { Authorization: `Bearer ${jwt}` },
+  });
+  const champ = await responseChamp.json();
+  if (!games) return null;
+
   const user_stat = calculateWinsAndLosses(games);
-  const myUserStats = calculateMyUserStats(myUser, games);
+  const myUserStats = calculateMyUserStats(myUser, games, champ);
 
   users = users.map(user => ({
     ...user,
@@ -107,6 +120,7 @@ if (userId) {
   document.getElementById('played').innerText = myUserStats.played;
   document.getElementById('wins').innerText = myUserStats.wins;
   document.getElementById('losses').innerText = myUserStats.losses;
+  document.getElementById('championships').innerText = myUserStats.championships;
 }
 
 // Call the Profile_js function to display user statistics

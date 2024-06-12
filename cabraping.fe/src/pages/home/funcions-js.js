@@ -5,6 +5,7 @@
 // const BACKEND_URL = `http://${serverIPAddress}:${serverPort}`;
 
 import { BACKEND_URL } from "../../components/wcGlobal.js";
+import { showNotification } from "../../components/showNotification.js";
 
 export function Home_js() {
   let buttonAuth = document.getElementById("button-auth");
@@ -17,11 +18,11 @@ export function Home_js() {
 }
 
 async function redirect42() {
-  const redirectURI = encodeURIComponent(`${BACKEND_URL}/callback/`);
+  const redirectURI = encodeURIComponent(`${BACKEND_URL}/api/callback/`);
 
   try {
     // Fetch configuration from backend
-    const response = await fetch(`${BACKEND_URL}/auth42/config`);
+    const response = await fetch(`${BACKEND_URL}/api/auth42/config`);
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
@@ -31,7 +32,7 @@ async function redirect42() {
       const UID = config.UID;
       const SECRET = config.SECRET;
 
-      // console.log(UID);
+      //console.log(UID);
       // Construct API URL with fetched UID
       const api_url = `https://api.intra.42.fr/oauth/authorize?client_id=${UID}&redirect_uri=${redirectURI}&response_type=code`;
 
@@ -53,6 +54,13 @@ function getQueryParams() {
   return { access_token, refresh_token };
 }
 
+function getQueryUser() {
+  const params = new URLSearchParams(window.location.search);
+  const create = params.get("creation_fail");
+  if (create != null)
+    showNotification("Error creating user! Username already exist");
+}
+
 function storeTokens(access_token, refresh_token) {
   localStorage.setItem("jwt", access_token);
   localStorage.setItem("access_token", access_token);
@@ -69,6 +77,7 @@ async function handleLogin() {
 }
 
 handleLogin();
+getQueryUser();
 
 async function handleButtonClick() {
   redirect42();
