@@ -53,9 +53,9 @@ urlpatterns = [
     path("api/friend_requests/me", FriendRequestViewSet.friend_request_me),
     path("api/friend_requests/", FriendRequestViewSet.friend_request_list),
     path("api/friend_requests/<int:pk>/", FriendRequestViewSet.friend_request_detail),
-    path("auth42/config", get_config),
+    path("api/auth42/config", get_config),
 
-    path("callback/", callback),
+    path("api/callback/", callback),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 handler404 = 'cabraping.views.custom_404'

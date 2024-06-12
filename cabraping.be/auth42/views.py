@@ -31,14 +31,15 @@ PW42 = os.getenv("PASSWORD_42")
 def get_backend_url(request):
     scheme = request.scheme
     host = request.get_host().split(':')[0]  # Get the hostname without port
-    port = 8000  # Default port for backend
-    return f"{scheme}://{host}:{port}"
+    #port = 8000  # Default port for backend
+    return f"{scheme}://{host}"
+    # return f"{scheme}://{host}:{port}"
 
 def get_frontend_url(request):
     scheme = request.scheme
     host = request.get_host().split(':')[0]  # Get the hostname without port
-    port = 8080  # Default port for backend
-    return f"{scheme}://{host}:{port}"
+    #port = 8080  # Default port for backend
+    return f"{scheme}://{host}"
 
 @api_view(['GET'])
 def get_config(request):
@@ -57,7 +58,7 @@ def callback(request):
         return JsonResponse({'error': 'No authorization code provided'}, status=400)
 
     token_url = "https://api.intra.42.fr/oauth/token"
-    redirect_uri =  f"{get_backend_url(request)}/callback/"  # Backend redirect URI
+    redirect_uri =  f"{get_backend_url(request)}/api/callback/"  # Backend redirect URI
     client_id = UID
     client_secret = SECRET
 
@@ -145,7 +146,7 @@ def callback(request):
     #return JsonResponse(user_info)
     # Redirect to the frontend with the tokens
     # frontend_redirect_url = f"http://localhost:8080?access_token={access_token}&refresh_token={refresh_token}&username={username}"
-    frontend_redirect_url = f"http://localhost:8080?access_token={access_token}&refresh_token={refresh_token}"
+    frontend_redirect_url = f"{get_backend_url(request)}?access_token={access_token}&refresh_token={refresh_token}"
 
     return redirect(frontend_redirect_url)
 

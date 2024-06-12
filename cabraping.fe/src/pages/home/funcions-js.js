@@ -17,11 +17,11 @@ export function Home_js() {
 }
 
 async function redirect42() {
-  const redirectURI = encodeURIComponent(`${BACKEND_URL}/callback/`);
+  const redirectURI = encodeURIComponent(`${BACKEND_URL}/api/callback/`);
 
   try {
     // Fetch configuration from backend
-    const response = await fetch(`${BACKEND_URL}/auth42/config`);
+    const response = await fetch(`${BACKEND_URL}/api/auth42/config`);
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
@@ -31,7 +31,7 @@ async function redirect42() {
       const UID = config.UID;
       const SECRET = config.SECRET;
 
-      // console.log(UID);
+      //console.log(UID);
       // Construct API URL with fetched UID
       const api_url = `https://api.intra.42.fr/oauth/authorize?client_id=${UID}&redirect_uri=${redirectURI}&response_type=code`;
 
