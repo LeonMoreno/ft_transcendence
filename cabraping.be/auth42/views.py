@@ -128,7 +128,8 @@ def callback(request):
         user = serializer.save()
         print("User created successfully")
     else:
-        return redirect(f"{get_backend_url(request)}?creation_fail")
+        if user == 0:
+            return redirect(f"{get_backend_url(request)}?creation_fail")
 
     if user != 0:
         token_response_data = generate_jwt_for_user(user)
