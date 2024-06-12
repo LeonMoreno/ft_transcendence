@@ -114,13 +114,14 @@ def callback(request):
         "last_name": last_name,
         "avatarImageURL": avatar_image_url,
     }
+    user = 0
     try:
-        user = CustomUser.objects.get(username=username)
+        user = CustomUser.objects.get(email=email)
         # User already exists, do not create a new one
-        logger.debug(f'User already exists: {user}')
+        logger.error(f'User already exists: {user}')
     except CustomUser.DoesNotExist:
         # User does not exist, create a new one
-        logger.debug('User does not exist, creating a new one...')
+        logger.error('User does not exist, creating a new one...')
 
     serializer = UserSerializer(data=user_data)
     if serializer.is_valid():
@@ -129,16 +130,14 @@ def callback(request):
     else:
         print("User creation failed:", serializer.errors)
 
-    if user:
+    if user != 0:
         token_response_data = generate_jwt_for_user(user)
         access_token = token_response_data.get('access')
         refresh_token = token_response_data.get('refresh')
+        frontend_redirect_url = f"{get_backend_url(request)}?access_token={access_token}&refresh_token={refresh_token}"
+        return redirect(frontend_redirect_url)
 
-    if not access_token:
-        return redirect(f"{get_backend_url(request)}")
-    frontend_redirect_url = f"{get_backend_url(request)}?access_token={access_token}&refresh_token={refresh_token}"
-
-    return redirect(frontend_redirect_url)
+    return redirect(f"{get_backend_url(request)}")
 
 
 
