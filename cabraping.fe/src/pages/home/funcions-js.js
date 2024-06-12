@@ -5,6 +5,7 @@
 // const BACKEND_URL = `http://${serverIPAddress}:${serverPort}`;
 
 import { BACKEND_URL } from "../../components/wcGlobal.js";
+import { showNotification } from "../../components/showNotification.js";
 
 export function Home_js() {
   let buttonAuth = document.getElementById("button-auth");
@@ -53,6 +54,13 @@ function getQueryParams() {
   return { access_token, refresh_token };
 }
 
+function getQueryUser() {
+  const params = new URLSearchParams(window.location.search);
+  const create = params.get("creation_fail");
+  if (create != null)
+    showNotification("Error creating user! Username already exist");
+}
+
 function storeTokens(access_token, refresh_token) {
   localStorage.setItem("jwt", access_token);
   localStorage.setItem("access_token", access_token);
@@ -69,6 +77,7 @@ async function handleLogin() {
 }
 
 handleLogin();
+getQueryUser();
 
 async function handleButtonClick() {
   redirect42();
