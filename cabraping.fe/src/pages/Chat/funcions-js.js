@@ -153,14 +153,18 @@ export async function Chat_js() {
   // Función para mostrar amigos conectados
 export function showActiveFriends(friends, check_id) {
 
+  console.log(">> showActiveFriends > friends:", friends);
   if (!friends.some(friend => String(friend.id) === String(check_id))){
     return null
   }
 
   const activeUserIds = JSON.parse(localStorage.getItem('id_active_users')) || [];
+  console.log(">> showActiveFriends > activeUserIds:", activeUserIds);
   const activeFriends = friends.filter(friend => activeUserIds.includes(String(friend.id)));
+  console.log(">> showActiveFriends > activeFriends:", activeFriends);
 
-  if (activeFriends[0] && String(activeFriends[0].id) === String(check_id)) {
+  // if (activeFriends[0] && String(activeFriends[0].id) === String(check_id)) {
+  if (activeFriends.length > 0 && activeFriends.some(friend => String(friend.id) === String(check_id))) {
     return true
   }
   return false

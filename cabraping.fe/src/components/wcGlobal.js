@@ -16,16 +16,6 @@ const frontendURL = new URL(window.location.href);
 const serverIPAddress = frontendURL.hostname;
 const serverPort = 8000; // Specify the port your backend server is running on
 
-/**
- * Enable/disable one of the BACKEND_URL & WS_URL pair
- * Similar with Django settings.py
- */
-
-// Production with Docker: Use HTTPS and WSS
-// export var BACKEND_URL = `https://localhost`;
-// export var WS_URL = `wss://localhost`;
-
-// Local development: Use HTTP and WS
 
 export var BACKEND_URL = `https://${serverIPAddress}`;
 export var WS_URL = `wss://${serverIPAddress}`;
