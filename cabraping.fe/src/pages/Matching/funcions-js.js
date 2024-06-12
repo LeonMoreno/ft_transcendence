@@ -31,6 +31,15 @@ export async function Matching_js() {
             (game.invitee.id === userId || game.inviter.id === userId)
     );
 
+    let currentTournamentId = localStorage.getItem("currentTournamentId");
+
+    if (currentTournamentId)
+    {
+        button.disabled = true;
+        statusDiv.innerHTML = '<p class="text-warning">You already have a Tournament invitation.</p>';
+        return;
+    }
+
     if (existingGame) {
         button.disabled = true;
         statusDiv.innerHTML = '<p class="text-warning">You already have a pending game invitation.</p>';

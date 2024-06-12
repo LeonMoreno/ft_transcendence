@@ -122,7 +122,7 @@ function FormSendData(event) {
 //just in case function:
 async function deleteUser(username) {
     const jwt = localStorage.getItem("jwt");
-    const response = await fetch(`${BACKEND_URL}/delete/${username}/`, {
+    const response = await fetch(`${BACKEND_URL}/api/delete/${username}/`, {
         method: 'DELETE',
         headers: {
             'Authorization': `Bearer ${jwt}`,

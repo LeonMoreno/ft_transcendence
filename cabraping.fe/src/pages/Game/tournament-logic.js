@@ -1,4 +1,4 @@
-import { showNotificationPopup } from "../../components/showNotification.js";
+import { showNotification, showNotificationPopup } from "../../components/showNotification.js";
 import { sendGameInitate_Waiting, sendGameInvataeNotifications, sendGameInvataeTournamentNotifications, sendWinnerOfGameTournamentNotifications } from "../../components/wcGlobal-funcions-send-message.js";
 import { BACKEND_URL } from "../../components/wcGlobal.js";
 import { getToken } from "../../utils/get-token.js";
@@ -85,10 +85,15 @@ export async function Send_data_bacnd_the_winer(first_player, secong_player, win
         }
     );
 
+
     if (response.ok){
         console.log("🧶🧶>> Send_data_bacnd_the_winer:", user_id);
 
         sendWinnerOfGameTournamentNotifications(user_id, "null",  `system_Tournmanet_${tournament_id}:${winer}`);
+    }else{
+        showNotification("Error in the tournament", "error");
+        console.log("Error in the tournament");
+        return;
     }
 
     if (winer === user_id) {
