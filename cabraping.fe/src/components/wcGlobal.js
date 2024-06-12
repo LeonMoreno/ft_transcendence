@@ -336,6 +336,8 @@ export function handleTournamentInvite(data, tournamentId) {
         const username = localStorage.getItem('username');
         sendUpdateList_of_tournament_Notifications(user_id, username, 0, `system_Tournmanet_${tournamentId}_updatelist`);
 
+        localStorage.removeItem("currentTournamentId");
+
         hideModal('tournamentInviteModal');
     };
 

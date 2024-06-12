@@ -42,7 +42,7 @@ function updateStartButton(participants) {
                 console.log("run -if check_tournament.participants[0].id:", (check_tournament.participants[0].id));
                 console.log("run -if userId:", (userId));
                 console.log("run -if check_tournament.participants[0].id !== userId:", (check_tournament.participants[0].id !== userId));
-                if (check_tournament.participants[0].id !== userId)
+                if (check_tournament.participants[0].user.id !== userId)
                 {
                     showNotification("only the created one can start it", "error");
                     return;
@@ -204,7 +204,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         let check_tournament = await getTournamentForId(tournamentId);
 
-        if (check_tournament.participants[0].id !== userId)
+        if (check_tournament.participants[0].user.id !== userId)
         {
             startButton.style.display = 'none';
             return;
@@ -229,7 +229,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             console.log("run -if check_tournament.participants[0].id:", (check_tournament.participants[0].id));
             console.log("run -if userId:", (userId));
             console.log("run -if check_tournament.participants[0].id !== userId:", (check_tournament.participants[0].id !== userId));
-            if (check_tournament.participants[0].id !== userId)
+            if (check_tournament.participants[0].user.id !== userId)
             {
                 showNotification("only the created one can start it", "error");
                 return;

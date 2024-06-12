@@ -657,6 +657,14 @@ function switchChannel(newChannelId) {
   const messageList = document.getElementById('messageList');
   messageList.innerHTML = '';
 
+  let currentTournamentId = localStorage.getItem("currentTournamentId");
+
+  // if (currentTournamentId)
+  // {
+  //     button.disabled = true;
+  //     statusDiv.innerHTML = '<p class="text-warning">You already have a Tournament invitation.</p>';
+  //     return;
+  // }
 
   if (newChannelId === -1) {
 
@@ -687,7 +695,7 @@ function switchChannel(newChannelId) {
     if (sendButton) sendButton.disabled = false;
     if (userButton) userButton.disabled = false;
     if (blockButton) blockButton.disabled = false;
-    if (inviteGameButtonButton) inviteGameButtonButton.disabled = false;
+    if (inviteGameButtonButton && !currentTournamentId) inviteGameButtonButton.disabled = false;
     if (messageTextarea) {
         messageTextarea.disabled = false;
         messageTextarea.placeholder = "Enter your message here...";
