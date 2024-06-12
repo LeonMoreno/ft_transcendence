@@ -26,10 +26,10 @@ const serverPort = 8000; // Specify the port your backend server is running on
 // export var WS_URL = `wss://localhost`;
 
 // Local development: Use HTTP and WS
-// export var BACKEND_URL = `https://${serverIPAddress}`;
-// export var WS_URL = `wss://${serverIPAddress}`;
-export var BACKEND_URL = `http://${serverIPAddress}:${serverPort}`;
-export var WS_URL = `ws://${serverIPAddress}:${serverPort}`;
+export var BACKEND_URL = `https://${serverIPAddress}`;
+export var WS_URL = `wss://${serverIPAddress}`;
+// export var BACKEND_URL = `http://${serverIPAddress}:${serverPort}`;
+// export var WS_URL = `ws://${serverIPAddress}:${serverPort}`;
 
 // export var WS_URL = `wss://${serverIPAddress}:${serverPort}`;
 
