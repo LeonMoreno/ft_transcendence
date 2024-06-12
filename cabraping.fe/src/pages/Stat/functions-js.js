@@ -14,18 +14,11 @@ export async function Stat_js() {
   }
   
   try {
-    const [responseMyUser, responseUsers, responseGames, responseChamp] = await Promise.all([
-      fetch(`${BACKEND_URL}/api/me/`, { headers: { Authorization: `Bearer ${jwt}` } }),
-      fetch(`${BACKEND_URL}/api/users/`),
-      fetch(`${BACKEND_URL}/api/games/`, { headers: { Authorization: `Bearer ${jwt}` } }),
-      fetch(`${BACKEND_URL}/api/tournaments/`, { headers: { Authorization: `Bearer ${jwt}` } })
-    ]);
-
     const [myUser, users, games, champ] = await Promise.all([
-      responseMyUser.json(),
-      responseUsers.json(),
-      responseGames.json(),
-      responseChamp.json()
+      fetchData(`${BACKEND_URL}/api/me/`, { headers: { Authorization: `Bearer ${jwt}` } }),
+      fetchData(`${BACKEND_URL}/api/users/`),
+      fetchData(`${BACKEND_URL}/api/games/`, { headers: { Authorization: `Bearer ${jwt}` } }),
+      fetchData(`${BACKEND_URL}/api/tournaments/`, { headers: { Authorization: `Bearer ${jwt}` } })
     ]);
     
     const user_stat = calculateWinsAndLosses(games);
@@ -45,33 +38,45 @@ export async function Stat_js() {
 function populateLeaderBoard(users, userStats, userChamp) {
   const usersListElement = document.getElementById("leaderboard");
   if (usersListElement) {
-    usersListElement.innerHTML = `
-    <tr class="table-dark">
-    <th class="col-1">Rank</th>
-    <th class="table-dark">Username</th>
-    <th class="table-dark">Wins</th>
-    <th class="table-dark">Losses</th>
-    <th class="table-dark">Tournament Wins</th>
-    </tr>
+    let leaderboardHTML = `
+      <tr class="table-dark">
+        <th class="col-1">Rank</th>
+        <th class="table-dark">Username</th>
+        <th class="table-dark">Wins</th>
+        <th class="table-dark">Losses</th>
+        <th class="table-dark">Tournament Wins</th>
+      </tr>
     `;
     
-    users.forEach((user, index) => {
+    // Sort users based on wins, then losses
+    const sortedUsers = users.map(user => {
       const stats = userStats[user.id] || { wins: 0, losses: 0 };
-      const championWins = userChamp[user.id] || 0;
+      return {
+        ...user,
+        wins: stats.wins,
+        losses: stats.losses,
+        championWins: userChamp[user.id] || 0
+      };
+    }).sort((a, b) => b.wins - a.wins || a.losses - b.losses);
+
+    sortedUsers.forEach((user, index) => {
       const rank = index + 1;
       
-      usersListElement.innerHTML += `
-      <tr class="table-dark">
-      <td class="col-1"># ${rank}</td>
-      <td class="table-info">${user.username}</td>
-      <td class="table-success">${stats.wins}</td>
-      <td class="table-warning">${stats.losses}</td>
-      <td class="table-danger">${championWins}</td>
-      </tr>
+      leaderboardHTML += `
+        <tr class="table-dark">
+          <td class="col-1"># ${rank}</td>
+          <td class="table-info">${user.username}</td>
+          <td class="table-success">${user.wins}</td>
+          <td class="table-warning">${user.losses}</td>
+          <td class="table-danger">${user.championWins}</td>
+        </tr>
       `;
     });
+
+    usersListElement.innerHTML = leaderboardHTML;
   }
 }
+
 
 function populateMatch(gameResults) {
   const tableBody = document.getElementById("history-list");
