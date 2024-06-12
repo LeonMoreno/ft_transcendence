@@ -179,6 +179,8 @@ async function loadTournamentData(tournamentId) {
             const participantsList = document.getElementById('participantsList');
             const addParticipantButton = document.getElementById('addParticipantButton');
 
+            const  input_name = document.getElementById('participantNameInput')
+
             // Set and disable the tournament name input
             tournamentNameInput.value = data.name;
             tournamentNameInput.disabled = true;
@@ -188,6 +190,8 @@ async function loadTournamentData(tournamentId) {
 
             // Clear the current participants list and update with stored participants
             participantsList.innerHTML = '';
+
+            input_name.disabled = true;
 
             console.log();
             let i = 0;
@@ -214,6 +218,11 @@ async function loadTournamentData(tournamentId) {
                 participantsList.appendChild(listItem);
                 i++;
             });
+
+            if (i < 4)
+            {
+                input_name.disabled = false;
+            }
 
             if (data.participants.length >= 4){
                 if ((number_invitate + 1) === i )
