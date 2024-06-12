@@ -218,11 +218,12 @@ export async function Game_js() {
       const result = response.json;
 
       // Diego - save data in the banckend
-      await Send_data_bacnd_the_winer(
-        game.inviter.id,
-        game.invitee.id,
-        winnerId
-      );
+
+      setTimeout(() => async {
+        await Send_data_bacnd_the_winer(game.inviter.id, game.invitee.id, winnerId);
+        }, Math.floor(Math.random() * 300));
+      // await Send_data_bacnd_the_winer(game.inviter.id, game.invitee.id, winnerId);
+
       // Diego - sen the winer
 
       return; // Stop further rendering

@@ -55,6 +55,23 @@ export function sendFriendRequestNotifications(userId, userName, destUserId) {
     WSsocket.send(JSON.stringify(message));
 }
 
+export function sendUpdateList_of_tournament_Notifications(userId, userName, destUserId, text) {
+    if (!WSsocket || WSsocket.readyState !== WebSocket.OPEN) {
+        console.log('WebSocket is not connected');
+        return;
+    }
+
+    const message = {
+        type: "notify",
+        message: text,
+        user_id: String(userId),
+        user_name: userName,
+        dest_user_id: String(destUserId)
+    };
+
+    WSsocket.send(JSON.stringify(message));
+}
+
 // Función para enviar un mensaje específico al WebSocket
 export function sendFriendAcceptdNotifications(userId, userName, destUserId) {
     if (!WSsocket || WSsocket.readyState !== WebSocket.OPEN) {

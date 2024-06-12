@@ -66,7 +66,7 @@ export async function Stat_html() {
               </tr>
               <tr class="table-active">
                 <th>Tournaments won:</th>
-                <td>Waiting for Rachel</td>
+                <td id="championships"></td>
               </tr>
             </tbody>
           </table>

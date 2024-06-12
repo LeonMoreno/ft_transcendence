@@ -32,6 +32,7 @@ import { BACKEND_URL, connectWebSocketGlobal  } from "../components/wcGlobal.js"
 import { Matching_html } from "../pages/Matching/html.js";
 import { Matching_js } from "../pages/Matching/funcions-js.js";
 import { getToken } from "../utils/get-token.js";
+import { getTournamentForId } from "../pages/Tournament/cancel.js";
 
 const routes = {
   "/": [Home_html, Home_js],
@@ -78,6 +79,17 @@ const router = async () => {
 
       localStorage.setItem('username', myUser.username)
       localStorage.setItem('userId', myUser.id);
+    }
+  }
+
+  console.log("--> Route: localStorage.getItem(currentTournamentId):", localStorage.getItem("currentTournamentId"));
+  if(localStorage.getItem("currentTournamentId"))
+  {
+    let tournament_id =localStorage.getItem("currentTournamentId")
+    let check_tournament = await getTournamentForId(tournament_id);
+    if (check_tournament.status === "canceled" || check_tournament.status === "completed")
+    {
+      localStorage.removeItem("currentTournamentId");
     }
   }
 

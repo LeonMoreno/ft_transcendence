@@ -3,13 +3,13 @@ import { Chat_Update_js, getUserIdFromJWT } from "../pages/Chat/funcions-js.js";
 import { Friends_js } from "../pages/Friends/funcions-js.js";
 import { Users_js } from "../pages/Users/funcions-js.js";
 
-import { updateParticipantsList, acceptTournamentInvitation, rejectTournamentInvitation, connectTournamentWebSocket, WS_check_the_torunament_pending } from "../pages/Tournament/funcions-js.js";
+import { updateParticipantsList, acceptTournamentInvitation, rejectTournamentInvitation, connectTournamentWebSocket, WS_check_the_torunament_pending, TournamentInit, Check_if_im_the_creator_to_reload } from "../pages/Tournament/funcions-js.js";
 import { getToken } from "../utils/get-token.js";
 import { showModal, hideModal } from "../utils/modal.js";
 import { startTournament, handleTournamentCanceled } from "../pages/TournamentWaitingArea/functions-js.js";
 import { updateWaitingParticipantsList } from "../pages/TournamentWaitingArea/functions-js.js";
 
-import { sendAcceptedGameNotifications, sendTournamentNotifications, sendDelleteMatchedMessage, handleUpdateWaitingList } from "./wcGlobal-funcions-send-message.js";
+import { sendAcceptedGameNotifications, sendTournamentNotifications, sendDelleteMatchedMessage, handleUpdateWaitingList, sendUpdateList_of_tournament_Notifications } from "./wcGlobal-funcions-send-message.js";
 import { sendGameAcceptTournament_final_Waiting, sendGameAcceptTournament_Waiting, system_invitte_game_Tournmanet } from "../pages/TournamentWaitingArea/game-logic.js";
 
 const frontendURL = new URL(window.location.href);
@@ -26,10 +26,11 @@ const serverPort = 8000; // Specify the port your backend server is running on
 // export var WS_URL = `wss://localhost`;
 
 // Local development: Use HTTP and WS
-// export var BACKEND_URL = `https://${serverIPAddress}`;
-// export var WS_URL = `wss://${serverIPAddress}`;
-export var BACKEND_URL = `http://${serverIPAddress}:${serverPort}`;
-export var WS_URL = `ws://${serverIPAddress}:${serverPort}`;
+
+export var BACKEND_URL = `https://${serverIPAddress}`;
+export var WS_URL = `wss://${serverIPAddress}`;
+// export var BACKEND_URL = `http://${serverIPAddress}:${serverPort}`;
+// export var WS_URL = `ws://${serverIPAddress}:${serverPort}`;
 
 // export var WS_URL = `wss://${serverIPAddress}:${serverPort}`;
 
@@ -108,7 +109,8 @@ export function sendTournamentInvitation(tournamentId, participantUsername, part
     if (!activeWebSockets[tournamentId] || activeWebSockets[tournamentId].readyState === WebSocket.CLOSED) {
         // const wsUrl = `ws://localhost:8000/ws/tournament/${tournamentId}/`;
         let jwt = getToken();
-        const wsUrl = `ws://localhost:8000/ws/tournament/${tournamentId}/?token=${jwt}`;
+        // const wsUrl = `ws://localhost:8000/ws/tournament/${tournamentId}/?token=${jwt}`;
+        const wsUrl = `${WS_URL}/ws/tournament/${tournamentId}/?token=${jwt}`;
         const tournamentSocket = new WebSocket(wsUrl);
         console.log(`🤖 tournamentSocket:`, tournamentSocket);
 
@@ -313,8 +315,13 @@ export function handleTournamentInvite(data, tournamentId) {
 
         console.log("😆 updateInviteStatus:", success);
 
-        // if (success) {
+        // if (success.ok) {
             acceptTournamentInvitation(tournamentId, data.user_name);
+
+            let user_id = getUserIdFromJWT();
+            const username = localStorage.getItem('username');
+            sendUpdateList_of_tournament_Notifications(user_id, username, 0, `system_Tournmanet_${tournamentId}_updatelist`);
+
             hideModal('tournamentInviteModal');
         // }
 
@@ -326,6 +333,13 @@ export function handleTournamentInvite(data, tournamentId) {
         console.log("😆 updateInviteStatus:", success);
 
         rejectTournamentInvitation(tournamentId, data.user_name);
+
+        let user_id = getUserIdFromJWT();
+        const username = localStorage.getItem('username');
+        sendUpdateList_of_tournament_Notifications(user_id, username, 0, `system_Tournmanet_${tournamentId}_updatelist`);
+
+        localStorage.removeItem("currentTournamentId");
+
         hideModal('tournamentInviteModal');
     };
 
@@ -543,25 +557,24 @@ async function Torunament_game_diego(message) {
     {
         return;
     }
-    console.log("🎃 String(message.dest_user_id) === '0':", (message.dest_user_id === "0"), message);
     if (message.dest_user_id === "0" || message.dest_user_id === 0)
     {
-        console.log("🎃🎃🎃🎃🎃🎃🎃🎃🎃🎃🎃🎃🎃🎃🎃🎃🎃🎃🎃🎃🎃🎃🎃🎃🎃🎃🎃");
 
         let tournament_id = localStorage.getItem("currentTournamentId");
-        console.log("🎃 🎃 tournament_id:", tournament_id);
 
         if (`system_Tournmanet_${tournament_id}` === message.message){
-            console.log("🎃🎃 🎃🎃system_Tournmanet:", tournament_id);
             system_invitte_game_Tournmanet();
+        }
+        if (`system_Tournmanet_${tournament_id}_updatelist` === message.message){
+            // system_invitte_game_Tournmanet();
+            console.log("=!!!!!!!!!!!! reload !!!");
+            // Check_if_im_the_creator_to_reload
+            Check_if_im_the_creator_to_reload();
         }
 
         const words = message.message.split(':');
-        console.log("🎃 🎃 > words:", words);
-        console.log("🎃 🎃 > words.length:", length);
 
         if (words.length === 2 && `system_Tournmanet_${tournament_id}` === words[0]){
-            console.log("🎃🎃 🎃🎃 🎃🎃system_Tournmanet:", tournament_id);
             localStorage.setItem(`system_Tournmanet_${tournament_id}_winner`, words[1]);
             localStorage.setItem(`system_Tournmanet_status_${tournament_id}_final`, "final");
         }
@@ -632,55 +645,3 @@ async function sendGameAccept_Waiting(userId, dest_user_id, myUser) {
         window.location.href = `/#game/${game.id}`;
     }
 }
-
-
-// rachel - function to send tournament invitation
-/*export function sendTournamentInvitation(tournamentId, username) {
-    console.log(`Preparing to send tournament invitation for tournament ${tournamentId} to ${username}`);
-    const tournamentName = localStorage.getItem(`tournamentName_${tournamentId}`);
-    const userId = localStorage.getItem('userId');
-
-    if (!activeWebSockets[tournamentId] || activeWebSockets[tournamentId].readyState === WebSocket.CLOSED) {
-        const wsUrl = `ws://localhost:8000/ws/tournament/${tournamentId}/`;
-        const tournamentSocket = new WebSocket(wsUrl);
-
-        tournamentSocket.onopen = function() {
-            console.log(`WebSocket connection opened for tournament ${tournamentId}`);
-            activeWebSockets[tournamentId] = tournamentSocket;
-            sendMessage();
-        };
-
-        tournamentSocket.onmessage = function(event) {
-            const data = JSON.parse(event.data);
-            handleTournamentWebSocketMessage(data, tournamentId);
-        };
-
-        tournamentSocket.onclose = function(event) {
-            console.log(`WebSocket connection closed for tournament ${tournamentId}:`, event);
-            delete activeWebSockets[tournamentId];
-        };
-
-        tournamentSocket.onerror = function(error) {
-            console.error(`WebSocket error for tournament ${tournamentId}:`, error);
-        };
-    } else {
-        sendMessage();
-    }
-
-    function sendMessage() {
-        const userId = localStorage.getItem('userId');
-        const message = {
-            type: 'tournament',
-            event: 'game_invite',
-            user_id: userId,
-            message: `${userId} is inviting you to join the tournament ${tournamentName}. Do you think you have what it takes to win the prestigious Chèvre Verte Award?`,
-            user_name: localStorage.getItem('username'),
-            dest_user_id: username,
-            tournament_id: tournamentId
-        };
-        console.log(`Sending tournament invitation message: ${JSON.stringify(message)}`);
-        activeWebSockets[tournamentId].send(JSON.stringify(message));
-    }
-}
-
-*/

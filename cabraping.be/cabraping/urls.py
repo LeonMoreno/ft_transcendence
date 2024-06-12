@@ -41,21 +41,21 @@ urlpatterns = [
     path('api/user/update/<int:pk>/', UserUpdate.as_view(), name='user-update'),
     path('api/users/<str:username>/exists/', check_user_exists, name='check_user_exists'),
     path('api/users/<str:username>/status/', check_user_status, name='check_user_status'),
-    path('delete/<str:username>/', delete_user, name='delete_user'),
     path('api/participants/status/', ParticipantViewSet.as_view({'get': 'status'}), name='participant-status'),
     path("api/", include(router.urls)),
-    path('channels/', ChannelListView.as_view(), name='channel-list'),
-    path('channels/create/', ChannelCreateView.as_view(), name='channel-create'),
-    path('user-channels/<int:user_id>/', UserChannelsView.as_view(), name='user-channels'),
-    path('custom_404/', custom_404, name='custom_404'),
+    path('api/delete/<str:username>/', delete_user, name='delete_user'),
+    path('api/channels/', ChannelListView.as_view(), name='channel-list'),
+    path('api/channels/create/', ChannelCreateView.as_view(), name='channel-create'),
+    path('api/user-channels/<int:user_id>/', UserChannelsView.as_view(), name='user-channels'),
+    path('api/custom_404/', custom_404, name='custom_404'),
     path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("api/friend_requests/me", FriendRequestViewSet.friend_request_me),
     path("api/friend_requests/", FriendRequestViewSet.friend_request_list),
     path("api/friend_requests/<int:pk>/", FriendRequestViewSet.friend_request_detail),
-    path("auth42/config", get_config),
+    path("api/auth42/config", get_config),
 
-    path("callback/", callback),
+    path("api/callback/", callback),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 handler404 = 'cabraping.views.custom_404'
