@@ -7,12 +7,6 @@ import { getToken } from "../../utils/get-token.js";
 
 let image = "assets/logo.svg";
 
-// // Extract the IP address from the URL used to access the frontend
-// const frontendURL = new URL(window.location.href);
-// const serverIPAddress = frontendURL.hostname;
-// const serverPort = 8000; // Specify the port your backend server is running on
-// const BACKEND_URL = `http://${serverIPAddress}:${serverPort}`;
-
 let sockets = {}; // Object to store WebSocket connections
 let usersList = []; // Global variable to store the list of users
 let blockUsersList = []; // Global variable to store the list of blocks users
@@ -49,16 +43,16 @@ export async function Chat_Update_js() {
 
   channels = await getUserChannels(myUser.id);
 
-  if (channels.length > 0) {
-    updateChannelList(channels); // Call the new function to update the channels dropdown
-    channel = channels[0].id; // Sets the first channel as the current channel
-    // Subscribe to all channels
-    channels.forEach(channel => {
-      createWebSocketConnection(channel.id);
-  });
-  }
+  // if (channels.length > 0) {
+  //   updateChannelList(channels); // Call the new function to update the channels dropdown
+  //   channel = channels[0].id; // Sets the first channel as the current channel
+  //   // Subscribe to all channels
+  //   channels.forEach(channel => {
+  //     createWebSocketConnection(channel.id);
+  // });
+  // }
 
-  checkRequestGame();
+  // checkRequestGame();
 }
 
 export async function Chat_js() {
@@ -218,40 +212,6 @@ async function inviteGame(jwt) {
   if (inviteGameButtonButton) inviteGameButtonButton.disabled = true;
 }
 
-  // async function inviteGame(jwt) {
-
-  //   if (communication_user_id < 1){
-  //     return
-  //   }
-
-  //   const response = await fetch(`${BACKEND_URL}/api/games/`, {
-  //     method: "POST",
-  //     headers: {
-  //       Authorization: `Bearer ${jwt}`,
-  //       "Content-Type": "application/json",
-  //     },
-  //     body: JSON.stringify({
-  //       invitationStatus: "PENDING",
-  //       inviter: myUser.id,
-  //       invitee: communication_user_id,
-  //     }),
-  //   });
-
-  //   // I send you an invitation to the game
-
-  //   if (response.ok) {
-  //     showNotification('Sent invitation', 'success');
-  //     sendGameInvataeNotifications(user_id, UserName, communication_user_id, "sendGameInvataeNotifications");
-  //   } else {
-  //     showNotification('Failed to invitation user', 'error');
-  //   }
-
-  //   const inviteGameButtonButton = document.getElementById('inviteGameButton');
-  //   if (inviteGameButtonButton) inviteGameButtonButton.disabled = true;
-
-  // }
-
-
   async function checkRequestGame() {
 
     const jwt = localStorage.getItem('jwt');
@@ -277,19 +237,11 @@ async function inviteGame(jwt) {
         (game.invitee.id === my_id ||
         game.inviter.id === my_id)
     );
-    // const game = games.find(
-    //   (game) =>
-    //     game.invitee.id === my_id &&
-    //     game.inviter.id === communication_user_id &&
-    //     game.invitationStatus === "PENDING"
-    // );
 
     console.log("--> 🎮 game:", game);
     if(game){
       console.log("game_ACCEPTED 🥶🥶🥶");
       gameId = game.id;
-      // const acceptGameButton = document.getElementById('acceptGameButton');
-      // if (acceptGameButton) acceptGameButton.disabled = false;
 
       const inviteGameButtonButton = document.getElementById('inviteGameButton');
       if (inviteGameButtonButton) inviteGameButtonButton.disabled = true;
@@ -659,13 +611,6 @@ function switchChannel(newChannelId) {
 
   let currentTournamentId = localStorage.getItem("currentTournamentId");
 
-  // if (currentTournamentId)
-  // {
-  //     button.disabled = true;
-  //     statusDiv.innerHTML = '<p class="text-warning">You already have a Tournament invitation.</p>';
-  //     return;
-  // }
-
   if (newChannelId === -1) {
 
     // If no channel is selected, disable send functionality and close WebSocket
@@ -774,8 +719,9 @@ export function getUserIdFromJWT() {
 // Function to obtain the user's channels
 async function getUserChannels(userId) {
   const response = await fetch(
-    `${BACKEND_URL}/user-channels/${userId}/?format=json`
+    `${BACKEND_URL}/api/user-channels/${userId}/?format=json`
   );
+  console.log("response:", await response);
   const data = await response.json();
   return data;
 }
@@ -848,7 +794,7 @@ function handleSaveChannelClick() {
   };
 
   // Backend endpoint (adjust according to your configuration)
-  const url = `${BACKEND_URL}/channels/create/`;
+  const url = `${BACKEND_URL}/api/channels/create/`;
 
   // Options for fetch request
   const requestOptions = {
