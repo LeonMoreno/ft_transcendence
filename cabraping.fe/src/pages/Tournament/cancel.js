@@ -21,8 +21,9 @@ export async function update_cancel_of_tournament(tournamentId) {
 
     let data = await response.json();
 
-    if (!data.ok)
-        showNotification("Error in the backend", "error");
+    // Diego, I don't think we need it since it is normal behaviour and it is covered by other notifications
+    //if (!data.ok)
+    //    showNotification("Error in the backend", "error");
 }
 
 export async function getTournamentForId(tournament_id) {

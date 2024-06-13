@@ -18,7 +18,7 @@ export function loginUser(username, password) {
   })
     .then((response) => {
       if (response.ok) {
-        showNotification("successful login", "success");
+        showNotification("Successful login", "success");
         return response.json();
       } else {
         showNotification("Incorrect username or password", "error");

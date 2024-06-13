@@ -1,11 +1,11 @@
-import { sendDelleteMatchedMessage,  sendGameInitate_Waiting, sendGameInvataeTournamentNotifications, sendGameInvataeNotifications, sendAcceptedGameNotifications } from "../../components/wcGlobal-funcions-send-message.js";
+import { sendDeleteMatchedMessage,  sendGameInitiate_Waiting, sendGameInviteTournamentNotifications, sendGameInviteNotifications, sendAcceptedGameNotifications } from "../../components/wcGlobal-funcions-send-message.js";
 import { BACKEND_URL } from "../../components/wcGlobal.js";
 import { getUserIdFromJWT } from "../Chat/funcions-js.js";
 import { fetchTournaments } from "../Tournament/funcions-js.js";
 
 let userId;
 let myUserName;
-let list_palyers_id;
+let list_players_id;
 let send_id;
 
 
@@ -72,7 +72,7 @@ export async function sendGameAcceptTournament_Waiting(new_userId, dest_user_id,
         }
         // sendAcceptedGameNotifications(new_userId, new_myUserName, dest_user_id, game.id);
         sendAcceptedGameNotifications(new_userId, new_myUserName, dest_user_id, game.id);
-        sendDelleteMatchedMessage(new_userId, dest_user_id);
+        sendDeleteMatchedMessage(new_userId, dest_user_id);
         window.location.href = `/#game/${game.id}`;
     }
 }
@@ -132,7 +132,7 @@ export async function sendGameAcceptTournament_final_Waiting(new_userId, dest_us
         }
         // sendAcceptedGameNotifications(new_userId, new_myUserName, dest_user_id, game.id);
         sendAcceptedGameNotifications(new_userId, new_myUserName, dest_user_id, game.id);
-        sendDelleteMatchedMessage(new_userId, dest_user_id);
+        sendDeleteMatchedMessage(new_userId, dest_user_id);
         window.location.href = `/#game/${game.id}`;
     }
 }
@@ -148,7 +148,7 @@ async function list_of_Tournament(id) {
 
     if (!tournaments)
     {
-        alert("1Problem with the backend reload page");
+        alert("1 - Problem with the backend. Reload page."); // Diego
         return null;
     }
     const pendingTournament = tournaments.find(t => t.status === 'in_progress' && t.participants.some(p => p.user.id === id));
@@ -156,7 +156,7 @@ async function list_of_Tournament(id) {
     console.log("in_progressTournament:", pendingTournament);
     if (!pendingTournament)
     {
-        alert("2Problem with the backend reload page");
+        alert("2 - Problem with the backend. Reload page."); // Diego, do we really want the user to see this and the other?
         return null;
     }
 
@@ -166,28 +166,28 @@ async function list_of_Tournament(id) {
     return tem_list;
 }
 
-export async function system_invitte_game_Tournmanet() {
+export async function system_invite_game_Tournament() {
 
     userId = getUserIdFromJWT();
     myUserName = localStorage.getItem("username");
 
-    console.log("🤖---> system_invitte_game_Tournmanet");
+    console.log("🤖---> system_invite_game_Tournament");
 
 
-    list_palyers_id = await list_of_Tournament(userId);
+    list_players_id = await list_of_Tournament(userId);
 
-    // pendingTournament.participants.map((participant) => list_palyers_id.push(participant.user.id))
+    // pendingTournament.participants.map((participant) => list_players_id.push(participant.user.id))
 
-    console.log("---> Tournmanet_game: list_palyers_id:", list_palyers_id);
-    console.log("---> Tournmanet_game: list_palyers_id:", list_palyers_id, ",userId:", userId, ", myUserName:", myUserName);
-    if (list_palyers_id.length >= 2) {
-        for (let i = 0; i < list_palyers_id.length; i += 2) {
-            if (list_palyers_id[i] === userId) {
-                console.log("---> Tournmanet_game: sendGameInitate_Waiting:", userId, list_palyers_id[i + 1]);
-                let status = await sendGameInitate_Waiting(userId, list_palyers_id[i + 1]);
+    console.log("---> Tournament_game: list_players_id:", list_players_id);
+    console.log("---> Tournament_game: list_players_id:", list_players_id, ",userId:", userId, ", myUserName:", myUserName);
+    if (list_players_id.length >= 2) {
+        for (let i = 0; i < list_players_id.length; i += 2) {
+            if (list_players_id[i] === userId) {
+                console.log("---> Tournament_game: sendGameInitiate_Waiting:", userId, list_players_id[i + 1]);
+                let status = await sendGameInitiate_Waiting(userId, list_players_id[i + 1]);
                 if (status.ok) {
-                    console.log("---> Tournmanet_game: Se mando la invitacion del juego con:", userId," de ", myUserName, ", a ",list_palyers_id[i + 1], "system-tournament");
-                    sendGameInvataeNotifications(userId, myUserName, list_palyers_id[i + 1], "system-tournament");
+                    console.log("---> Tournament_game: Se mando la invitacion del juego con:", userId," de ", myUserName, ", a ",list_players_id[i + 1], "system-tournament");
+                    sendGameInviteNotifications(userId, myUserName, list_players_id[i + 1], "system-tournament");
                     return true;
                 }
                 return false;
@@ -198,14 +198,14 @@ export async function system_invitte_game_Tournmanet() {
 }
 
 
-export async function handle_Tournmanet_game_invitte(tournament_id) {
+export async function handle_Tournament_game_invite(tournament_id) {
 
-    let status = await system_invitte_game_Tournmanet()
+    let status = await system_invite_game_Tournament()
 
     if ( status === true)
     {
-        console.log("----> _Tournmanet handle_Tournmanet_game_invitte");
-        sendGameInvataeTournamentNotifications(userId, myUserName, 0, `system_Tournmanet_${tournament_id}`);
-        localStorage.setItem(`system_Tournmanet_status_${tournament_id}`, "in");
+        console.log("----> _Tournament handle_Tournament_game_invite");
+        sendGameInviteTournamentNotifications(userId, myUserName, 0, `system_Tournament_${tournament_id}`);
+        localStorage.setItem(`system_Tournament_status_${tournament_id}`, "in");
     }
 }

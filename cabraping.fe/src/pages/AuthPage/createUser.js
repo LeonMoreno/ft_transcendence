@@ -34,6 +34,7 @@ export function createUser(email, password) {
   .catch((error) => {
       // Catch any error from the server response or the fetch operation itself
       // Error message can be more user-friendly or detailed based on the actual server response
-      showNotification("Error creating user! " + error.message, "error");
+      //showNotification("Error creating user! " + error.message, "error");
+      showNotification("Error creating user. Maybe you have signed up already?");
   });
 }

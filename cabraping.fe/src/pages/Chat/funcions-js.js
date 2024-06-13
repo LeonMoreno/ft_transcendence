@@ -2,7 +2,7 @@
 import { getHash } from "../../utils/getHash.js";
 import { showNotification, showNotificationPopup } from '../../components/showNotification.js';
 import { BACKEND_URL, WS_URL } from "../../components/wcGlobal.js";
-import { sendAcceptedGameNotifications, sendChannelCreatedNotifications, sendGameInvataeNotifications } from "../../components/wcGlobal-funcions-send-message.js";
+import { sendAcceptedGameNotifications, sendChannelCreatedNotifications, sendGameInviteNotifications } from "../../components/wcGlobal-funcions-send-message.js";
 import { getToken } from "../../utils/get-token.js";
 
 let image = "assets/logo.svg";
@@ -203,7 +203,7 @@ async function inviteGame(jwt) {
 
   if (response.ok) {
       showNotification('Sent invitation', 'success');
-      sendGameInvataeNotifications(user_id, UserName, communication_user_id, "sendGameInvataeNotifications");
+      sendGameInviteNotifications(user_id, UserName, communication_user_id, "sendGameInviteNotifications");
   } else {
       showNotification('Failed to invite user', 'error');
   }

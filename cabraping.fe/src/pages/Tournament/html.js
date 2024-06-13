@@ -32,7 +32,7 @@ const Tournament_html = async () => {
               <h6>Participant list:</h6>
               <ul id="participantsList" class="list-unstyled mt-2"></ul>
           </div>
-          <button id="goToWaitingAreaButton" class="btn btn-success mt-3 mb-5" disabled>Go To Tournament Waiting Area</button>
+          <button id="goToWaitingAreaButton" class="btn btn-success mt-3 mb-5" disabled>Go To Tournament Launch Area</button>
           <button id="cancelCreateButton" class="btn btn-danger mt-3 mb-5">Cancel</button>
       </div>
       <!-- Modal for notifications -->
