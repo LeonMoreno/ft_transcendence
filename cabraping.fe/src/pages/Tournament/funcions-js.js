@@ -4,6 +4,7 @@ import { sendTournamentInvitation, activeWebSockets, handleTournamentWebSocketMe
 import { getUserIdFromJWT } from "../Chat/funcions-js.js";
 import { handleTournamentCanceled } from "../TournamentWaitingArea/functions-js.js";
 import { checkUsers_is_part_of_valid_tournament, getTournamentForId } from "./cancel.js";
+import { validateAndSanitizeInput } from "../../components/security.js";
 
 export async function WS_check_the_torunament_pending() {
     
@@ -290,6 +291,7 @@ async function handleAddParticipant(e) {
 
     const participantName = document.getElementById('participantNameInput').value.trim();
 
+
     console.log("🪵 participantName:", participantName);
     if (!participantName) {
         displayErrorMessage('Participant name cannot be empty.');
@@ -358,6 +360,11 @@ async function handleAddParticipant(e) {
 function checkAddParticipantButton(e) {
     if (e.type === 'keydown' && e.key !== 'Enter') {
         return; // handles only enter key for keydown events
+    }
+
+    const participantNameInput = document.getElementById('participantNameInput');
+    if (!validateAndSanitizeInput(participantNameInput.value)){
+        return;
     }
 
     const addParticipantButton = document.getElementById('addParticipantButton');
@@ -612,6 +619,12 @@ function displayErrorMessage(message) {
 
 async function handleCreateTournament(e) {
     e.preventDefault();
+
+    const tournamentNameInput_check = document.getElementById('tournamentNameInput');
+    if (!validateAndSanitizeInput(tournamentNameInput_check.value)){
+        return;
+    }
+
     console.log("🍀 Create Tournament form submitted");
     const tournamentName = document.getElementById('tournamentNameInput').value.trim();
     if (!tournamentName) {

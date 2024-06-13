@@ -1,3 +1,4 @@
+import { validateAndSanitizeInput } from "../../components/security.js";
 import { showNotification } from "../../components/showNotification.js";
 import { BACKEND_URL } from "../../components/wcGlobal.js";
 
@@ -9,6 +10,11 @@ import { BACKEND_URL } from "../../components/wcGlobal.js";
 
 // Function to log in
 export function loginUser(username, password) {
+  // validateAndSanitizeInput
+  if (!validateAndSanitizeInput(username) || !validateAndSanitizeInput(password)){
+    return;
+  }
+
   fetch(`${BACKEND_URL}/api/token/`, {
     method: "POST",
     headers: {

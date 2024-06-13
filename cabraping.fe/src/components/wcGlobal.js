@@ -397,6 +397,7 @@ function execute_processes_by_category_message(message, myUser) {
     switch (message.event) {
         case "channel_created":
             showNotificationPopup(message.user_name, message.message);
+            console.log("🫔");
             Chat_Update_js();
             break;
         case "game_invite":
