@@ -173,7 +173,8 @@ export function sendTournamentInvitation(tournamentId, participantUsername, part
 
 export async function getUserIdByUsername(username) {
     try {
-        const response = await fetch(`${BACKEND_URL}/api/users?username=${username}`, {
+        // const response = await fetch(`${BACKEND_URL}/api/users?username=${username}`, {
+        const response = await fetch(`${BACKEND_URL}/api/users/`, {
             headers: {
                 'Authorization': `Bearer ${getToken()}`, 
                 'Content-Type': 'application/json'

@@ -19,9 +19,36 @@ import json
 
 # permission_classes = [IsAuthenticated]
 
+# class TournamentViewSet(viewsets.ModelViewSet):
 class TournamentViewSet(viewsets.ModelViewSet):
     queryset = Tournament.objects.all()
     serializer_class = TournamentSerializer
+
+
+    def retrieve(self, request, *args, **kwargs):
+        try:
+            instance = self.get_object()
+            serializer = self.get_serializer(instance)
+            return Response(serializer.data)
+        except Tournament.DoesNotExist:
+            return Response({"error": "Tournament not found"}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    @action(detail=True, methods=['post'])
+    def update_status(self, request, pk=None):
+        tournament = self.get_object()
+        status = request.data.get('status', None)
+        champion = request.data.get('champion', None)
+        
+        if status:
+            tournament.status = status
+        
+        if champion:
+            tournament.champion_id = champion
+
+        tournament.save()
+        return Response(TournamentSerializer(tournament).data, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=['post'])
     def add_participant(self, request, pk=None):

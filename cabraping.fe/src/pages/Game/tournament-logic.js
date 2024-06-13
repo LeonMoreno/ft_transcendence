@@ -97,7 +97,7 @@ export async function Send_data_bacnd_the_winer(first_player, secong_player, win
     }
 
     if (winer === user_id) {
-        const matchesResponse = await fetch(`${BACKEND_URL}/api/tournaments/${tournament_id}`, {
+        const matchesResponse = await fetch(`${BACKEND_URL}/api/tournaments/${tournament_id}/`, {
             headers: {
                 Authorization: `Bearer ${getToken()}`,
             }
