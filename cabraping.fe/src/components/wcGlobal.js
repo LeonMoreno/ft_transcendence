@@ -173,7 +173,8 @@ export function sendTournamentInvitation(tournamentId, participantUsername, part
 
 export async function getUserIdByUsername(username) {
     try {
-        const response = await fetch(`${BACKEND_URL}/api/users?username=${username}`, {
+        // const response = await fetch(`${BACKEND_URL}/api/users?username=${username}`, {
+        const response = await fetch(`${BACKEND_URL}/api/users/`, {
             headers: {
                 'Authorization': `Bearer ${getToken()}`, 
                 'Content-Type': 'application/json'
@@ -397,6 +398,7 @@ function execute_processes_by_category_message(message, myUser) {
     switch (message.event) {
         case "channel_created":
             showNotificationPopup(message.user_name, message.message);
+            console.log("🫔");
             Chat_Update_js();
             break;
         case "game_invite":

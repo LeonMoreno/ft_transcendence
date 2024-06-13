@@ -4,6 +4,7 @@ import { showNotification, showNotificationPopup } from '../../components/showNo
 import { BACKEND_URL, WS_URL } from "../../components/wcGlobal.js";
 import { sendAcceptedGameNotifications, sendChannelCreatedNotifications, sendGameInvataeNotifications } from "../../components/wcGlobal-funcions-send-message.js";
 import { getToken } from "../../utils/get-token.js";
+import { validateAndSanitizeInput } from "../../components/security.js";
 
 let image = "assets/logo.svg";
 
@@ -23,6 +24,8 @@ let array_channels;
 let myUser = null;
 
 export async function Chat_Update_js() {
+
+  console.log("= reload ? Chat_Update_js:");
   const jwt = localStorage.getItem('jwt');
   if (!jwt) {
       return;
@@ -36,6 +39,7 @@ export async function Chat_Update_js() {
   });
   myUser = await responseMyUser.json();
 
+  console.log("= reload ? myUser:", myUser);
   if (myUser.code === "user_not_found" || myUser.code === "token_not_valid") {
     window.location.replace("/#logout");
   }
@@ -43,14 +47,14 @@ export async function Chat_Update_js() {
 
   channels = await getUserChannels(myUser.id);
 
-  // if (channels.length > 0) {
-  //   updateChannelList(channels); // Call the new function to update the channels dropdown
-  //   channel = channels[0].id; // Sets the first channel as the current channel
-  //   // Subscribe to all channels
-  //   channels.forEach(channel => {
-  //     createWebSocketConnection(channel.id);
-  // });
-  // }
+  if (channels.length > 0) {
+    updateChannelList(channels); // Call the new function to update the channels dropdown
+    channel = channels[0].id; // Sets the first channel as the current channel
+    // Subscribe to all channels
+    channels.forEach(channel => {
+      createWebSocketConnection(channel.id);
+  });
+  }
 
   // checkRequestGame();
 }
@@ -406,6 +410,11 @@ async function unlockUser(userId) {
 
 function handleSendClick() {
   const textarea = document.getElementById('messageTextarea');
+
+  if (!validateAndSanitizeInput(textarea.value)){
+    return;
+  }
+
   if (textarea && sockets[channel_now]) { // Check if the current channel connection exists
       const message = textarea.value;
       if (message.trim() !== '') {
@@ -814,9 +823,10 @@ function handleSaveChannelClick() {
   // Perform POST request
   fetch(url, requestOptions)
     .then((response) => response.json())
-    .then((data) => {
+    .then( async (data) => {
       if (data.name) {
         // Verify that the response status is 200 or 201.
+        await Chat_Update_js();
         showNotification("Channel successfully created", "success");
         // Actualiza la lista de canales
         getUserChannels(user_id).then(updateChannelList); // Asume que user_id es global

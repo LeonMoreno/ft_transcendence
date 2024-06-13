@@ -27,7 +27,7 @@ export async function update_cancel_of_tournament(tournamentId) {
 
 export async function getTournamentForId(tournament_id) {
 
-    const response = await fetch(`${BACKEND_URL}/api/tournaments/${tournament_id}`, {
+    const response = await fetch(`${BACKEND_URL}/api/tournaments/${tournament_id}/`, {
         headers: {
             Authorization: `Bearer ${getToken()}`,
         }
