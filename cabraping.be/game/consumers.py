@@ -4,11 +4,13 @@ import math
 
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.layers import get_channel_layer
+from urllib.parse import parse_qs
 
 
 class Game:
-    def __init__(self, game_id):
+    def __init__(self, game_id, play_mode):
         self.game_id = game_id
+        self.play_mode = play_mode
         self.left_paddle_x = 5  # Define the left paddle's x-coordinate
         self.left_paddle_y = 50
         self.right_paddle_x = 94  # Define the right paddle's x-coordinate
@@ -76,14 +78,12 @@ class Game:
         elif self.right_score == 3:
             self.winner = "right"
 
-    def move_paddle(self, side, dy):
-        if side == "left":
-            self.left_paddle_y += dy
-        elif side == "right":
-            self.right_paddle_y += dy
-
-        # Ensure paddles stay within bounds
+    def paddle_move_left(self, dy):
+        self.left_paddle_y += dy
         self.left_paddle_y = max(0, min(self.left_paddle_y, 100))
+
+    def paddle_move_right(self, dy):
+        self.right_paddle_y += dy
         self.right_paddle_y = max(0, min(self.right_paddle_y, 100))
 
     def get_state(self):
@@ -99,25 +99,31 @@ class Game:
 
 
 class GameConsumer(AsyncWebsocketConsumer):
-    games = {}  # temporary games list being played as a cache
+    games = {}  # Temporary games list being played as a cache
 
     async def connect(self):
         self.game_id = self.scope["url_route"]["kwargs"]["game_id"]
         self.game_group_name = f"game_{self.game_id}"
 
+        # Parse query string to get playMode
+        query_string = self.scope["query_string"].decode()
+        query_params = parse_qs(query_string)
+        self.play_mode = int(
+            query_params.get("playMode", [0])[0]
+        )  # Default to 0 if not provided
+
         # Game loop for computation
         if self.game_id not in self.games:
-            self.games[self.game_id] = Game(self.game_id)
+            self.games[self.game_id] = Game(self.game_id, self.play_mode)
 
         # Join game group for communication/connection on WebSocket
         await self.channel_layer.group_add(self.game_group_name, self.channel_name)
 
         await self.accept()
 
-        print(f"Channel Name: {self.channel_name}")
-
         # Assign player to left or right paddle
         game = self.games[self.game_id]
+
         if game.players["left"] is None:
             game.players["left"] = self.channel_name
         elif game.players["right"] is None:
@@ -134,7 +140,9 @@ class GameConsumer(AsyncWebsocketConsumer):
         )
 
         # Check if both players have joined
-        if game.players["left"] and game.players["right"] and not game.loop_running:
+        if (
+            game.play_mode == 1 or (game.players["left"] and game.players["right"])
+        ) and not game.loop_running:
             # Notify players that the game is starting
             game.loop_running = True  # Mark the game loop as running
             await self.channel_layer.group_send(
@@ -163,11 +171,13 @@ class GameConsumer(AsyncWebsocketConsumer):
         data = json.loads(text_data)
         game = self.games[self.game_id]
 
-        if "paddle_move" in data:
-            if data["paddle_move"] == "up":
-                game.move_paddle(data["side"], -5)  # y coordinate
-            elif data["paddle_move"] == "down":
-                game.move_paddle(data["side"], 5)
+        # Aggregate movements for left and right paddles
+        left_movement = data.get("paddle_move_left", 0)
+        right_movement = data.get("paddle_move_right", 0)
+
+        # Move left paddle and move right paddle
+        game.paddle_move_left(left_movement)
+        game.paddle_move_right(right_movement)
 
         state = game.get_state()
 

@@ -6,8 +6,10 @@ export function Game_html() {
   return `
     <div class="container-fluid d-flex align-items-center justify-content-center mb-5 mt-5">
       <div class="row w-100">
-        <section class="col-12 d-flex justify-content-center">
-          <div>
+        <div class="col-12 d-flex justify-content-center">
+          <section>
+            <h3 id="game-winner-text"></h3>
+
             <header class="d-flex justify-content-between">
               <h4>
                 <span id="left-paddle-name"></span>
@@ -23,11 +25,17 @@ export function Game_html() {
               </h4>
             </header>
 
-            <div class="bg-dark w-100 h-100 d-flex align-items-center justify-content-center p-5" >
+            <div class="bg-dark d-flex align-items-center justify-content-center p-5" >
                 <canvas id="game" class="w-100 h-100"></canvas>  <!-- Canvas se ajusta al espacio disponible después del padding -->
             </div>
-          </div>
-        </section>
+
+            <footer class="d-flex justify-content-between">
+              <p>W (Up) or S (Down)</p>
+              <p id="game-play-mode-text"></p>
+              <p>Up key or Down key</p>
+            </footer>
+          </section>
+        </div>
       </div>
     </div>
   `;

@@ -1,5 +1,8 @@
-import {BACKEND_URL } from "../../components/wcGlobal.js";
-import { sendFriendAcceptdNotifications, sendFriendDeletedNotifications } from "../../components/wcGlobal-funcions-send-message.js";
+import { BACKEND_URL } from "../../components/wcGlobal.js";
+import {
+  sendFriendAcceptdNotifications,
+  sendFriendDeletedNotifications,
+} from "../../components/wcGlobal-funcions-send-message.js";
 import { getToken } from "../../utils/get-token.js";
 import { showActiveFriends } from "../Chat/funcions-js.js";
 
@@ -17,8 +20,7 @@ let friendRequests = [];
 export async function Friends_js() {
   const jwt = getToken();
 
-  if (!jwt)
-  {
+  if (!jwt) {
     window.location.replace("/#");
   }
 
@@ -30,8 +32,7 @@ export async function Friends_js() {
 export async function fetchMyUserData() {
   const jwt = getToken();
 
-  if (!jwt)
-  {
+  if (!jwt) {
     window.location.replace("/#");
   }
 
@@ -161,13 +162,14 @@ export async function FriendsRender() {
     button.addEventListener("click", async (event) => {
       const friendId = Number(event.target.getAttribute("data-id"));
 
-      const result = await fetch(`${BACKEND_URL}/api/games/`, {
+      await fetch(`${BACKEND_URL}/api/games/`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${jwt}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          playMode: 2,
           invitationStatus: "PENDING",
           inviter: myUserData.id,
           invitee: friendId,

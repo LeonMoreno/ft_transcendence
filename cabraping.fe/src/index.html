@@ -30,7 +30,7 @@
       </div>
     </main>
 
-    <footer id="footer">
+    <footer id="footer" class="mt-5 fixed-bottom">
       <!--  -->
     </footer>
 
@@ -42,7 +42,13 @@
             <p id="modalMessage"></p>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" id="closeModalButton">Close</button>
+            <button
+              type="button"
+              class="btn btn-secondary"
+              id="closeModalButton"
+            >
+              Close
+            </button>
           </div>
         </div>
       </div>
@@ -51,13 +57,17 @@
     <!-- Custom modal for tournament invitations -->
     <div id="tournamentInviteModal" class="modal">
       <div class="modal-content">
-          <span class="close">&times;</span>
-          <h5 class="modal-title">Tournament Invitation</h5>
-          <p id="tournamentInviteMessage"></p>
-          <button class="btn btn-primary" id="acceptTournamentInvite">Accept</button>
-          <button class="btn btn-secondary" id="rejectTournamentInvite">Reject</button>
+        <span class="close">&times;</span>
+        <h5 class="modal-title">Tournament Invitation</h5>
+        <p id="tournamentInviteMessage"></p>
+        <button class="btn btn-primary" id="acceptTournamentInvite">
+          Accept
+        </button>
+        <button class="btn btn-secondary" id="rejectTournamentInvite">
+          Reject
+        </button>
       </div>
-  </div>
+    </div>
 
     <script
       src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
