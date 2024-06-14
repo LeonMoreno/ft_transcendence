@@ -36,9 +36,9 @@ const Tournament_html = async () => {
           <button id="cancelCreateButton" class="btn btn-danger mt-3 mb-5">Cancel</button>
       </div>
       <!-- Modal for notifications -->
-      <div id="notificationModal" class="modal" tabindex="-1" role="dialog">
+      <div id="notificationModal" class="d-none position-fixed w-100 h-100 overflow-auto custom-overlay" tabindex="-1" role="dialog">
           <div class="modal-dialog" role="document">
-              <div class="modal-content">
+              <div class="bg-white mx-auto p-3 border">
                   <div class="modal-body">
                       <p id="modalMessage"></p>
                   </div>

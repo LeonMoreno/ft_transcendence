@@ -21,7 +21,6 @@ export var BACKEND_URL = `https://${serverIPAddress}`;
 export var WS_URL = `wss://${serverIPAddress}`;
 // export var BACKEND_URL = `http://${serverIPAddress}:${serverPort}`;
 // export var WS_URL = `ws://${serverIPAddress}:${serverPort}`;
-
 // export var WS_URL = `wss://${serverIPAddress}:${serverPort}`;
 
 export let WSsocket = null; // Variable global para almacenar la instancia del WebSocket

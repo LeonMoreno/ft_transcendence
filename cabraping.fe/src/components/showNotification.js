@@ -9,9 +9,10 @@ export function showNotification(message, type) {
     "m-2",
     "shadow",
     "d-inline-block",
-    "notification"
   );
-  if (type === "success") notification.classList.add("bg-success");
+  // "notification"
+  if (type === "success")
+    notification.classList.add("bg-success");
   else {
     notification.classList.add("bg-danger");
   }

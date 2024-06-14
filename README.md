@@ -35,7 +35,7 @@ Compatibility and Community Support: Redis is widely used and supported in the d
 
 Ensuring that Redis is running and correctly configured is a crucial step in the setup and debugging process of any application that uses it, especially when working with real-time technologies like Django Channels. Without Redis running, these applications will not be able to properly handle real-time connections or utilize the storage and messaging features that Redis provides.
 
-## isntall redis MACOS
+## install redis MACOS
 
 - brew install redis
 

@@ -523,8 +523,14 @@ function handleButtonClick() {
   const modal = document.getElementById("channelModal");
   const membersList = document.getElementById("channelMembers");
 
+  console.log("+++++ handleButtonClick:", modal);
   if (modal) {
-    modal.style.display = "block"; // Display the modal
+
+    console.log("-----> modal.style.display:", modal.style.display);
+    modal.classList.remove("d-none");
+    modal.classList.add("d-block");
+    console.log("-----> modal.style.display:", modal.style.display);
+
     fetch(`${BACKEND_URL}/api/users/`)
       .then((response) => response.json())
       .then((users) => {
@@ -547,7 +553,10 @@ function handleButtonClick() {
   const closeModalButton = document.getElementById("closeModalButton");
   if (closeModalButton) {
     closeModalButton.addEventListener("click", () => {
-      modal.style.display = "none"; // Hide the modal
+      // modal.style.display = "none"; // Hide the modal
+      console.log("closeModalButton on");
+      modal.classList.remove("d-block");
+      modal.classList.add("d-none");
     });
   }
 }
@@ -896,7 +905,10 @@ function handleSaveChannelClick() {
       // Cierra el modal
       const modal = document.getElementById("channelModal");
       if (modal) {
-        modal.style.display = "none";
+        // modal.style.display = "none";
+        console.log("------>>> style.display");
+        modal.classList.remove("d-block");
+        modal.classList.add("d-none");
       }
     })
     .catch((error) => {

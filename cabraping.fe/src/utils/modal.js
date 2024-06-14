@@ -2,7 +2,9 @@
 export function showModal(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) {
-        modal.style.display = 'block';
+        // modal.style.display = 'block';
+        modal.classList.remove("d-none");
+        modal.classList.add("d-block");
     }
 }
 
@@ -10,7 +12,9 @@ export function showModal(modalId) {
 export function hideModal(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) {
-        modal.style.display = 'none';
+        // modal.style.display = 'none';
+        modal.classList.remove("d-block");
+        modal.classList.add("d-none");
     }
 }
 
