@@ -306,6 +306,24 @@ export function sendGameAcceptTournamentNotifications(userId, userName, destUser
 }
 
 // Función para enviar un mensaje específico al WebSocket
+export function sendGameCancelTournamentNotifications(userId, userName, destUserId) {
+    if (!WSsocket || WSsocket.readyState !== WebSocket.OPEN) {
+        console.log('WebSocket is not connected');
+        return;
+    }
+
+    const message = {
+        type: "notify",
+        message: "Cancel Game",
+        user_id: String(userId),
+        user_name: userName,
+        dest_user_id: String(destUserId)
+    };
+
+    WSsocket.send(JSON.stringify(message));
+}
+
+// Función para enviar un mensaje específico al WebSocket
 export function sendWinnerOfGameTournamentNotifications(userId, userName, text) {
     if (!WSsocket || WSsocket.readyState !== WebSocket.OPEN) {
         console.log('WebSocket is not connected');

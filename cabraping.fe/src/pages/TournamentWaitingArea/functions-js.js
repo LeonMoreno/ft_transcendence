@@ -163,37 +163,22 @@ function updateCancelButton(isCreator) {
         }
     }
 }
-// function updateCancelButton(isCreator) {
-//     const cancelButton = document.getElementById('cancelTournamentButton');
-//     if (cancelButton) {
-//         cancelButton.disabled = false; // Enable the button for all participants
-//         if (!cancelButton.dataset.listenerAttached) {
-//             cancelButton.addEventListener('click', async function() {
-//                 const tournamentId = localStorage.getItem('currentTournamentId');
-//                 const creatorUsername = localStorage.getItem(`creatorUsername_${tournamentId}`);
-//                 const currentUsername = localStorage.getItem('username');
 
-//                 if (currentUsername === creatorUsername) {
-//                     console.log("Creator canceled the tournament.");
-//                     const message = {
-//                         type: 'tournament_canceled',
-//                         event: 'tournament_canceled',
-//                         message: 'The tournament has been canceled by the creator.',
-//                         tournament_id: tournamentId
-//                     };
-//                     if (activeWebSockets[tournamentId]) {
-//                         activeWebSockets[tournamentId].send(JSON.stringify(message));
-//                     } else {
-//                         console.error("WebSocket connection not found for tournament", tournamentId);
-//                     }
-//                 } else {
-//                     showNotificationPopup('Cancellation failed.', 'Only the creator can cancel the tournament.');
-//                 }
-//             });
-//             cancelButton.dataset.listenerAttached = true;
-//         }
-//     }
-// }
+// Diego
+export async function CancelTournament_for_descconecte_() {
+    const tournamentId = localStorage.getItem('currentTournamentId');
+    const message = {
+        type: 'tournament_canceled',
+        event: 'tournament_canceled',
+        message: 'The tournament has been canceled by the creator.',
+        tournament_id: tournamentId
+    };
+    if (activeWebSockets[tournamentId]) {
+        activeWebSockets[tournamentId].send(JSON.stringify(message));
+    } else {
+        console.error("WebSocket connection not found for tournament", tournamentId);
+    }
+}
 
 
 document.addEventListener('DOMContentLoaded', async () => {

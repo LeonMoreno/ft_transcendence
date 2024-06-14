@@ -5,6 +5,8 @@ import { getUserIdFromJWT } from "../Chat/funcions-js.js";
 import { Send_data_bacnd_the_winner } from "./tournament-logic.js";
 
 
+export let gameSocket;
+
 export async function Game_js() {
   const jwt = getToken();
   if (!jwt) {
@@ -28,7 +30,7 @@ export async function Game_js() {
   console.log(" 👨‍⚕️👨‍⚕️👨‍⚕️ game:", game);
 
   let checMyId = getUserIdFromJWT();
-  if (!(game.inviter.id === checMyId || game.invitee.id === checMyId) || game.invitationStatus !== "ACCEPTED" ){
+  if ( game.detail || !(game.inviter.id === checMyId || game.invitee.id === checMyId) || game.invitationStatus !== "ACCEPTED" ){
     window.location.replace("/#");
     return
   }
@@ -72,7 +74,7 @@ export async function Game_js() {
    * The game real-time connection
    */
 
-  const gameSocket = new WebSocket(
+  gameSocket = new WebSocket(
     `${WS_URL}/ws/game/${game.id}/?token=${jwt}&playMode=${game.playMode}`
   );
   // Also provide the play_mode

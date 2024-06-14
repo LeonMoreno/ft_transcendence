@@ -13,15 +13,15 @@ import { Error404_html } from "../pages/Error404/html.js";
 import { LogoutPage_js } from "../pages/Logout/funcions-js.js";
 import { Users_js } from "../pages/Users/funcions-js.js";
 import { Users_html } from "../pages/Users/html.js";
-import { Game_js } from "../pages/Game/funcions-js.js";
+import { Game_js, gameSocket } from "../pages/Game/funcions-js.js";
 import { Game_html } from "../pages/Game/html.js";
 import { Friends_html } from "../pages/Friends/html.js";
 import { Tournament_html } from "../pages/Tournament/html.js";
 import { TournamentInit, WS_check_the_torunament_pending } from "../pages/Tournament/funcions-js.js";
 import { TournamentWaitingArea_html } from "../pages/TournamentWaitingArea/html.js";
-import { initializeTournamentWaitingArea } from "../pages/TournamentWaitingArea/functions-js.js";
+import { CancelTournament_for_descconecte_, initializeTournamentWaitingArea } from "../pages/TournamentWaitingArea/functions-js.js";
 import { Friends_js } from "../pages/Friends/funcions-js.js";
-import { Chat_js, Chat_Update_js } from "../pages/Chat/funcions-js.js";
+import { Chat_js, Chat_Update_js, getUserIdFromJWT } from "../pages/Chat/funcions-js.js";
 import { Chat_html } from "../pages/Chat/html.js";
 import { Stat_js } from "../pages/Stat/functions-js.js";
 import { Stat_html } from "../pages/Stat/html.js";
@@ -34,6 +34,7 @@ import { Matching_js } from "../pages/Matching/funcions-js.js";
 import { getToken } from "../utils/get-token.js";
 import { getTournamentForId } from "../pages/Tournament/cancel.js";
 import { Cancel_a_Game } from "../pages/Game/cancel.js";
+import { sendGameCancelTournamentNotifications } from "../components/wcGlobal-funcions-send-message.js";
 
 const routes = {
   "/": [Home_html, Home_js],
@@ -100,10 +101,21 @@ const router = async () => {
     }
   }
 
-  if (localStorage.getItem("system_game_id"))
-  {
-    await Cancel_a_Game(localStorage.getItem("system_game_id"));
-    localStorage.removeItem("system_game_id");
+  console.log("🐹 localStorage.getItem(system_game_id):", localStorage.getItem("system_game_id"));
+  if (localStorage.getItem("system_game_id") || (localStorage.getItem("currentTournamentId") && localStorage.getItem("system_game_id")) )
+    {
+      if (localStorage.getItem("currentTournamentId"))
+      {
+        CancelTournament_for_descconecte_();
+        return;
+      }
+      if (gameSocket)
+      {
+        gameSocket.close()
+      }
+      let send_notificaque = await Cancel_a_Game(localStorage.getItem("system_game_id"));
+      sendGameCancelTournamentNotifications(getUserIdFromJWT(), localStorage.getItem('username'), send_notificaque);
+      localStorage.removeItem("system_game_id");
   }
 
 

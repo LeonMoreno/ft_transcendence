@@ -9,9 +9,10 @@ import { showModal, hideModal } from "../utils/modal.js";
 import { startTournament, handleTournamentCanceled, update_list_tournamet } from "../pages/TournamentWaitingArea/functions-js.js";
 import { updateWaitingParticipantsList } from "../pages/TournamentWaitingArea/functions-js.js";
 
-import { sendAcceptedGameNotifications, sendTournamentNotifications, sendDeleteMatchedMessage, handleUpdateWaitingList, sendUpdateList_of_tournament_Notifications } from "./wcGlobal-funcions-send-message.js";
+import { sendAcceptedGameNotifications, sendTournamentNotifications, sendDeleteMatchedMessage, handleUpdateWaitingList, sendUpdateList_of_tournament_Notifications, sendGameCancelTournamentNotifications } from "./wcGlobal-funcions-send-message.js";
 import { sendGameAcceptTournament_final_Waiting, sendGameAcceptTournament_Waiting, system_invite_game_Tournament } from "../pages/TournamentWaitingArea/game-logic.js";
-import { checkAcceptedGames, getDifference_in_array } from "../pages/Game/cancel.js";
+import { Cancel_a_Game, checkAcceptedGames, getDifference_in_array } from "../pages/Game/cancel.js";
+import { gameSocket } from "../pages/Game/funcions-js.js";
 
 const frontendURL = new URL(window.location.href);
 const serverIPAddress = frontendURL.hostname;
@@ -34,9 +35,9 @@ function filterMessagesForUser(message, userId) {
     return String(message.dest_user_id) === userId.toString();
 }
 
-function handleWebSocketMessage(message, userId) {
+async function handleWebSocketMessage(message, userId) {
     const myUser = userId;
-    execute_processes_by_category_message(message, myUser);
+    await execute_processes_by_category_message(message, myUser);
 
     // Rachel tournament
     switch (message.event) {
@@ -396,6 +397,16 @@ export async function handleTournamentWebSocketMessage(data, tournamentId) {
             break;
         case 'tournament_canceled':
         //case 'tournament_aborted':
+            if (localStorage.getItem("system_game_id"))
+            {
+                if (gameSocket)
+                {
+                  gameSocket.close()
+                }
+                let send_notificaque = await Cancel_a_Game(localStorage.getItem("system_game_id"));
+                sendGameCancelTournamentNotifications(getUserIdFromJWT(), localStorage.getItem('username'), send_notificaque);
+                localStorage.removeItem("system_game_id");
+            }
             handleTournamentCanceled(data);
             break;
         default:
@@ -415,7 +426,7 @@ function checkStartTournament(tournamentId) {
 }
 
 // function execute_processes_by_category(message, myUser) {
-function execute_processes_by_category_message(message, myUser) {
+async function execute_processes_by_category_message(message, myUser) {
     switch (message.event) {
         case "channel_created":
             showNotificationPopup(message.user_name, message.message);
@@ -455,12 +466,12 @@ function execute_processes_by_category_message(message, myUser) {
             window.location.href = `/#game/${message.message}`;
             break;
         default:
-            run_processes_per_message(message);
+            await run_processes_per_message(message);
             break;
     }
 }
 
-function run_processes_per_message(message) {
+async function run_processes_per_message(message) {
 
     switch (message.message) {
         case "Send friend request":
@@ -477,6 +488,13 @@ function run_processes_per_message(message) {
             Friends_js();
             Users_js();
             Chat_Update_js();
+            break;
+        case "Cancel Game":
+            gameSocket.close();
+            await Cancel_a_Game(localStorage.getItem("system_game_id"));
+            localStorage.removeItem("system_game_id");
+            showNotificationPopup(message.user_name, "Cancel Game")
+            window.location.href = `/#`;
             break;
         default:
             break;
@@ -520,7 +538,7 @@ export async function connectWebSocketGlobal() {
         console.log('🤯  WebSocket connection opened');
     };
 
-    WSsocket.onmessage = function (event) {
+    WSsocket.onmessage = async function (event) {
         const message = JSON.parse(event.data);
 
         console.log("--> 🎉 > 🎉 WSsocket.onmessage:", message);
