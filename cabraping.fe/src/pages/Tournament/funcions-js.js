@@ -758,8 +758,8 @@ export function acceptTournamentInvitation(tournamentId, username) {
     activeWebSockets[tournamentId].send(JSON.stringify(message));
   
     // Hide the modal
-    const modalElement = document.getElementById('tournamentInviteModal');
-    modalElement.style.display = 'none';
+    // const modalElement = document.getElementById('tournamentInviteModal');
+    // modalElement.style.display = 'none';
   }
   
 

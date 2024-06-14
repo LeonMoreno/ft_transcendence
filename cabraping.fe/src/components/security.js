@@ -21,7 +21,7 @@ export function validateAndSanitizeInput(userInput) {
     //     showNotification("Input is not a valid string", "error");
     //     return;
     // }
-    if (userInput.trim() === "" || userInput.length > 1000) {
+    if (userInput.trim() === "" || userInput.length > 100) {
         // throw new Error("Input is either empty or too long");
         showNotification("Input is either empty or too long", "error");
         return false;

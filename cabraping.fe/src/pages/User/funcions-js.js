@@ -1,3 +1,4 @@
+import { validateAndSanitizeInput } from '../../components/security.js';
 import { showNotification } from '../../components/showNotification.js';
 import { BACKEND_URL } from '../../components/wcGlobal.js';
 import { getHash } from '../../utils/getHash.js';
@@ -79,6 +80,15 @@ function FormSendData(event) {
   const firstName = document.getElementById('first_name').value;
   const lastName = document.getElementById('last_name').value;
   const imageData = document.getElementById('avatarImageURL').value;
+
+  if (
+      !validateAndSanitizeInput(username) ||
+      !validateAndSanitizeInput(firstName) ||
+      !validateAndSanitizeInput(imageData) ||
+      !validateAndSanitizeInput(lastName)
+  ){
+    return;
+}
 
   let formData = new Object();
   if (username) formData.username = username;
