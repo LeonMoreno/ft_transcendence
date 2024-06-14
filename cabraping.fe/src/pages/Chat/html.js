@@ -50,9 +50,11 @@ export  function Chat_html() {
   </div>
 
     <!-- Modal para crear un nuevo canal -->
-    <div class="modal" tabindex="-1" role="dialog" id="channelModal">
-      <div class="modal-dialog" role="document">
-        <div class="modal-content">
+    <div class="pe-auto position-fixed w-100 h-100 overflow-auto d-none" style="z-index: 1; left: 0; top: 0; background-color: rgba(0, 0, 0, 0.4);" tabindex="-1" role="dialog" id="channelModal">
+      <div class="pe-auto modal-dialog" role="document">
+
+        <div class="pe-auto bg-white mx-auto p-4 border">
+
           <div class="modal-header">
             <h5 class="modal-title">New conversation</h5>
             <h5 class="modal-title">Who do you want to start a conversation with?</h5>

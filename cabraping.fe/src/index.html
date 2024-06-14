@@ -23,7 +23,7 @@
       </section>
 
       <div
-        class="text-center position-absolute bottom-50 start-50 translate-middle"
+        class="position-fixed top-50 start-50 translate-middle text-center"
         id="notification-container"
       >
         <!--  -->
@@ -35,9 +35,10 @@
     </footer>
 
     <!-- Notification Modal -->
-    <div id="notificationModal" class="modal" tabindex="-1" role="dialog">
+    <!-- <div id="notificationModal" class="modal" tabindex="-1" role="dialog"> -->
+    <div id="notificationModal" class="d-none position-fixed w-100 h-100 overflow-auto custom-overlay" tabindex="-1" role="dialog">
       <div class="modal-dialog" role="document">
-        <div class="modal-content">
+        <div class="bg-white mx-auto p-3 border">
           <div class="modal-body">
             <p id="modalMessage"></p>
           </div>
@@ -55,8 +56,8 @@
     </div>
 
     <!-- Custom modal for tournament invitations -->
-    <div id="tournamentInviteModal" class="modal">
-      <div class="modal-content">
+    <div id="tournamentInviteModal" class="d-none position-fixed w-100 h-100 overflow-auto custom-overlay fade">
+      <div class="bg-white mx-auto p-3 border">
         <span class="close">&times;</span>
         <h5 class="modal-title">Tournament Invitation</h5>
         <p id="tournamentInviteMessage"></p>

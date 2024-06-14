@@ -1,24 +1,27 @@
-@import url("https://fonts.googleapis.com/css?family=Open+Sans:300,400&display=swap");
+/* @import url("https://fonts.googleapis.com/css?family=Open+Sans:300,400&display=swap"); */
 
-body {
+/* body {
   margin: 0;
   padding: 0;
   background-color: #f4f4f4;
   color: #3c484e;
   font-family: "Open Sans", sans-serif;
-}
+} */
 
-a {
+/* a {
   text-decoration: none;
-}
+} */
 
-.game-board {
-  background: black;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
+/* 
+#notification-container {
+  position: fixed;
+  top: 50vh;
+  left: 50vw;
+  z-index: 10;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+  text-align: center;
+} */
 
 /* .notification {
   padding: 10px 20px;
@@ -28,46 +31,12 @@ a {
   box-shadow: 0 0 10px rgba(0,0,0,0.1);
   display: inline-block;
   min-width: 200px;
+  margin: 5px;
 } */
 
-#notification-container {
-  position: fixed;
-  top: 50vh;
-  left: 50vw;
-  z-index: 10;
-  transform: translate(-50%, -50%);
-  z-index: 1000;
-  text-align: center;
-}
 
-.notification {
-  padding: 10px 20px;
-  color: white;
-  border-radius: 5px;
-  margin-bottom: 10px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
-  display: inline-block;
-  min-width: 200px;
-  margin: 5px; /* Spacing between notifications if multiple */
-}
-
-
-.notification.success { background-color: #4CAF50; }
-.notification.error { background-color: #f44336; }
-
-/* modal for chevre verte award */
-.rotating {
-  animation: rotation 2s infinite linear;
-}
-
-@keyframes rotation {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(359deg);
-  }
-}
+/* .notification.success { background-color: #4CAF50; } */
+/* .notification.error { background-color: #f44336; } */
 
 .modal {
   display: none;
