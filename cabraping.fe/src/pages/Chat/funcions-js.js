@@ -527,7 +527,6 @@ function handleButtonClick() {
   if (modal) {
 
     console.log("-----> modal.style.display:", modal.style.display);
-    // modal.style.display = "block"; // Display the modal
     modal.classList.remove("d-none");
     modal.classList.add("d-block");
     console.log("-----> modal.style.display:", modal.style.display);
