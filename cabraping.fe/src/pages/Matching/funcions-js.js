@@ -30,6 +30,12 @@ export async function Matching_js() {
             game.invitationStatus === "PENDING" &&
             (game.invitee.id === userId || game.inviter.id === userId)
     );
+    
+    const existingGame_accept = games.find(
+        (game) =>
+            game.invitationStatus === "ACCEPTED" &&
+            (game.invitee.id === userId || game.inviter.id === userId)
+    );
 
     let currentTournamentId = localStorage.getItem("currentTournamentId");
 
@@ -40,7 +46,7 @@ export async function Matching_js() {
         return;
     }
 
-    if (existingGame) {
+    if (existingGame || existingGame_accept) {
         button.disabled = true;
         statusDiv.innerHTML = '<p class="text-warning">You already have a pending game invitation.</p>';
     } else {

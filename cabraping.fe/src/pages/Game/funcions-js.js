@@ -1,6 +1,7 @@
 import { BACKEND_URL, WS_URL } from "../../components/wcGlobal.js";
 import { getToken } from "../../utils/get-token.js";
 import { getHash } from "../../utils/getHash.js";
+import { getUserIdFromJWT } from "../Chat/funcions-js.js";
 import { Send_data_bacnd_the_winner } from "./tournament-logic.js";
 
 
@@ -26,11 +27,19 @@ export async function Game_js() {
   const game = await responseGame.json();
   console.log(" 👨‍⚕️👨‍⚕️👨‍⚕️ game:", game);
 
+  let checMyId = getUserIdFromJWT();
+  if (!(game.inviter.id === checMyId || game.invitee.id === checMyId) || game.invitationStatus !== "ACCEPTED" ){
+    window.location.replace("/#");
+    return
+  }
+
   if (!game.playMode)
   {
     window.location.replace("/#");
     return;
   }
+
+  localStorage.setItem("system_game_id", game.id);
 
   document.getElementById("game-id").innerText = game.id;
   document.getElementById("game-play-mode-text").innerText =
@@ -228,6 +237,16 @@ export async function Game_js() {
     leftPaddleScoreElement.innerText = state.left_score || 0;
     rightPaddleScoreElement.innerText = state.right_score || 0;
 
+    if(!localStorage.getItem("system_game_id")){
+      gameSocket.close();
+
+      // Optionally remove event listeners to prevent further key inputs
+      document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("keyup", handleKeyUp);
+      return;
+    }
+
+
     if (state.winner) {
       // Close the WebSocket connection
       gameSocket.close();
@@ -272,6 +291,7 @@ export async function Game_js() {
       );
 
       const result = response.json;
+      localStorage.removeItem("system_game_id");
 
       // Diego - save data in the banckend
       setTimeout( async () =>  {

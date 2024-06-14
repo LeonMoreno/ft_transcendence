@@ -6,11 +6,12 @@ import { Users_js } from "../pages/Users/funcions-js.js";
 import { updateParticipantsList, acceptTournamentInvitation, rejectTournamentInvitation, connectTournamentWebSocket, WS_check_the_torunament_pending, TournamentInit, Check_if_im_the_creator_to_reload } from "../pages/Tournament/funcions-js.js";
 import { getToken } from "../utils/get-token.js";
 import { showModal, hideModal } from "../utils/modal.js";
-import { startTournament, handleTournamentCanceled } from "../pages/TournamentWaitingArea/functions-js.js";
+import { startTournament, handleTournamentCanceled, update_list_tournamet } from "../pages/TournamentWaitingArea/functions-js.js";
 import { updateWaitingParticipantsList } from "../pages/TournamentWaitingArea/functions-js.js";
 
 import { sendAcceptedGameNotifications, sendTournamentNotifications, sendDeleteMatchedMessage, handleUpdateWaitingList, sendUpdateList_of_tournament_Notifications } from "./wcGlobal-funcions-send-message.js";
 import { sendGameAcceptTournament_final_Waiting, sendGameAcceptTournament_Waiting, system_invite_game_Tournament } from "../pages/TournamentWaitingArea/game-logic.js";
+import { checkAcceptedGames, getDifference_in_array } from "../pages/Game/cancel.js";
 
 const frontendURL = new URL(window.location.href);
 const serverIPAddress = frontendURL.hostname;
@@ -175,7 +176,7 @@ export async function getUserIdByUsername(username) {
         // const response = await fetch(`${BACKEND_URL}/api/users?username=${username}`, {
         const response = await fetch(`${BACKEND_URL}/api/users/`, {
             headers: {
-                'Authorization': `Bearer ${getToken()}`, 
+                'Authorization': `Bearer ${getToken()}`,
                 'Content-Type': 'application/json'
             }
         });
@@ -530,6 +531,29 @@ export async function connectWebSocketGlobal() {
 
         switch (message.event) {
             case 'update_user_list':
+
+                // checkAcceptedGames
+                // getDifference_in_array
+                if (localStorage.getItem('id_active_users')){
+                    console.log("DDDDDDDDDDDDD localStorage.getItem('id_active_users'):", localStorage.getItem('id_active_users'));
+                    let diff_value = getDifference_in_array(message.user_ids, localStorage.getItem('id_active_users'))
+                    console.log("DDDDDDDDDDDDD diff_value:", diff_value);
+                    if (diff_value)
+                        {
+                        diff_value.map( async (id) => {
+                            
+                            let ifGame = await checkAcceptedGames(id);
+                            console.log("DDDDDDDDDDDDD id:", id, ", ifGame:", ifGame);
+                            if (ifGame)
+                            {
+                                await checkAcceptedGames(ifGame.id);
+                            }
+                            return
+                        } )
+                    }
+                }
+
+
                 localStorage.setItem('id_active_users', JSON.stringify(message.user_ids));
                 Chat_Update_js();
                 Friends_js();
@@ -576,9 +600,7 @@ async function Torunament_game_diego(message) {
             system_invite_game_Tournament();
         }
         if (`system_Tournament_${tournament_id}_updatelist` === message.message){
-            // system_invite_game_Tournament();
-            console.log("=!!!!!!!!!!!! reload !!!");
-            // Check_if_im_the_creator_to_reload
+            update_list_tournamet()
             Check_if_im_the_creator_to_reload();
         }
 

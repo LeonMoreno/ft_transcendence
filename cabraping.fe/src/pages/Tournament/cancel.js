@@ -7,6 +7,14 @@ import { fetchTournaments } from "./funcions-js.js";
 
 export async function update_cancel_of_tournament(tournamentId) {
 
+    // getTournamentForId
+    let my_tournamet = await getTournamentForId(tournamentId)
+
+    console.log("/////////// update_cancel_of_tournament: my_tournamet:", my_tournamet);
+
+    if (my_tournamet.status === "completed"){
+        return;
+    }
 
     const response = await fetch(`${BACKEND_URL}/api/tournaments/${tournamentId}/update_status/`, {
         method: 'PUT',

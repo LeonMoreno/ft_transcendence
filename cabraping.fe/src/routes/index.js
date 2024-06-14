@@ -33,6 +33,7 @@ import { Matching_html } from "../pages/Matching/html.js";
 import { Matching_js } from "../pages/Matching/funcions-js.js";
 import { getToken } from "../utils/get-token.js";
 import { getTournamentForId } from "../pages/Tournament/cancel.js";
+import { Cancel_a_Game } from "../pages/Game/cancel.js";
 
 const routes = {
   "/": [Home_html, Home_js],
@@ -98,6 +99,13 @@ const router = async () => {
       localStorage.removeItem("currentTournamentId");
     }
   }
+
+  if (localStorage.getItem("system_game_id"))
+  {
+    await Cancel_a_Game(localStorage.getItem("system_game_id"));
+    localStorage.removeItem("system_game_id");
+  }
+
 
   content.innerHTML = await render[0]();
   if (render.length > 1) {

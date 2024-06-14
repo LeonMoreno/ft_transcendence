@@ -361,12 +361,37 @@ async function initializeTournamentWaitingArea() {
         connectTournamentWebSocket(tournamentId);
     }
 
-    setInterval(async () => {
-        const participants = await fetchParticipantsRSVPs(tournamentId);
-        updateWaitingParticipantsList(participants);
-        updateCancelButton(isCreator);
-    }, 5000);
+    // setInterval(async () => {
+    //     console.log(">> setInterval tournamentId:", tournamentId);
+    //     const participants = await fetchParticipantsRSVPs(tournamentId);
+    //     updateWaitingParticipantsList(participants);
+    //     updateCancelButton(isCreator);
+    // }, 5000);
+
+    update_list_tournamet();
+
+
 }
+
+
+export async function update_list_tournamet() {
+
+    let tournamentId_update_list_tournamet = localStorage.getItem("currentTournamentId");
+
+    if (!tournamentId_update_list_tournamet)
+    {
+        return;
+    }
+
+    const creatorUsername = localStorage.getItem('creatorUsername_' + tournamentId_update_list_tournamet);
+    const isCreator = localStorage.getItem('username') === creatorUsername;
+
+    console.log(">> setInterval tournamentId:", tournamentId_update_list_tournamet);
+    const participants = await fetchParticipantsRSVPs(tournamentId_update_list_tournamet);
+    updateWaitingParticipantsList(participants);
+    updateCancelButton(isCreator);
+}
+
 
 export function startTournament() {
     console.log('All participants are ready. Starting the tournament...');
@@ -374,7 +399,17 @@ export function startTournament() {
 }
 
 export async function handleTournamentCanceled(data) {
+
     const { message, tournament_id } = data;
+
+    let my_tournamet = await getTournamentForId(tournament_id)
+
+    console.log("/////////// my_tournamet:", my_tournamet);
+
+    if (my_tournamet.status === "completed"){
+        return;
+    }
+
     showNotificationPopup('Tournament canceled.', message);
     
     // Remove tournament data from local storage
