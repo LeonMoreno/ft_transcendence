@@ -36,7 +36,7 @@ class Game:
                 self.left_paddle_x + 1
             )  # Prevent ball from going inside paddle
             self.ball_dx *= -1
-
+        #this is jo 
         # Check collision with right paddle
         if (
             self.ball_x >= self.right_paddle_x - 1  # Adjust collision margin
