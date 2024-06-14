@@ -1,4 +1,5 @@
-import { WSsocket, BACKEND_URL, WS_URL } from "./wcGlobal.js";
+import { getToken } from "../utils/get-token.js";
+import { WSsocket, BACKEND_URL, WS_URL, connectWebSocketGlobal } from "./wcGlobal.js";
 
 // Función para enviar un mensaje específico al WebSocket
 export function sendAcceptedGameNotifications(userId, userName, destUserId, game_id) {
@@ -174,6 +175,24 @@ export async function sendGameInitiate_Waiting(userId, inviteId) {
     return response;
 }
 
+
+async function hasPendingOrAcceptedGames(userId) {
+    const response = await fetch(`${BACKEND_URL}/api/games/`, {
+        headers: { Authorization: `Bearer ${getToken()}` }
+    });
+
+    if (!response.ok) {
+        console.error('Error fetching games:', response.statusText);
+        return false;
+    }
+
+    const games = await response.json();
+    return games.some(game =>
+        (game.invitee.id === userId || game.inviter.id === userId) &&
+        (game.invitationStatus === "PENDING" || game.invitationStatus === "ACCEPTED")
+    );
+}
+
 // Función para manejar el evento "update_waiting_list"
 export async function handleUpdateWaitingList(message, userId, myUser) {
     const waitingIds = message.waiting_ids;
@@ -181,11 +200,24 @@ export async function handleUpdateWaitingList(message, userId, myUser) {
     if (waitingIds.length >= 2) {
         for (let i = 1; i < waitingIds.length; i += 2) {
             if (waitingIds[i] === userId) {
-                console.log("---> Matching: sendGameInitiate_Waiting:", userId, waitingIds[i - 1]);
-                let status = await sendGameInitiate_Waiting(userId, waitingIds[i - 1]);
+
+                console.log("---> Matching: sendGameInitate_Waiting:", userId, waitingIds[i - 1]);
+
+                let status_id_1 = await hasPendingOrAcceptedGames(userId);
+                let status_id_2 = await hasPendingOrAcceptedGames(waitingIds[i - 1]);
+
+                console.log(">> status_id_1:", status_id_1);
+                console.log(">> status_id_2:", status_id_2);
+                if (status_id_2 || status_id_1){
+                    return;
+                }
+
+                let status = await sendGameInitate_Waiting(userId, waitingIds[i - 1]);
                 if (status.ok) {
                     console.log("---> Matching: Se mando la invitacion a l juego:", userId, myUser.username, waitingIds[i - 1], "system");
-                    sendGameInviteNotifications(userId, myUser.username, waitingIds[i - 1], "system");
+                    sendGameInvataeNotifications(userId, myUser.username, waitingIds[i - 1], "system");
+                    // WSsocket.close();
+                    // connectWebSocketGlobal()
                 }
                 break;
             }

@@ -47,6 +47,13 @@ export async function Chat_Update_js() {
 
   channels = await getUserChannels(myUser.id);
 
+  console.log("update channels:", channels);
+
+  console.log(">>>>> channel_now:", channel_now);
+  if (channel_now !== "/"){
+    switchChannel(channel_now);
+  }
+
   if (channels.length > 0) {
     updateChannelList(channels); // Call the new function to update the channels dropdown
     channel = channels[0].id; // Sets the first channel as the current channel
@@ -138,8 +145,11 @@ export async function Chat_js() {
     }
 
     let userId = getUserIdFromJWT();
-    // const channels = await getUserChannels(userId);
-    channels = await getUserChannels(userId);
+    const channels = await getUserChannels(userId);
+    // channels = await getUserChannels_filter_blockuser(userId);
+
+    // let filter = await getUserChannels_filter_blockuser(userId);
+    // console.log("getUserChannels_filter_blockuser", filter);
 
     if (channels.length > 0) {
       updateChannelList(channels); // Call the new function to update the channels dropdown
@@ -331,13 +341,29 @@ async function inviteGame(jwt) {
 
     switchChannel(-1);
     updateChannelList(channels);
+
     if (response.ok) {
       showNotification('User blocked successfully', 'success');
     } else {
       showNotification('Failed to block user', 'error');
     }
 
-    blocks_users_frontend(jwt);
+    await blocks_users_frontend(jwt);
+
+    disconnectWebSocket(channel_now);
+    Chat_Update_js();
+  }
+
+  async function disconnectWebSocket(check_channel_infucion) {
+
+    // if (sockets[channel_now]) {
+    //   sockets[channel_now].close();
+    //   delete sockets[channel_now];
+    // }
+      // sockets[check_channel_infucion].close();
+      delete sockets[check_channel_infucion];
+
+      console.log(">>> delete sockets[check_channel_infucion]:", sockets[check_channel_infucion]);
   }
 
   async function  blocks_users_frontend(jwt) {
@@ -431,7 +457,13 @@ function handleSendClick() {
   }
 }
 
-function addMessageToChat(message) {
+async function addMessageToChat(message) {
+
+  let block_users = await get_User_list_blockuser(user_id);
+
+  if ( block_users.some((id) =>  id === message.userDetails.id) ){
+    return;
+  }
 
   saveMessageToLocalStorage(message);
   if (message.channel === channel_now) {
@@ -612,6 +644,8 @@ function switchChannel(newChannelId) {
   // Update the current channel
   channel_now = newChannelId;
 
+  console.log(" <<<<<<< channel_now:", channel_now);
+
   // Clear the chat messages from the UI
 
   const inviteGameButtonButton = document.getElementById('inviteGameButton');
@@ -620,6 +654,11 @@ function switchChannel(newChannelId) {
   const sendButton = document.getElementById('sendButton');
   const messageTextarea = document.getElementById('messageTextarea');
   const messageList = document.getElementById('messageList');
+
+  if (!inviteGameButtonButton || !userButton || !blockButton || !sendButton || !messageTextarea || !messageList)
+  {
+    return;
+  }
   messageList.innerHTML = '';
 
   let currentTournamentId = localStorage.getItem("currentTournamentId");
@@ -736,7 +775,23 @@ async function getUserChannels(userId) {
   );
   console.log("response:", await response);
   const data = await response.json();
+
+  console.log("getUserChannels:", data);
   return data;
+}
+
+// async function getUserChannels_filter_blockuser(userId) {
+async function get_User_list_blockuser() {
+ 
+  // block list
+  const responseBlockUser = await fetch(`${BACKEND_URL}/api/users-blocks/blocked/`, {
+    headers: { Authorization: `Bearer ${getToken()}` },
+  });
+  blockUsersList = await responseBlockUser.json();
+
+  let blockUsersList_id = blockUsersList.map((Block_user) => Block_user.id);
+
+  return blockUsersList_id;
 }
 
 // Function to create a WebSocket connection
@@ -830,6 +885,7 @@ function handleSaveChannelClick() {
         showNotification("Channel successfully created", "success");
         // Actualiza la lista de canales
         getUserChannels(user_id).then(updateChannelList); // Asume que user_id es global
+        // getUserChannels_filter_blockuser(user_id).then(updateChannelList); // Asume que user_id es global
         // sendChannelCreatedMessage
         sendChannelCreatedNotifications(user_id, UserName, selectedUsersMember[0])
       } else {
