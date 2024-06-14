@@ -4,22 +4,8 @@ import { getHash } from "../../utils/getHash.js";
 import { Send_data_bacnd_the_winner } from "./tournament-logic.js";
 
 
-// Extract the IP address from the URL used to access the frontend
-// const frontendURL = new URL(window.location.href);
-// const serverIPAddress = frontendURL.hostname;
-// const serverPort = 8000; // Specify the port your backend server is running on
-// const BACKEND_URL = `http://${serverIPAddress}:${serverPort}`;
-// const WS_URL = `ws://${serverIPAddress}:${serverPort}`;
-
-// Extract the IP address from the URL used to access the frontend
-// const frontendURL = new URL(window.location.href);
-// const serverIPAddress = frontendURL.hostname;
-// const serverPort = 8000; // Specify the port your backend server is running on
-// const BACKEND_URL = `http://${serverIPAddress}:${serverPort}`;
-
 export async function Game_js() {
   const jwt = getToken();
-
   if (!jwt) {
     window.location.replace("/#");
   }
@@ -27,19 +13,31 @@ export async function Game_js() {
   const gameId = getHash();
   if (gameId === "/") return;
 
-  // Fetch initial game data
-  const responseGame = await fetch(`${BACKEND_URL}/api/games/${gameId}/`, {
-    headers: { Authorization: `Bearer ${jwt}` },
-  });
-  const game = await responseGame.json();
-
   // Fetch the current user's ID
   const responseUser = await fetch(`${BACKEND_URL}/api/me/`, {
     headers: { Authorization: `Bearer ${jwt}` },
   });
   const myUserData = await responseUser.json();
 
+  // Fetch initial game data/details
+  const responseGame = await fetch(`${BACKEND_URL}/api/games/${gameId}/`, {
+    headers: { Authorization: `Bearer ${jwt}` },
+  });
+  const game = await responseGame.json();
+  console.log(" 👨‍⚕️👨‍⚕️👨‍⚕️ game:", game);
+
+  if (!game.playMode)
+  {
+    window.location.replace("/#");
+    return;
+  }
+
   document.getElementById("game-id").innerText = game.id;
+  document.getElementById("game-play-mode-text").innerText =
+    game.playMode === 1 ? "Play on 1 Computer" : "Play on 2 Computers";
+  document.getElementById("game-winner-text").innerText = game.winner.username
+    ? `${game.winner.username} is the winner! 🎉`
+    : "";
 
   // Determine if the current user is the inviter or invitee
   const isLeftPlayer = myUserData.id === game.inviter.id;
@@ -66,8 +64,9 @@ export async function Game_js() {
    */
 
   const gameSocket = new WebSocket(
-    `${WS_URL}/ws/game/${game.id}/?token=${jwt}}`
+    `${WS_URL}/ws/game/${game.id}/?token=${jwt}&playMode=${game.playMode}`
   );
+  // Also provide the play_mode
 
   gameSocket.onopen = function (event) {
     console.info("Game socket connected");
@@ -127,53 +126,101 @@ export async function Game_js() {
     resetting: false,
   };
 
-  // Check collision between two objects
-  function collides(obj1, obj2) {
-    return (
-      obj1.x < obj2.x + obj2.width &&
-      obj1.x + obj1.width > obj2.x &&
-      obj1.y < obj2.y + obj2.height &&
-      obj1.y + obj2.height > obj2.y
-    );
-  }
+  // Define variables to accumulate paddle movements
+  let leftPaddleMovement = 0;
+  let rightPaddleMovement = 0;
+  const MOVEMENT_SPEED = 5; // Adjust as needed
 
   document.addEventListener("keydown", handleKeyDown);
   document.addEventListener("keyup", handleKeyUp);
 
+  const KEYS = {
+    W: 87,
+    S: 83,
+    UP: 38,
+    DOWN: 40,
+  };
+
   function handleKeyDown(e) {
-    if (isLeftPlayer) {
-      if (e.which === 87) {
+    if (game.playMode === 1) {
+      // W key
+      if (e.which === KEYS.W) {
+        leftPaddleMovement = -MOVEMENT_SPEED;
+      }
+      // S key
+      if (e.which === KEYS.S) {
+        leftPaddleMovement = MOVEMENT_SPEED;
+      }
+      // Up arrow key
+      if (e.which === KEYS.UP) {
+        rightPaddleMovement = -MOVEMENT_SPEED;
+      }
+      // Down arrow key
+      if (e.which === KEYS.DOWN) {
+        rightPaddleMovement = MOVEMENT_SPEED;
+      }
+    } else if (game.playMode === 2) {
+      if (isLeftPlayer) {
         // W key
-        gameSocket.send(JSON.stringify({ paddle_move: "up", side: "left" }));
-      } else if (e.which === 83) {
+        if (e.which === KEYS.W) {
+          leftPaddleMovement = -MOVEMENT_SPEED;
+        }
         // S key
-        gameSocket.send(JSON.stringify({ paddle_move: "down", side: "left" }));
+        if (e.which === KEYS.S) {
+          leftPaddleMovement = MOVEMENT_SPEED;
+        }
+      } else if (isRightPlayer) {
+        // Up arrow key
+        if (e.which === KEYS.UP) {
+          rightPaddleMovement = -MOVEMENT_SPEED;
+        }
+        // Down arrow key
+        if (e.which === KEYS.DOWN) {
+          rightPaddleMovement = MOVEMENT_SPEED;
+        }
       }
     }
-    if (isRightPlayer) {
-      if (e.which === 38) {
-        // Up key
-        gameSocket.send(JSON.stringify({ paddle_move: "up", side: "right" }));
-      } else if (e.which === 40) {
-        // Down key
-        gameSocket.send(JSON.stringify({ paddle_move: "down", side: "right" }));
-      }
-    }
+
+    // Send movement data to server
+    gameSocket.send(
+      JSON.stringify({
+        paddle_move_left: leftPaddleMovement,
+        paddle_move_right: rightPaddleMovement,
+      })
+    );
   }
 
   function handleKeyUp(e) {
-    if (isLeftPlayer) {
-      if (e.which === 87 || e.which === 83) {
+    if (game.playMode === 1) {
+      // W or S key
+      if (e.which === KEYS.W || e.which === KEYS.S) {
+        leftPaddleMovement = 0;
+      }
+      // Up or Down arrow key
+      if (e.which === KEYS.UP || e.which === KEYS.DOWN) {
+        rightPaddleMovement = 0;
+      }
+    } else if (game.playMode === 2) {
+      if (isLeftPlayer) {
         // W or S key
-        gameSocket.send(JSON.stringify({ paddle_move: "stop", side: "left" }));
+        if (e.which === KEYS.W || e.which === KEYS.S) {
+          leftPaddleMovement = 0;
+        }
+      } else if (isRightPlayer) {
+        // Up or Down arrow key
+        if (e.which === KEYS.UP || e.which === KEYS.DOWN) {
+          rightPaddleMovement = 0;
+        }
       }
     }
-    if (isRightPlayer) {
-      if (e.which === 38 || e.which === 40) {
-        // Up or Down key
-        gameSocket.send(JSON.stringify({ paddle_move: "stop", side: "right" }));
-      }
-    }
+
+    // Send stop message to server
+    gameSocket.send(
+      JSON.stringify({
+        paddle_move_left: leftPaddleMovement,
+        paddle_move_right: rightPaddleMovement,
+      })
+    );
   }
 
   async function renderGameState(state) {
@@ -182,16 +229,24 @@ export async function Game_js() {
     rightPaddleScoreElement.innerText = state.right_score || 0;
 
     if (state.winner) {
-      console.log({ state });
-      // Announce the winner and stop the game
-      // alert(`Game finished.`);
-
       // Close the WebSocket connection
       gameSocket.close();
 
       // Optionally remove event listeners to prevent further key inputs
       document.removeEventListener("keydown", handleKeyDown);
       document.removeEventListener("keyup", handleKeyUp);
+
+      // Announce the winner and stop the game
+      const winner =
+        state.winner === "left"
+          ? game.inviter
+          : state.winner === "right"
+          ? game.invitee
+          : "";
+
+      document.getElementById(
+        "game-winner-text"
+      ).innerText = `${winner.username} is the winner! 🎉`;
 
       let winnerId = null;
       if (state.winner === "left") {
@@ -244,17 +299,12 @@ export async function Game_js() {
 
     // Draw paddles
     context.fillStyle = "white";
-    context.fillRect(
-      leftPaddle.x,
-      leftPaddleY,
-      leftPaddle.width,
-      paddleHeight + 5
-    );
+    context.fillRect(leftPaddle.x, leftPaddleY, leftPaddle.width, paddleHeight);
     context.fillRect(
       rightPaddle.x,
       rightPaddleY,
       rightPaddle.width,
-      paddleHeight + 5
+      paddleHeight
     );
 
     // Draw ball

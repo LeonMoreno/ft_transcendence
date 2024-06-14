@@ -1,5 +1,8 @@
-import {BACKEND_URL } from "../../components/wcGlobal.js";
-import { sendFriendAcceptdNotifications, sendFriendDeletedNotifications } from "../../components/wcGlobal-funcions-send-message.js";
+import { BACKEND_URL } from "../../components/wcGlobal.js";
+import {
+  sendFriendAcceptdNotifications,
+  sendFriendDeletedNotifications,
+} from "../../components/wcGlobal-funcions-send-message.js";
 import { getToken } from "../../utils/get-token.js";
 import { showActiveFriends } from "../Chat/funcions-js.js";
 
@@ -17,8 +20,7 @@ let friendRequests = [];
 export async function Friends_js() {
   const jwt = getToken();
 
-  if (!jwt)
-  {
+  if (!jwt) {
     window.location.replace("/#");
   }
 
@@ -30,8 +32,7 @@ export async function Friends_js() {
 export async function fetchMyUserData() {
   const jwt = getToken();
 
-  if (!jwt)
-  {
+  if (!jwt) {
     window.location.replace("/#");
   }
 
@@ -127,57 +128,58 @@ export async function FriendsRender() {
     })
     .join("");
 
-  // const inviteGameButtonElements = document.querySelectorAll(
-  //   '[data-action="invite-game"]'
-  // );
+  const inviteGameButtonElements = document.querySelectorAll(
+    '[data-action="invite-game"]'
+  );
 
-  // const acceptGameButtonElements = document.querySelectorAll(
-  //   '[data-action="accept-game"]'
-  // );
+  const acceptGameButtonElements = document.querySelectorAll(
+    '[data-action="accept-game"]'
+  );
 
-  // inviteGameButtonElements.forEach((button) => {
-  //   button.addEventListener("click", async (event) => {
-  //     const friendId = Number(event.target.getAttribute("data-id"));
+  inviteGameButtonElements.forEach((button) => {
+    button.addEventListener("click", async (event) => {
+      const friendId = Number(event.target.getAttribute("data-id"));
 
-  //     const result = await fetch(`${BACKEND_URL}/api/games/`, {
-  //       method: "POST",
-  //       headers: {
-  //         Authorization: `Bearer ${jwt}`,
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: JSON.stringify({
-  //         invitationStatus: "PENDING",
-  //         inviter: myUserData.id,
-  //         invitee: friendId,
-  //       }),
-  //     });
+      await fetch(`${BACKEND_URL}/api/games/`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${jwt}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          playMode: 2,
+          invitationStatus: "PENDING",
+          inviter: myUserData.id,
+          invitee: friendId,
+        }),
+      });
 
-  //     FriendsRender();
-  //     FriendRequestsRender();
-  //   });
-  // });
+      FriendsRender();
+      FriendRequestsRender();
+    });
+  });
 
-  // acceptGameButtonElements.forEach((button) => {
-  //   button.addEventListener("click", async (event) => {
-  //     const gameId = Number(event.target.getAttribute("data-id"));
+  acceptGameButtonElements.forEach((button) => {
+    button.addEventListener("click", async (event) => {
+      const gameId = Number(event.target.getAttribute("data-id"));
 
-  //     const result = await fetch(
-  //       `${BACKEND_URL}/api/games/${gameId}/accept_game/`,
-  //       {
-  //         method: "PUT",
-  //         headers: {
-  //           Authorization: `Bearer ${jwt}`,
-  //           "Content-Type": "application/json",
-  //         },
-  //       }
-  //     );
+      const result = await fetch(
+        `${BACKEND_URL}/api/games/${gameId}/accept_game/`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${jwt}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
-  //     window.location.href = `/#game/${gameId}`;
+      window.location.href = `/#game/${gameId}`;
 
-  //     FriendsRender();
-  //     FriendRequestsRender();
-  //   });
-  // });
+      FriendsRender();
+      FriendRequestsRender();
+    });
+  });
 
 }
 

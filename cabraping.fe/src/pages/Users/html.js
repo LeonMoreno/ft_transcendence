@@ -1,10 +1,8 @@
-
 export function Users_html() {
-
-  const jwt = localStorage.getItem('jwt');
+  const jwt = localStorage.getItem("jwt");
   if (!jwt) {
-      window.location.href = '/#';
-      return;
+    window.location.href = "/#";
+    return;
   }
 
   return `

@@ -213,6 +213,7 @@ async function inviteGame(jwt) {
           "Content-Type": "application/json",
       },
       body: JSON.stringify({
+          playMode: 2,
           invitationStatus: "PENDING",
           inviter: myUser.id,
           invitee: communication_user_id,

@@ -416,15 +416,12 @@ function execute_processes_by_category_message(message, myUser) {
                 console.log("-> system-tournament - Matching showNotificationPopup myUser:", myUser,);
                 console.log("-> system-tournament - Matching showNotificationPopup message.dest_user_id:", message.dest_user_id, ", message.user_id:", message.user_id);
                 sendGameAcceptTournament_Waiting(message.dest_user_id, message.user_id, myUser)
-                // sendGameAccept_Waiting(message.dest_user_id, message.user_id, myUser);
             } else if (message.message === 'system-tournament-final'){
                 console.log("-> system-tournament - final showNotificationPopup");
                 console.log("-> system-tournament - final showNotificationPopup message:", message,);
                 console.log("-> system-tournament - final showNotificationPopup myUser:", myUser,);
                 console.log("-> system-tournament - final showNotificationPopup message.dest_user_id:", message.dest_user_id, ", message.user_id:", message.user_id);
                 // diego - aceptarjuego
-                // sendGameAcceptTournament_Waiting(message.dest_user_id, message.user_id, myUser)
-                // sendGameAcceptTournament_final_Waiting
                 sendGameAcceptTournament_final_Waiting(message.dest_user_id, message.user_id, myUser);
             }else{
                 Chat_Update_js();
@@ -633,8 +630,8 @@ async function sendGameAccept_Waiting(userId, dest_user_id, myUser) {
         if (!response.ok) {
             console.log("error in system");
         }
-        sendAcceptedGameNotifications(userId, myUser.userName, dest_user_id, game.id);
         sendDeleteMatchedMessage(userId, dest_user_id);
+        sendAcceptedGameNotifications(userId, myUser.userName, dest_user_id, game.id);
         window.location.href = `/#game/${game.id}`;
     }
 }

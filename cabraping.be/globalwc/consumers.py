@@ -97,6 +97,7 @@ class NotificationConsumer(AsyncWebsocketConsumer):
             dest_user_id = text_data_json.get('dest_user_id', '')
             tournament_id = text_data_json.get('tournament_id', '')
             tournament_name = text_data_json.get('tournament_name', '')
+            matched_user_ids = text_data_json.get('matched_user_ids', [])
 
             if event_type == 'wait_matched':
                 # Add user to the waiting list
@@ -115,7 +116,7 @@ class NotificationConsumer(AsyncWebsocketConsumer):
 
             elif event_type == 'delete_matched' and len(matched_user_ids) == 2:
                 # Remove matched users from the waiting list
-                for matched_user_id in matched_user_ids:
+                for matched_user_id in matched_user_ids :
                     waiting_users.discard(matched_user_id)
                     if matched_user_id in waiting_channels:
                         del waiting_channels[matched_user_id]

@@ -166,6 +166,7 @@ export async function sendGameInitiate_Waiting(userId, inviteId) {
             "Content-Type": "application/json",
         },
         body: JSON.stringify({
+            playMode: 2,
             invitationStatus: "PENDING",
             inviter: userId,
             invitee: inviteId,
@@ -201,29 +202,32 @@ export async function handleUpdateWaitingList(message, userId, myUser) {
         for (let i = 1; i < waitingIds.length; i += 2) {
             if (waitingIds[i] === userId) {
 
-                console.log("---> Matching: sendGameInitate_Waiting:", userId, waitingIds[i - 1]);
+                console.log("---> Matching: sendGameInitiate_Waiting:", userId, waitingIds[i - 1]);
 
-                let status_id_1 = await hasPendingOrAcceptedGames(userId);
-                let status_id_2 = await hasPendingOrAcceptedGames(waitingIds[i - 1]);
+                // let status_id_1 = await hasPendingOrAcceptedGames(userId);
+                // let status_id_2 = await hasPendingOrAcceptedGames(waitingIds[i - 1]);
 
-                console.log(">> status_id_1:", status_id_1);
-                console.log(">> status_id_2:", status_id_2);
-                if (status_id_2 || status_id_1){
-                    return;
-                }
+                // console.log(">> status_id_1:", status_id_1);
+                // console.log(">> status_id_2:", status_id_2);
+                // if (status_id_2 || status_id_1){
+                //     return;
+                // }
 
-                let status = await sendGameInitate_Waiting(userId, waitingIds[i - 1]);
+                // let status = await sendGameInitiate_Waiting(userId, waitingIds[i - 1]);
+                let status = await sendGameInitiate_Waiting(userId, waitingIds[i - 1]);
+                console.log("<--- Matching: status:", status);
                 if (status.ok) {
                     console.log("---> Matching: Se mando la invitacion a l juego:", userId, myUser.username, waitingIds[i - 1], "system");
-                    sendGameInvataeNotifications(userId, myUser.username, waitingIds[i - 1], "system");
-                    // WSsocket.close();
-                    // connectWebSocketGlobal()
+                    sendGameInviteNotifications(userId, myUser.username, waitingIds[i - 1], "system");
+                //     // WSsocket.close();
+                //     // connectWebSocketGlobal()
                 }
                 break;
             }
         }
     }
 }
+
 
 // Función para enviar un mensaje específico al WebSocket
 export function sendChannelCreatedNotifications(userId, userName, destUserId) {

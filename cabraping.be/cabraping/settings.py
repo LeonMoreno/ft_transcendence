@@ -179,31 +179,6 @@ DATABASES = {
 }
 # < Docker ----------------------------------------------------------------------------------------------------------------------------
 
-#---> Local
-# CHANNEL_LAYERS = {
-#    'default': {
-#        'BACKEND': 'channels_redis.core.RedisChannelLayer',
-#        'CONFIG': {
-#            "hosts": [('127.0.0.1', 6379)],  # Cambia si tu servidor Redis está en una ubicación diferente
-#            "hosts": [('127.0.0.1', 6379)],  # Cambia si tu servidor Redis está en una ubicación diferente
-#        },
-#    },
-# }
-
-# DATABASES = {
-#    'default': {
-#        'ENGINE': 'django.db.backends.postgresql',
-#        'NAME': 'transcendence_db',
-#        'USER': 'transcendence_user',
-#        'PASSWORD': 'transcendence_password',
-#        'HOST': 'localhost',
-#        'HOST': 'localhost',
-#        'PORT': '5432',
-#    }
-# }
-
-# < Local ----------------------------------------------------------------------------------------------------------------------------
-
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
