@@ -46,9 +46,13 @@ export async function Chat_Update_js() {
   UserName = myUser.username;
 
   channels = await getUserChannels(myUser.id);
-  // channels = await getUserChannels_filter_blockuser(myUser.id);
 
   console.log("update channels:", channels);
+
+  console.log(">>>>> channel_now:", channel_now);
+  if (channel_now !== "/"){
+    switchChannel(channel_now);
+  }
 
   if (channels.length > 0) {
     updateChannelList(channels); // Call the new function to update the channels dropdown
@@ -455,11 +459,8 @@ function handleSendClick() {
 
 async function addMessageToChat(message) {
 
-  console.log(">>>>>> addMessageToChat:", message);
-
   let block_users = await get_User_list_blockuser(user_id);
 
-  console.log(">>>>>> verificar si esta bloqueado:", (block_users.some((id) =>  id === message.userDetails.id)));
   if ( block_users.some((id) =>  id === message.userDetails.id) ){
     return;
   }
@@ -643,6 +644,8 @@ function switchChannel(newChannelId) {
   // Update the current channel
   channel_now = newChannelId;
 
+  console.log(" <<<<<<< channel_now:", channel_now);
+
   // Clear the chat messages from the UI
 
   const inviteGameButtonButton = document.getElementById('inviteGameButton');
@@ -651,6 +654,11 @@ function switchChannel(newChannelId) {
   const sendButton = document.getElementById('sendButton');
   const messageTextarea = document.getElementById('messageTextarea');
   const messageList = document.getElementById('messageList');
+
+  if (!inviteGameButtonButton || !userButton || !blockButton || !sendButton || !messageTextarea || !messageList)
+  {
+    return;
+  }
   messageList.innerHTML = '';
 
   let currentTournamentId = localStorage.getItem("currentTournamentId");

@@ -427,6 +427,7 @@ function execute_processes_by_category_message(message, myUser) {
                 // sendGameAcceptTournament_final_Waiting
                 sendGameAcceptTournament_final_Waiting(message.dest_user_id, message.user_id, myUser);
             }else{
+                Chat_Update_js();
                 showNotificationPopup(message.user_name, message.message);
             }
             break;
