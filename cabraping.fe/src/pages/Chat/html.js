@@ -14,7 +14,7 @@ export  function Chat_html() {
       <div class="mb-4">
         <h4 class="d-flex justify-content-between fs-5">
           Messages with all
-          <button id="addChannel" class="btn btn-primary btn-sm">Add Channel</button>
+          <button id="addChannel" class="btn btn-primary btn-sm">New conversation</button>
         </h4>
         <div id="chanelsLists" class="chat-messages">
             <!-- Aquí se agregarán los mensajes -->
@@ -30,7 +30,7 @@ export  function Chat_html() {
     <!-- Panel Medio: Chat Messages -->
     <div class="bg-white p-3 overflow-auto" style="flex-grow: 1;">
       <h3 id="channel-title" class="mb-4">
-        Channel Title
+        Select a user!!!
       </h3>
       <button id="blockUserButton" class="btn btn-danger btn-sm ml-2">Block User</button>
       <button id="usersRouteButton" class="btn btn-secondary btn-sm ml-2">User info</button>
@@ -54,7 +54,8 @@ export  function Chat_html() {
       <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">Create Channel</h5>
+            <h5 class="modal-title">New conversation</h5>
+            <h5 class="modal-title">Who do you want to start a conversation with?</h5>
             <button id="closeModalButton" type="button" class="close" data-dismiss="modal" aria-label="Close">
               <span aria-hidden="true">&times;</span>
             </button>
