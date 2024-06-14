@@ -28,19 +28,19 @@ router.register(r'matches', MatchViewSet)
 urlpatterns = [
     path('admin/', admin.site.urls),
 
-    path('api/tournaments/<int:tournament_id>/set_ready/', TournamentViewSet.set_ready, name='set_ready'),
+    #path('api/tournaments/<int:tournament_id>/set_ready/', TournamentViewSet.set_ready, name='set_ready'), # rachel
 
     
     path('api/tournaments/<int:pk>/addparticipant/', TournamentViewSet.as_view({'post': 'add_participant'}), name='add_participant'),
     path('api/participants/<int:pk>/update_accepted_invite/', ParticipantViewSet.as_view({'post': 'update_accepted_invite'}), name='update_accepted_invite'),
 
-    path('api/login/', custom_login, name='custom_login'),
-    path('api/logout/', custom_logout, name='custom_logout'),
+   # path('api/login/', custom_login, name='custom_login'), # delete all instances
+   # path('api/logout/', custom_logout, name='custom_logout'), # rachel
     path("api/me/", MeViewSet.as_view(), name="my-profile"),
     path('api/me-full/', CurrentUserView.as_view(), name='current-user'),
     path('api/user/update/<int:pk>/', UserUpdate.as_view(), name='user-update'),
-    path('api/users/<str:username>/exists/', check_user_exists, name='check_user_exists'),
-    path('api/users/<str:username>/status/', check_user_status, name='check_user_status'),
+    #path('api/users/<str:username>/exists/', check_user_exists, name='check_user_exists'), # rachel (and below)
+    #path('api/users/<str:username>/status/', check_user_status, name='check_user_status'),
     path('api/participants/status/', ParticipantViewSet.as_view({'get': 'status'}), name='participant-status'),
     path("api/", include(router.urls)),
     path('api/delete/<str:username>/', delete_user, name='delete_user'),

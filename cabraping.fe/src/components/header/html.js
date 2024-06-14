@@ -1,6 +1,4 @@
-
-
-import { BACKEND_URL,  WS_URL } from "../wcGlobal.js";
+import { BACKEND_URL, WS_URL } from "../wcGlobal.js";
 
 // import image from "../../assets/logo.svg";
 let image = "assets/logo.svg";

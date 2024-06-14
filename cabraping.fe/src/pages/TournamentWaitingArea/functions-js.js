@@ -4,7 +4,7 @@ import { showNotification, showNotificationPopup } from '../../components/showNo
 import { handleTournamentWebSocketMessage, activeWebSockets, connectWebSocketGlobal, BACKEND_URL } from '../../components/wcGlobal.js';
 import { connectTournamentWebSocket } from "../Tournament/funcions-js.js";
 import { getUserIdFromJWT } from '../Chat/funcions-js.js';
-import { handle_Tournmanet_game_invitte } from './game-logic.js';
+import { handle_Tournament_game_invite } from './game-logic.js';
 import { getTournamentForId, update_cancel_of_tournament } from '../Tournament/cancel.js';
 
 
@@ -44,7 +44,7 @@ function updateStartButton(participants) {
                 console.log("run -if check_tournament.participants[0].id !== userId:", (check_tournament.participants[0].id !== userId));
                 if (check_tournament.participants[0].user.id !== userId)
                 {
-                    showNotification("only the created one can start it", "error");
+                    showNotification("Sorry, amigo. Only the creator can start the tournament.", "error");
                     return;
                 }
 
@@ -61,8 +61,13 @@ function updateStartButton(participants) {
                     });
 
                     if (response.ok) {
-                        // Diego to do - logic game - update everigone
-                        handle_Tournmanet_game_invitte(tournamentId);
+                        // Clear the waiting participants list
+                        const participantsList = document.getElementById('waitingParticipantsList');
+                        if (participantsList) {
+                            participantsList.innerHTML = '';
+                        }
+                        // Diego to do - logic game - update everyone
+                        handle_Tournament_game_invite(tournamentId);
                     } else {
                         console.error('Failed to notify the server about readiness');
                     }
@@ -78,7 +83,7 @@ function updateStartButton(participants) {
 }
 
 // Fetch the list of participants from the server
-export async function fetchParticipants(tournamentId) {
+export async function fetchParticipantsRSVPs(tournamentId) {
     try {
         const response = await fetch(`${BACKEND_URL}/api/participants/status/?tournament_id=${tournamentId}`, {
             headers: {
@@ -151,7 +156,7 @@ function updateCancelButton(isCreator) {
 
                     await update_cancel_of_tournament(tournamentId);
                 } else {
-                    showNotificationPopup('Cancellation failed.', 'Only the creator can cancel the tournament.');
+                    showNotification("Cancellation failed. Only the creator can cancel the tournament.");
                 }
             });
             cancelButton.dataset.listenerAttached = true;
@@ -286,7 +291,7 @@ function check_if_i_am_part_of__tournament(tournament) {
     if (!(tournament.status === 'pending' || tournament.status === 'in_progress'))
     {
         console.log("Tournament ID is null or invalid");
-        showNotificationPopup("Tournament ID is null or invalid", 'error');
+        //showNotificationPopup("Tournament ID is null or invalid", 'error');
         return false;
     }
 
@@ -302,7 +307,7 @@ function check_if_i_am_part_of__tournament(tournament) {
         if(pendingTournament.id)
         {
             localStorage.setItem('currentTournamentId', pendingTournament.id);
-            localStorage.setItem(`system_Tournmanet_status_${pendingTournament.id}`, "in");
+            localStorage.setItem(`system_Tournament_status_${pendingTournament.id}`, "in");
         }
         console.log("siiiiiiiii");
         return true;
@@ -312,7 +317,7 @@ function check_if_i_am_part_of__tournament(tournament) {
     return false;
 }
 
-// Initialize the Tournament Waiting Area
+// Initialize the Tournament Launch Area
 async function initializeTournamentWaitingArea() {
 
     let jwt = localStorage.getItem('jwt');
@@ -334,7 +339,7 @@ async function initializeTournamentWaitingArea() {
 
     if (!tournament_data) {
         console.log("Tournament ID is null or invalid");
-        showNotificationPopup("Error in the banckd, reload page", 'error');
+        //showNotificationPopup("Tournament ID is null or invalid. Reloading page.");
         window.location.href = '/#';
         return;
     }
@@ -357,7 +362,7 @@ async function initializeTournamentWaitingArea() {
     }
 
     setInterval(async () => {
-        const participants = await fetchParticipants(tournamentId);
+        const participants = await fetchParticipantsRSVPs(tournamentId);
         updateWaitingParticipantsList(participants);
         updateCancelButton(isCreator);
     }, 5000);

@@ -140,7 +140,7 @@ export function sendWaitMatchedMessage(userId) {
     WSsocket.send(JSON.stringify(message));
 }
 
-export function sendDelleteMatchedMessage(userId, otherId) {
+export function sendDeleteMatchedMessage(userId, otherId) {
     if (!WSsocket || WSsocket.readyState !== WebSocket.OPEN) {
         console.log('WebSocket is not connected');
         return;
@@ -156,7 +156,7 @@ export function sendDelleteMatchedMessage(userId, otherId) {
 
 
 
-export async function sendGameInitate_Waiting(userId, inviteId) {
+export async function sendGameInitiate_Waiting(userId, inviteId) {
     const jwt = localStorage.getItem('jwt');
 
     const response = await fetch(`${BACKEND_URL}/api/games/`, {
@@ -200,6 +200,7 @@ export async function handleUpdateWaitingList(message, userId, myUser) {
     if (waitingIds.length >= 2) {
         for (let i = 1; i < waitingIds.length; i += 2) {
             if (waitingIds[i] === userId) {
+
                 console.log("---> Matching: sendGameInitate_Waiting:", userId, waitingIds[i - 1]);
 
                 let status_id_1 = await hasPendingOrAcceptedGames(userId);
@@ -243,7 +244,7 @@ export function sendChannelCreatedNotifications(userId, userName, destUserId) {
 }
 
 // Función para enviar un mensaje específico al WebSocket Diego
-export function sendGameInvataeNotifications(userId, userName, destUserId, text) {
+export function sendGameInviteNotifications(userId, userName, destUserId, text) {
     if (!WSsocket || WSsocket.readyState !== WebSocket.OPEN) {
         console.log('WebSocket is not connected');
         return;
@@ -258,13 +259,13 @@ export function sendGameInvataeNotifications(userId, userName, destUserId, text)
     };
 
     console.log("???");
-    console.log("sendGameInvataeNotifications",message);
+    console.log("sendGameInviteNotifications",message);
 
     WSsocket.send(JSON.stringify(message));
 }
 
 // Función para enviar un mensaje específico al WebSocket
-export function sendGameInvataeTournamentNotifications(userId, userName, destUserId, text) {
+export function sendGameInviteTournamentNotifications(userId, userName, destUserId, text) {
     if (!WSsocket || WSsocket.readyState !== WebSocket.OPEN) {
         console.log('WebSocket is not connected');
         return;

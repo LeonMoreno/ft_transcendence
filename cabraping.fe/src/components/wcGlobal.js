@@ -9,8 +9,8 @@ import { showModal, hideModal } from "../utils/modal.js";
 import { startTournament, handleTournamentCanceled } from "../pages/TournamentWaitingArea/functions-js.js";
 import { updateWaitingParticipantsList } from "../pages/TournamentWaitingArea/functions-js.js";
 
-import { sendAcceptedGameNotifications, sendTournamentNotifications, sendDelleteMatchedMessage, handleUpdateWaitingList, sendUpdateList_of_tournament_Notifications } from "./wcGlobal-funcions-send-message.js";
-import { sendGameAcceptTournament_final_Waiting, sendGameAcceptTournament_Waiting, system_invitte_game_Tournmanet } from "../pages/TournamentWaitingArea/game-logic.js";
+import { sendAcceptedGameNotifications, sendTournamentNotifications, sendDeleteMatchedMessage, handleUpdateWaitingList, sendUpdateList_of_tournament_Notifications } from "./wcGlobal-funcions-send-message.js";
+import { sendGameAcceptTournament_final_Waiting, sendGameAcceptTournament_Waiting, system_invite_game_Tournament } from "../pages/TournamentWaitingArea/game-logic.js";
 
 const frontendURL = new URL(window.location.href);
 const serverIPAddress = frontendURL.hostname;
@@ -311,7 +311,7 @@ export function handleTournamentInvite(data, tournamentId) {
 
             let user_id = getUserIdFromJWT();
             const username = localStorage.getItem('username');
-            sendUpdateList_of_tournament_Notifications(user_id, username, 0, `system_Tournmanet_${tournamentId}_updatelist`);
+            sendUpdateList_of_tournament_Notifications(user_id, username, 0, `system_Tournament_${tournamentId}_updatelist`);
 
             hideModal('tournamentInviteModal');
         // }
@@ -327,7 +327,7 @@ export function handleTournamentInvite(data, tournamentId) {
 
         let user_id = getUserIdFromJWT();
         const username = localStorage.getItem('username');
-        sendUpdateList_of_tournament_Notifications(user_id, username, 0, `system_Tournmanet_${tournamentId}_updatelist`);
+        sendUpdateList_of_tournament_Notifications(user_id, username, 0, `system_Tournament_${tournamentId}_updatelist`);
 
         localStorage.removeItem("currentTournamentId");
 
@@ -555,11 +555,11 @@ async function Torunament_game_diego(message) {
 
         let tournament_id = localStorage.getItem("currentTournamentId");
 
-        if (`system_Tournmanet_${tournament_id}` === message.message){
-            system_invitte_game_Tournmanet();
+        if (`system_Tournament_${tournament_id}` === message.message){
+            system_invite_game_Tournament();
         }
-        if (`system_Tournmanet_${tournament_id}_updatelist` === message.message){
-            // system_invitte_game_Tournmanet();
+        if (`system_Tournament_${tournament_id}_updatelist` === message.message){
+            // system_invite_game_Tournament();
             console.log("=!!!!!!!!!!!! reload !!!");
             // Check_if_im_the_creator_to_reload
             Check_if_im_the_creator_to_reload();
@@ -567,9 +567,9 @@ async function Torunament_game_diego(message) {
 
         const words = message.message.split(':');
 
-        if (words.length === 2 && `system_Tournmanet_${tournament_id}` === words[0]){
-            localStorage.setItem(`system_Tournmanet_${tournament_id}_winner`, words[1]);
-            localStorage.setItem(`system_Tournmanet_status_${tournament_id}_final`, "final");
+        if (words.length === 2 && `system_Tournament_${tournament_id}` === words[0]){
+            localStorage.setItem(`system_Tournament_${tournament_id}_winner`, words[1]);
+            localStorage.setItem(`system_Tournament_status_${tournament_id}_final`, "final");
         }
     }
 }
@@ -634,7 +634,7 @@ async function sendGameAccept_Waiting(userId, dest_user_id, myUser) {
             console.log("error in system");
         }
         sendAcceptedGameNotifications(userId, myUser.userName, dest_user_id, game.id);
-        sendDelleteMatchedMessage(userId, dest_user_id);
+        sendDeleteMatchedMessage(userId, dest_user_id);
         window.location.href = `/#game/${game.id}`;
     }
 }
