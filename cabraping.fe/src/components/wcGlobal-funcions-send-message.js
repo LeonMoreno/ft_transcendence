@@ -215,8 +215,8 @@ export async function handleUpdateWaitingList(message, userId, myUser) {
                 if (status.ok) {
                     console.log("---> Matching: Se mando la invitacion a l juego:", userId, myUser.username, waitingIds[i - 1], "system");
                     sendGameInvataeNotifications(userId, myUser.username, waitingIds[i - 1], "system");
-                    WSsocket.close();
-                    connectWebSocketGlobal()
+                    // WSsocket.close();
+                    // connectWebSocketGlobal()
                 }
                 break;
             }
