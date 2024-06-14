@@ -152,6 +152,7 @@ export function sendDeleteMatchedMessage(userId, otherId) {
     }
 
     WSsocket.send(JSON.stringify(message));
+    localStorage.removeItem('update_waiting_list');
 }
 
 

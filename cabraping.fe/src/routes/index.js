@@ -28,7 +28,7 @@ import { Stat_html } from "../pages/Stat/html.js";
 import { Profile_js } from "../pages/Profile/functions-js.js";
 import { Profile_html } from "../pages/Profile/html.js";
 import resolveRoutes from "../utils/resolveRoutes.js";
-import { BACKEND_URL, connectWebSocketGlobal  } from "../components/wcGlobal.js";
+import { BACKEND_URL, checNotifi, connectWebSocketGlobal, handleTournamentInvite, Tournament_check_notificacion  } from "../components/wcGlobal.js";
 import { Matching_html } from "../pages/Matching/html.js";
 import { Matching_js } from "../pages/Matching/funcions-js.js";
 import { getToken } from "../utils/get-token.js";
@@ -68,6 +68,12 @@ const router = async () => {
   let render = resolveRoutes(routes, user_location);
 
   await WS_check_the_torunament_pending();
+
+  if (checNotifi !== 0)
+    {
+      // handleTournamentInvite();
+      Tournament_check_notificacion();
+    }
 
   if (getToken())
   {

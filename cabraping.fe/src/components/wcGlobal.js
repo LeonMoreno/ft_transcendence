@@ -283,46 +283,49 @@ export async function fetchParticipants(tournamentId) {
 }
 
 
-export function handleTournamentInvite(data, tournamentId) {
-    console.log(`Tournament invitation received for tournament ${tournamentId}:`, data);
-    // Set the message in the modal
-    const message = `${data.user_name} invited you to the ${data.tournament_name} tournament!`;
+export let checNotifi = 0;
+
+export function Tournament_check_notificacion() {
+
+    let tournamentId = localStorage.getItem(`currentTournamentId`)
+    let message = localStorage.getItem(`system_tournament_name_${tournamentId}`)
+
     document.getElementById('tournamentInviteMessage').innerText = message;
 
-    // Ensure WebSocket connection for the tournament
-    if (!activeWebSockets[tournamentId] || activeWebSockets[tournamentId].readyState === WebSocket.CLOSED) {
-        connectTournamentWebSocket(tournamentId);
-    }
-
-    // Show the modal
     showModal('tournamentInviteModal');
+    checNotifi = 1;
 
     // Attach event listeners for modal buttons
     document.getElementById('acceptTournamentInvite').onclick = async () => {
 
         // acceptTournamentInvitation
+        let tournamentId = localStorage.getItem(`currentTournamentId`);
+        let tournament_data = localStorage.getItem(`system_tournament_name_${tournamentId}_data`);
         const success = await updateInviteStatus(tournamentId, true);
 
         console.log("😆 updateInviteStatus:", success);
 
         // if (success.ok) {
-            acceptTournamentInvitation(tournamentId, data.user_name);
+            acceptTournamentInvitation(tournamentId, tournament_data.user_name);
 
             let user_id = getUserIdFromJWT();
             const username = localStorage.getItem('username');
             sendUpdateList_of_tournament_Notifications(user_id, username, 0, `system_Tournament_${tournamentId}_updatelist`);
 
             hideModal('tournamentInviteModal');
+            checNotifi = 0;
         // }
 
     };
     document.getElementById('rejectTournamentInvite').onclick = async () => {
 
+        let tournamentId = localStorage.getItem(`currentTournamentId`);
+        let tournament_data = localStorage.getItem(`system_tournament_name_${tournamentId}_data`);
         const success = await updateInviteStatus(tournamentId, false);
 
         console.log("😆 updateInviteStatus:", success);
 
-        rejectTournamentInvitation(tournamentId, data.user_name);
+        rejectTournamentInvitation(tournamentId, tournament_data.user_name);
 
         let user_id = getUserIdFromJWT();
         const username = localStorage.getItem('username');
@@ -331,7 +334,25 @@ export function handleTournamentInvite(data, tournamentId) {
         localStorage.removeItem("currentTournamentId");
 
         hideModal('tournamentInviteModal');
+        checNotifi = 0;
     };
+}
+
+export function handleTournamentInvite(data, tournamentId) {
+    console.log(`Tournament invitation received for tournament ${tournamentId}:`, data);
+    // Set the message in the modal
+    const message = `${data.user_name} invited you to the ${data.tournament_name} tournament!`;
+    document.getElementById('tournamentInviteMessage').innerText = message;
+
+    localStorage.setItem(`system_tournament_name_${tournamentId}`, message)
+    localStorage.setItem(`system_tournament_name_${tournamentId}_data`, data)
+    // Ensure WebSocket connection for the tournament
+    if (!activeWebSockets[tournamentId] || activeWebSockets[tournamentId].readyState === WebSocket.CLOSED) {
+        connectTournamentWebSocket(tournamentId);
+    }
+
+    // Show the modal
+    Tournament_check_notificacion();
 
     updateParticipantsList(data, 'invited', tournamentId);
 }
