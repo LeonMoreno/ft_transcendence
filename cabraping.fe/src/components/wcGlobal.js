@@ -63,6 +63,7 @@ async function handleWebSocketMessage(message, userId) {
             handleTournamentInvite(message, message.tournament_id);
             break;
         case 'tournament_canceled':
+            hideModal('tournamentInviteModal');
             handleTournamentCanceled(message);
             break;
         //case 'tournament_aborted':
@@ -396,6 +397,7 @@ export async function handleTournamentWebSocketMessage(data, tournamentId) {
             break;
         case 'tournament_canceled':
         //case 'tournament_aborted':
+            hideModal('tournamentInviteModal');
             if (localStorage.getItem("system_game_id"))
             {
                 if (gameSocket)
