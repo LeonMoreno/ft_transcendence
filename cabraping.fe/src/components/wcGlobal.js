@@ -515,14 +515,19 @@ async function run_processes_per_message(message) {
             localStorage.setItem(`final_tournametn_${localStorage.getItem("currentTournamentId")}`, true);
             break;
         case "Cancel Game":
-            if (gameSocket.readyState === 1)
-            {
-              gameSocket.close()
+            try {
+                if (gameSocket.readyState === 1) {
+                    gameSocket.close();
+                }
+                await Cancel_a_Game(localStorage.getItem("system_game_id"));
+                localStorage.removeItem("system_game_id");
+                showNotificationPopup(message.user_name, "Cancel Game");
+                window.location.href = `/#`;
+            } catch (error) {
+                console.error("An error occurred while cancelling the game:", error);
+                // Optionally, show an error notification to the user
+                showNotificationPopup("Error", "An error occurred while cancelling the game");
             }
-            await Cancel_a_Game(localStorage.getItem("system_game_id"));
-            localStorage.removeItem("system_game_id");
-            showNotificationPopup(message.user_name, "Cancel Game")
-            window.location.href = `/#`;
             break;
         default:
             break;
