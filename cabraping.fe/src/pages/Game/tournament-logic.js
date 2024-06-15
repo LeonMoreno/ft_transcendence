@@ -23,7 +23,7 @@ async function update_winner_of_tournament(tournamentId, winner) {
         })
     });
 
-    showNotification("You won the tournament. Congratulations!");
+    showNotification("You won the tournament. Congratulations!", "success");
     // console.log("The tournament is finished!");
     window.location.href = `/#`;
 
@@ -59,13 +59,13 @@ export async function Send_data_bacnd_the_winner(first_player, secong_player, wi
     let user_id = getUserIdFromJWT();
 
     if (winner !== user_id ){
-        showNotification("You lost. Better luck next time.");
+        showNotification("You lost. Better luck next time.", "error");
         // console.log("🥻🥻🥻>> winner:", winner, ", user_id:", user_id);
         window.location.href = `/#`;
         return;
     }
 
-    showNotification("You won. Congratulations!");
+    showNotification("You won. Congratulations!", "success");
 
     let myUserName = localStorage.getItem("username");
 

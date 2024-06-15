@@ -503,7 +503,10 @@ async function run_processes_per_message(message) {
             Chat_Update_js();
             break;
         case "Cancel Game":
-            gameSocket.close();
+            if (gameSocket.readyState === 1)
+            {
+              gameSocket.close()
+            }
             await Cancel_a_Game(localStorage.getItem("system_game_id"));
             localStorage.removeItem("system_game_id");
             showNotificationPopup(message.user_name, "Cancel Game")
@@ -575,11 +578,11 @@ export async function connectWebSocketGlobal() {
                 {
                     let tournamentId = localStorage.getItem(`currentTournamentId`);
                     // let tournament_data = localStorage.getItem(`system_tournament_name_${tournamentId}_data`);
-    
+
                     let tournament = await getTournamentForId(tournamentId);
                     let user_id = getUserIdFromJWT();
 
-    
+
                     if (tournament && tournament.participants[0].user.id === user_id)
                     {
                         let tournament_list_id = tournament.participants.map((participant) => String(participant.user.id));
@@ -604,32 +607,32 @@ export async function connectWebSocketGlobal() {
                     }
                 }
 
-                const response = await fetch(`${BACKEND_URL}/api/games/`, {
-                    headers: { Authorization: `Bearer ${getToken()}` },
-                });
+                // const response = await fetch(`${BACKEND_URL}/api/games/`, {
+                //     headers: { Authorization: `Bearer ${getToken()}` },
+                // });
 
-                let result = await response.json();
-                if (response.ok)
-                {
-                    let pendeingGame = result.filter((game) => game.invitationStatus === "ACCEPTED");
-                    await pendeingGame.map( async (game) => {
-                        let disconnected_invitee = message.user_ids.some( (userId_active) => userId_active === String(game.invitee.id))
-                        let disconnected_inviter = message.user_ids.some( (userId_active) => userId_active === String(game.inviter.id))
+                // let result = await response.json();
+                // if (response.ok)
+                // {
+                //     let pendeingGame = result.filter((game) => game.invitationStatus === "ACCEPTED");
+                //     await pendeingGame.map( async (game) => {
+                //         let disconnected_invitee = message.user_ids.some( (userId_active) => userId_active === String(game.invitee.id))
+                //         let disconnected_inviter = message.user_ids.some( (userId_active) => userId_active === String(game.inviter.id))
 
-                        if ((disconnected_invitee === true && disconnected_inviter === false) ||
-                            !(disconnected_invitee === false && disconnected_inviter === true) ||
-                            !(disconnected_invitee === false && disconnected_inviter === false))
-                        {
-                            let data_game = await Cancel_a_Game(game.id);
-                            if (game.inviter.id === getUserIdFromJWT() || game.invitee.id === getUserIdFromJWT())
-                            {
-                                showNotification("Cancel Game", "cancel")
-                                window.location.href = `/#`;
-                            }
-                        }
-                        return
-                    })
-                }
+                //         if ((disconnected_invitee === true && disconnected_inviter === false) ||
+                //             !(disconnected_invitee === false && disconnected_inviter === true) ||
+                //             !(disconnected_invitee === false && disconnected_inviter === false))
+                //         {
+                //             let data_game = await Cancel_a_Game(game.id);
+                //             if (game.inviter.id === getUserIdFromJWT() || game.invitee.id === getUserIdFromJWT())
+                //             {
+                //                 showNotification("Cancel Game", "cancel")
+                //                 window.location.href = `/#`;
+                //             }
+                //         }
+                //         return
+                //     })
+                // }
                 break;
             case 'update_waiting_list':
                 //console.log("--> Matching: 🍀 update_waiting_list 🍀", message);

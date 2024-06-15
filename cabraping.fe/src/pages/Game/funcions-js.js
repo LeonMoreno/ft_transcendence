@@ -254,7 +254,10 @@ export async function Game_js() {
     rightPaddleScoreElement.innerText = state.right_score || 0;
 
     if(!localStorage.getItem("system_game_id")){
-      gameSocket.close();
+      if (gameSocket.readyState === 1)
+      {
+        gameSocket.close()
+      }
 
       // Optionally remove event listeners to prevent further key inputs
       document.removeEventListener("keydown", handleKeyDown);
@@ -265,7 +268,10 @@ export async function Game_js() {
 
     if (state.winner) {
       // Close the WebSocket connection
-      gameSocket.close();
+      if (gameSocket.readyState === 1)
+      {
+        gameSocket.close()
+      }
 
       // Optionally remove event listeners to prevent further key inputs
       document.removeEventListener("keydown", handleKeyDown);

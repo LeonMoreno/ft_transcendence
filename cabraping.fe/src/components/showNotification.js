@@ -1,3 +1,4 @@
+
 export function showNotification(message, type) {
   const container = document.getElementById("notification-container");
   const notification = document.createElement("div");
@@ -11,22 +12,19 @@ export function showNotification(message, type) {
     "d-inline-block",
   );
   // "notification"
-  if (type === "success" || type === "success")
-  {
-    notification.classList.remove("bg-danger");
-    notification.classList.remove("bg-warning");
-    notification.classList.add("bg-success");
-    }
-  if (type === "warning")
-  {
-    notification.classList.remove("bg-danger");
-    notification.classList.remove("bg-success");
-    notification.classList.add("bg-warning");
-  }
-  else {
-    notification.classList.remove("bg-danger");
-    notification.classList.remove("bg-warning");
-    notification.classList.add("bg-danger");
+
+  switch (type) {
+    case "success":
+      notification.classList.add("bg-success");
+      break;
+    case "warning":
+      notification.classList.add("bg-warning");
+      break;
+    case "warning":
+      break;
+    default:
+      notification.classList.add("bg-danger");
+      break;
   }
 
   notification.textContent = message;

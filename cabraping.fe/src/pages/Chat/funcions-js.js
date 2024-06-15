@@ -214,10 +214,6 @@ async function inviteGame(jwt) {
         (game.invitee.id === communication_user_id || game.inviter.id === communication_user_id)
   );
 
-  console.log("games:", games);
-  console.log("existing_invitate_Game_me:", existing_invitate_Game_me);
-  console.log("existing_invitate_Game_order:", existing_invitate_Game_order);
-
   if (existing_invitate_Game_me || existing_invitate_Game_order)
   {
     showNotification('the user already has an invitation to the game', 'warning');
@@ -270,9 +266,6 @@ async function inviteGame(jwt) {
     });
     const games = await responseGames.json();
 
-    //console.log("--> 🎮🎮  my_id:", my_id, ", communication_user_id:", communication_user_id);
-    //console.log("--> 🎮 games:", games);
-
     const game = games.find(
       (game) =>
         game.invitationStatus === "PENDING" &&
@@ -280,9 +273,7 @@ async function inviteGame(jwt) {
         game.inviter.id === my_id)
     );
 
-    //console.log("--> 🎮 game:", game);
     if(game){
-      //console.log("game_ACCEPTED 🥶🥶🥶");
       gameId = game.id;
 
       const inviteGameButtonButton = document.getElementById('inviteGameButton');
@@ -293,11 +284,11 @@ async function inviteGame(jwt) {
     const game_ACCEPTED = games.find(
       (game) =>
         game.invitee.id === my_id &&
+        game.inviter.id === communication_user_id &&
         game.invitationStatus === "ACCEPTED"
       );
 
     if (game_ACCEPTED){
-      //console.log("game_ACCEPTED 🥶🥶");
       window.location.href = `/#game/${game_ACCEPTED.id}`;
     }
 
@@ -305,14 +296,17 @@ async function inviteGame(jwt) {
     const game_pending = games.find(
       (game) =>
         game.invitee.id === my_id &&
+        game.inviter.id === communication_user_id &&
         game.invitationStatus === "PENDING"
     );
 
-    if (game_pending)
+    const acceptGameButton = document.getElementById('acceptGameButton');
+    let currentTournamentId = localStorage.getItem("currentTournamentId");
+    if (game_pending && !currentTournamentId)
     {
-      //console.log("game_pending 🥶");
-      const acceptGameButton = document.getElementById('acceptGameButton');
       if (acceptGameButton) acceptGameButton.disabled = false;
+    }else{
+      if (acceptGameButton) acceptGameButton.disabled = true;
     }
 }
 
@@ -682,13 +676,14 @@ function switchChannel(newChannelId) {
   // Clear the chat messages from the UI
 
   const inviteGameButtonButton = document.getElementById('inviteGameButton');
+  const acceptGameButtonButton = document.getElementById('acceptGameButton');
   const userButton = document.getElementById('usersRouteButton');
   const blockButton = document.getElementById('blockUserButton');
   const sendButton = document.getElementById('sendButton');
   const messageTextarea = document.getElementById('messageTextarea');
   const messageList = document.getElementById('messageList');
 
-  if (!inviteGameButtonButton || !userButton || !blockButton || !sendButton || !messageTextarea || !messageList)
+  if (!acceptGameButtonButton || !inviteGameButtonButton || !userButton || !blockButton || !sendButton || !messageTextarea || !messageList)
   {
     return;
   }
@@ -703,6 +698,7 @@ function switchChannel(newChannelId) {
     if (userButton) userButton.disabled = true;
     if (blockButton) blockButton.disabled = true;
     if (inviteGameButtonButton) inviteGameButtonButton.disabled = true;
+    if (acceptGameButtonButton) acceptGameButtonButton.disabled = true;
     if (messageTextarea) {
         messageTextarea.disabled = true;
         messageTextarea.placeholder = "Select a channel to send messages";
@@ -726,6 +722,7 @@ function switchChannel(newChannelId) {
     if (userButton) userButton.disabled = false;
     if (blockButton) blockButton.disabled = false;
     if (inviteGameButtonButton && !currentTournamentId) inviteGameButtonButton.disabled = false;
+    if (acceptGameButtonButton && !currentTournamentId) acceptGameButtonButton.disabled = false;
     if (messageTextarea) {
         messageTextarea.disabled = false;
         messageTextarea.placeholder = "Enter your message here...";

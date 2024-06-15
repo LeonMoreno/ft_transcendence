@@ -156,7 +156,7 @@ function updateCancelButton(isCreator) {
 
                     await update_cancel_of_tournament(tournamentId);
                 } else {
-                    showNotification("Cancellation failed. Only the creator can cancel the tournament.");
+                    showNotification("Cancellation failed. Only the creator can cancel the tournament.", "error");
                 }
             });
             cancelButton.dataset.listenerAttached = true;

@@ -58,7 +58,7 @@ function getQueryUser() {
   const params = new URLSearchParams(window.location.search);
   const create = params.get("creation_fail");
   if (create != null)
-    showNotification("Error creating user! Username already exist");
+    showNotification("Error creating user! Username already exist", "error");
 }
 
 function storeTokens(access_token, refresh_token) {
