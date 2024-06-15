@@ -252,7 +252,8 @@ async function loadTournamentData(tournamentId) {
 }
 
 // Establecer conexión WebSocket
-export function connectTournamentWebSocket(tournamentId) {
+// export function connectTournamentWebSocket(tournamentId) {
+export async function connectTournamentWebSocket(tournamentId) {
     if (!activeWebSockets[tournamentId] || activeWebSockets[tournamentId].readyState === WebSocket.CLOSED) {
         let jwt = getToken();
         // const wsUrl = `ws://localhost:8000/ws/tournament/${tournamentId}/?token=${jwt}`;
@@ -277,7 +278,7 @@ export function connectTournamentWebSocket(tournamentId) {
         tournamentSocket.onerror = function(error) {
             // console.error(`WebSocket error for tournament ${tournamentId}:`, error);
         };
-        //activeWebSockets[tournamentId] = tournamentSocket;
+        activeWebSockets[tournamentId] = tournamentSocket;
     }
 }
 

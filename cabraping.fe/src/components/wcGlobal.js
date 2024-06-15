@@ -13,6 +13,7 @@ import { sendAcceptedGameNotifications, sendTournamentNotifications, sendDeleteM
 import { sendGameAcceptTournament_final_Waiting, sendGameAcceptTournament_Waiting, system_invite_game_Tournament } from "../pages/TournamentWaitingArea/game-logic.js";
 import { Cancel_a_Game, checkAcceptedGames, getDifference_in_array } from "../pages/Game/cancel.js";
 import { gameSocket } from "../pages/Game/funcions-js.js";
+import { getTournamentForId } from "../pages/Tournament/cancel.js";
 
 const frontendURL = new URL(window.location.href);
 const serverIPAddress = frontendURL.hostname;
@@ -210,14 +211,15 @@ export async function getUserIdByUsername(username) {
 }
 
 // Function to send a POST request to update the invite status
-async function updateInviteStatus(tournamentId, accepted) {
+// async function updateInviteStatus(tournamentId, accepted) {
+async function updateInviteStatus(tournamentId, accepted, currentUserId) {
 
     //console.log("🚨🚨updateInviteStatus🚨🚨:", tournamentId, ", accepted:", accepted);
 
     const participants = await fetchParticipants(tournamentId);
     //console.log("🚨🚨>participants:", participants);
     // const currentUserId = localStorage.getItem('userId');
-    const currentUserId = getUserIdFromJWT();
+    // const currentUserId = getUserIdFromJWT();
     //console.log("🚨🚨>currentUserId:", currentUserId);
     const participant = participants.find(p => String(p.user.id) === String(currentUserId));
 
@@ -303,7 +305,13 @@ export function Tournament_check_notificacion() {
         // acceptTournamentInvitation
         let tournamentId = localStorage.getItem(`currentTournamentId`);
         let tournament_data = localStorage.getItem(`system_tournament_name_${tournamentId}_data`);
-        const success = await updateInviteStatus(tournamentId, true);
+        const success = await updateInviteStatus(tournamentId, true, getUserIdFromJWT());
+
+
+        if (!activeWebSockets[tournamentId] || activeWebSockets[tournamentId].readyState === WebSocket.CLOSED) {
+            console.log("run");
+            connectTournamentWebSocket(tournamentId);
+        }
 
         //console.log("😆 updateInviteStatus:", success);
 
@@ -318,12 +326,15 @@ export function Tournament_check_notificacion() {
             checNotifi = 0;
         // }
 
+        // TESTE
+        // updateParticipantsList(data, 'invited', tournamentId);
+
     };
     document.getElementById('rejectTournamentInvite').onclick = async () => {
 
         let tournamentId = localStorage.getItem(`currentTournamentId`);
         let tournament_data = localStorage.getItem(`system_tournament_name_${tournamentId}_data`);
-        const success = await updateInviteStatus(tournamentId, false);
+        const success = await updateInviteStatus(tournamentId, false, getUserIdFromJWT());
 
         //console.log("😆 updateInviteStatus:", success);
 
@@ -346,17 +357,20 @@ export function handleTournamentInvite(data, tournamentId) {
     const message = `${data.user_name} invited you to the ${data.tournament_name} tournament!`;
     document.getElementById('tournamentInviteMessage').innerText = message;
 
+    localStorage.setItem(`system_tournament_invitee_id`, tournamentId)
     localStorage.setItem(`system_tournament_name_${tournamentId}`, message)
     localStorage.setItem(`system_tournament_name_${tournamentId}_data`, data)
     // Ensure WebSocket connection for the tournament
-    if (!activeWebSockets[tournamentId] || activeWebSockets[tournamentId].readyState === WebSocket.CLOSED) {
-        connectTournamentWebSocket(tournamentId);
-    }
+    console.log("run-0");
+    // if (!activeWebSockets[tournamentId] || activeWebSockets[tournamentId].readyState === WebSocket.CLOSED) {
+    //     console.log("run-1");
+    //     connectTournamentWebSocket(tournamentId);
+    // }
 
     // Show the modal
     Tournament_check_notificacion();
 
-    updateParticipantsList(data, 'invited', tournamentId);
+    // updateParticipantsList(data, 'invited', tournamentId);
 }
 
 
@@ -559,6 +573,40 @@ export async function connectWebSocketGlobal() {
                 Friends_js();
                 Users_js();
 
+                console.log("localStorage.getItem(`currentTournamentId`):", localStorage.getItem(`currentTournamentId`));
+                if (localStorage.getItem(`currentTournamentId`))
+                {
+                    let tournamentId = localStorage.getItem(`currentTournamentId`);
+                    // let tournament_data = localStorage.getItem(`system_tournament_name_${tournamentId}_data`);
+    
+                    let tournament = await getTournamentForId(tournamentId);
+                    let user_id = getUserIdFromJWT();
+
+    
+                    if (tournament && tournament.participants[0].user.id === user_id)
+                    {
+                        let tournament_list_id = tournament.participants.map((participant) => String(participant.user.id));
+
+                        for (let index = 0; index < tournament_list_id.length; index++) {
+
+                            if (!(message.user_ids.some((id) => id ===  String(tournament_list_id[index])))){
+
+                                const success = await updateInviteStatus(tournamentId, false, Number(tournament_list_id[index]));
+                                rejectTournamentInvitation(tournamentId, tournament_list_id[index]);
+                                let user_id = getUserIdFromJWT();
+                                const username = localStorage.getItem('username');
+                                sendUpdateList_of_tournament_Notifications(user_id, "null", 0, `system_Tournament_${tournamentId}_updatelist`);
+
+                                update_list_tournamet()
+                                Check_if_im_the_creator_to_reload();
+                            }
+                        }
+                    }else{
+                        localStorage.removeItem("currentTournamentId")
+                        localStorage.removeItem(`system_tournament_name_${tournamentId}_data`)
+                    }
+                }
+
                 const response = await fetch(`${BACKEND_URL}/api/games/`, {
                     headers: { Authorization: `Bearer ${getToken()}` },
                 });
@@ -567,13 +615,9 @@ export async function connectWebSocketGlobal() {
                 if (response.ok)
                 {
                     let pendeingGame = result.filter((game) => game.invitationStatus === "ACCEPTED");
-
-                    //console.log("💡💡💡 message.user_ids:", message.user_ids);
-                    //console.log("💡💡💡 pendeingGame:", pendeingGame);
                     await pendeingGame.map( async (game) => {
                         let disconnected_invitee = message.user_ids.some( (userId_active) => userId_active === String(game.invitee.id))
                         let disconnected_inviter = message.user_ids.some( (userId_active) => userId_active === String(game.inviter.id))
-                        //console.log("💡💡💡💡 disconnected_invitee:", disconnected_invitee, ", disconnected_inviter:", disconnected_inviter);
 
                         if ((disconnected_invitee === true && disconnected_inviter === false) ||
                             !(disconnected_invitee === false && disconnected_inviter === true) ||
