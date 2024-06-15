@@ -312,7 +312,7 @@ export async function Game_js() {
       // Diego - save data in the banckend
       setTimeout( async () =>  {
         await Send_data_bacnd_the_winner(game.inviter.id, game.invitee.id, winnerId);
-      }, Math.floor(Math.random() * 300));
+      }, Math.floor((Math.random() * 300 ) + getUserIdFromJWT ));
       // Diego - sen the winner
 
       return; // Stop further rendering

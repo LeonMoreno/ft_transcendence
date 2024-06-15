@@ -22,6 +22,7 @@ export async function Friends_js() {
 
   if (!jwt) {
     window.location.replace("/#");
+    return;
   }
 
   await fetchMyUserData();

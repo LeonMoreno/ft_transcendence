@@ -3,7 +3,8 @@ import { sendGameInitiate_Waiting, sendGameInviteNotifications, sendGameInviteTo
 import { BACKEND_URL } from "../../components/wcGlobal.js";
 import { getToken } from "../../utils/get-token.js";
 import { getUserIdFromJWT } from "../Chat/funcions-js.js";
-import { fetchTournaments } from "../Tournament/funcions-js.js";
+import { update_cancel_of_tournament } from "../Tournament/cancel.js";
+import { fetchTournaments, loadTournamentData } from "../Tournament/funcions-js.js";
 // import { handle_Tournament_game_invite } from "../TournamentWaitingArea/game-logic.js";
 
 
@@ -38,7 +39,7 @@ export async function Send_data_bacnd_the_winner(first_player, secong_player, wi
 
     if (!tournament_id)
         return;
-    
+
     const tournaments = await fetchTournaments();
     // console.log("-> tournaments:", tournaments);
     if (!tournaments)
@@ -68,6 +69,8 @@ export async function Send_data_bacnd_the_winner(first_player, secong_player, wi
 
     let myUserName = localStorage.getItem("username");
 
+    console.log("Send -> tournament_id:",tournament_id," first_player:", first_player, ", secong_player:", secong_player, ", winner:", winner);
+
     const response = await fetch(
         `${BACKEND_URL}/api/matches/`,
         {
@@ -84,6 +87,13 @@ export async function Send_data_bacnd_the_winner(first_player, secong_player, wi
           }),
         }
     );
+
+    if ((response.ok && response.json().error) || !response.ok)
+    {
+        showNotification("Error in the Tournament, tournament cancel", "error");
+        await update_cancel_of_tournament(tournament_id);
+        return;
+    }
 
 
     if (response.ok){

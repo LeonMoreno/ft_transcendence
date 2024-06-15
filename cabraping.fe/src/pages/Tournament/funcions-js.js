@@ -58,6 +58,7 @@ async function TournamentInit() {
     if (!jwt)
     {
       window.location.replace("/#");
+      return;
     }
     // console.log("Initializing Tournament Page");
 
