@@ -23,14 +23,25 @@ export async function Game_js() {
   const myUserData = await responseUser.json();
 
   // Fetch initial game data/details
-  const responseGame = await fetch(`${BACKEND_URL}/api/games/${gameId}/`, {
+  // const responseGame = await fetch(`${BACKEND_URL}/api/games/${gameId}/`, {
+  //   headers: { Authorization: `Bearer ${jwt}` },
+  // });
+  // const game = await responseGame.json();
+  const responseGame = await fetch(`${BACKEND_URL}/api/games/`, {
     headers: { Authorization: `Bearer ${jwt}` },
   });
-  const game = await responseGame.json();
-  console.log(" 👨‍⚕️👨‍⚕️👨‍⚕️ game:", game);
+  const games_data = await responseGame.json();
+
+  if (games_data.detail || games_data.length === 0)
+  {
+    window.location.replace("/#");
+    return
+  }
+
+  let game = games_data.find((game) => String(game.id) === gameId );
 
   let checMyId = getUserIdFromJWT();
-  if ( game.detail || !(game.inviter.id === checMyId || game.invitee.id === checMyId) || game.invitationStatus !== "ACCEPTED" ){
+  if ( !game || !(game.inviter.id === checMyId || game.invitee.id === checMyId) || game.invitationStatus !== "ACCEPTED" ){
     window.location.replace("/#");
     return
   }
@@ -80,7 +91,7 @@ export async function Game_js() {
   // Also provide the play_mode
 
   gameSocket.onopen = function (event) {
-    console.info("Game socket connected");
+    // console.info("Game socket connected");
   };
 
   // game loop, 60 FPS because the backend sent that much
@@ -91,16 +102,16 @@ export async function Game_js() {
 
   gameSocket.onclose = function (event) {
     if (event.wasClean) {
-      console.info(
-        `Connection closed cleanly, code=${event.code}, reason=${event.reason}`
-      );
+      // console.info(
+      //   `Connection closed cleanly, code=${event.code}, reason=${event.reason}`
+      // );
     } else {
-      console.info("Game socket connection died");
+      // console.info("Game socket connection died");
     }
   };
 
   gameSocket.onerror = function (error) {
-    console.log(`WebSocket error: ${error.message}`);
+    // console.log(`WebSocket error: ${error.message}`);
   };
 
   /**

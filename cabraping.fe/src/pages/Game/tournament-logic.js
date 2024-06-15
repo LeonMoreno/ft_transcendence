@@ -23,7 +23,7 @@ async function update_winner_of_tournament(tournamentId, winner) {
     });
 
     showNotification("You won the tournament. Congratulations!");
-    console.log("The tournament is finished!");
+    // console.log("The tournament is finished!");
     window.location.href = `/#`;
 
 
@@ -33,22 +33,22 @@ export async function Send_data_bacnd_the_winner(first_player, secong_player, wi
 
     // localStorage.setItem('currentTournamentId', pendingTournament.id);
     let tournament_id = localStorage.getItem("currentTournamentId");
-    console.log("-----------------------------");
-    console.log("-> tournament_id:", tournament_id);
+    // console.log("-----------------------------");
+    // console.log("-> tournament_id:", tournament_id);
 
     if (!tournament_id)
         return;
     
     const tournaments = await fetchTournaments();
-    console.log("-> tournaments:", tournaments);
+    // console.log("-> tournaments:", tournaments);
     if (!tournaments)
         return;
 
     let userId = getUserIdFromJWT();
     const pendingTournament = tournaments.find(t => t.status === 'in_progress' && t.participants.some(p => p.user.id === userId));
 
-    console.log("-> pendingTournament:", pendingTournament);
-    console.log("-----------------------------");
+    // console.log("-> pendingTournament:", pendingTournament);
+    // console.log("-----------------------------");
 
     if (!pendingTournament) {
         return;
@@ -59,7 +59,7 @@ export async function Send_data_bacnd_the_winner(first_player, secong_player, wi
 
     if (winner !== user_id ){
         showNotification("You lost. Better luck next time.");
-        console.log("🥻🥻🥻>> winner:", winner, ", user_id:", user_id);
+        // console.log("🥻🥻🥻>> winner:", winner, ", user_id:", user_id);
         window.location.href = `/#`;
         return;
     }
@@ -87,12 +87,12 @@ export async function Send_data_bacnd_the_winner(first_player, secong_player, wi
 
 
     if (response.ok){
-        console.log("🧶🧶>> Send_data_bacnd_the_winner:", user_id);
+        // console.log("🧶🧶>> Send_data_bacnd_the_winner:", user_id);
 
         sendWinnerOfGameTournamentNotifications(user_id, "null",  `system_Tournament_${tournament_id}:${winner}`);
     }else{
         showNotification("Error in the tournament", "error");
-        console.log("Error in the tournament");
+        // console.log("Error in the tournament");
         return;
     }
 
@@ -105,29 +105,29 @@ export async function Send_data_bacnd_the_winner(first_player, secong_player, wi
 
         const data = await matchesResponse.json();
         const matches = data.matches;
-        console.log("------------------------> matches:", matches);
+        // console.log("------------------------> matches:", matches);
         if (matches.length <= 2) {
             let system_winner = localStorage.getItem(`system_Tournament_${tournament_id}_winner`);
 
-            console.log("🧶🧶>> tengo system_winner?:", system_winner);
+            // console.log("🧶🧶>> tengo system_winner?:", system_winner);
             if (!system_winner || system_winner === "no") {
                 return;
             }
             let system_final = localStorage.getItem(`system_Tournament_status_${tournament_id}`);
             let system_final_final = localStorage.getItem(`system_Tournament_status_${tournament_id}_final`);
 
-            console.log("🧶 >>>>>> system_final:", system_final);
-            console.log("🧶 >>>>>> system_final_final:", system_final_final);
+            // console.log("🧶 >>>>>> system_final:", system_final);
+            // console.log("🧶 >>>>>> system_final_final:", system_final_final);
 
-            console.log("🧶🧶🧶>> system_winner:", system_winner);
-            console.log("🧶🧶🧶>> winner:", winner);
-            console.log("🧶🧶🧶>> user_id:", user_id);
+            // console.log("🧶🧶🧶>> system_winner:", system_winner);
+            // console.log("🧶🧶🧶>> winner:", winner);
+            // console.log("🧶🧶🧶>> user_id:", user_id);
 
             if (system_winner !== user_id) {
                 let status = await sendGameInitiate_Waiting(user_id, system_winner);
-                console.log("🧶🧶🧶🧶>> user_id:", status);
+                // console.log("🧶🧶🧶🧶>> user_id:", status);
                 if (status.ok) {
-                    console.log("---> Tournament_game (system_winner): Se mando la invitacion del juego con:", user_id, " de ", myUserName, ", a ", system_winner, "system-tournament-final");
+                    // console.log("---> Tournament_game (system_winner): Se mando la invitacion del juego con:", user_id, " de ", myUserName, ", a ", system_winner, "system-tournament-final");
                     sendGameInviteNotifications(user_id, myUserName, system_winner, "system-tournament-final");
                     localStorage.setItem(`system_Tournament_status_${tournament_id}`, "final");
                     window.location.href = `/#waitroom/${tournament_id}`;
@@ -136,7 +136,7 @@ export async function Send_data_bacnd_the_winner(first_player, secong_player, wi
             }
         }
         else{
-            console.log("soy el ganador y voy a terminar el tournament");
+            // console.log("soy el ganador y voy a terminar el tournament");
             localStorage.setItem(`system_Tournament_status_${tournament_id}`, "no");
             update_winner_of_tournament(tournament_id, winner);
         }
