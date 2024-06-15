@@ -22,7 +22,6 @@ const serverPort = 8000; // Specify the port your backend server is running on
 export var BACKEND_URL = `https://${serverIPAddress}`;
 export var WS_URL = `wss://${serverIPAddress}`;
 // export var BACKEND_URL = `http://${serverIPAddress}:${serverPort}`;
-// export var WS_URL = `ws://${serverIPAddress}:${serverPort}`;
 // export var WS_URL = `wss://${serverIPAddress}:${serverPort}`;
 
 export let WSsocket = null; // Variable global para almacenar la instancia del WebSocket
@@ -392,7 +391,7 @@ export async function handleTournamentWebSocketMessage(data, tournamentId) {
             participants = await fetchParticipants(tournamentId);
             updateWaitingParticipantsList(participants);
             break;
-        case 'all_ready':  
+        case 'all_ready':
             startTournament();
             break;
         case 'tournament_canceled':
@@ -552,25 +551,36 @@ export async function connectWebSocketGlobal() {
 
                 // checkAcceptedGames
                 // getDifference_in_array
-                if (localStorage.getItem('id_active_users')){
-                    console.log("DDDDDDDDDDDDD localStorage.getItem('id_active_users'):", localStorage.getItem('id_active_users'));
-                    let diff_value = getDifference_in_array(message.user_ids, localStorage.getItem('id_active_users'))
-                    console.log("DDDDDDDDDDDDD diff_value:", diff_value);
-                    if (diff_value)
-                        {
-                        diff_value.map( async (id) => {
-                            
-                            let ifGame = await checkAcceptedGames(id);
-                            console.log("DDDDDDDDDDDDD id:", id, ", ifGame:", ifGame);
-                            if (ifGame)
-                            {
-                                await checkAcceptedGames(ifGame.id);
-                            }
-                            return
-                        } )
-                    }
-                }
 
+                const response = await fetch(`${BACKEND_URL}/api/games/`, {
+                    headers: { Authorization: `Bearer ${getToken()}` },
+                });
+
+                let result = await response.json();
+
+                console.log("💡💡 result.ok:", result);
+                if (response.ok)
+                {
+                    let pendeingGame = result.filter((game) => game.invitationStatus === "ACCEPTED");
+
+                    console.log("💡💡💡 message.user_ids:", message.user_ids);
+                    console.log("💡💡💡 pendeingGame:", pendeingGame);
+                    pendeingGame.map( async (game) => {
+                        let disconnected_invitee = message.user_ids.some( (userId_active) => userId_active === String(game.invitee.id))
+                        let disconnected_inviter = message.user_ids.some( (userId_active) => userId_active === String(game.inviter.id))
+                        console.log("💡💡💡💡 disconnected_invitee:", disconnected_invitee, ", disconnected_inviter:", disconnected_inviter);
+
+                        if ((disconnected_invitee === true && disconnected_inviter === false) ||
+                            !(disconnected_invitee === false && disconnected_inviter === true) ||
+                            !(disconnected_invitee === false && disconnected_inviter === false))
+                        {
+                            console.log("💡💡💡💡💡 Delllete 🚨");
+                            let data_game = await Cancel_a_Game(game.id);
+                            console.log("💡💡💡💡💡 data_game:", data_game);
+                        }
+                        return
+                    })
+                }
 
                 localStorage.setItem('id_active_users', JSON.stringify(message.user_ids));
                 Chat_Update_js();
