@@ -22,6 +22,13 @@ export async function Header_html() {
       headers: { Authorization: `Bearer ${jwt}` },
     });
 
+    if (!responseMyUser.ok)
+    {
+      localStorage.clear();
+      window.location.href = `/#`;
+      return;
+    }
+
     myUser = await responseMyUser.json();
 
     if ( !responseMyUser.ok || myUser.code === "user_not_found" || myUser.code === "token_not_valid") {

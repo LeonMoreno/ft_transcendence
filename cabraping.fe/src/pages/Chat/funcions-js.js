@@ -783,7 +783,7 @@ async function getUserChannels(userId) {
   const response = await fetch(
     `${BACKEND_URL}/api/user-channels/${userId}/?format=json`
   );
-  console.log("response:", await response);
+  // console.log("response:", await response);
   const data = await response.json();
 
   console.log("getUserChannels:", data);

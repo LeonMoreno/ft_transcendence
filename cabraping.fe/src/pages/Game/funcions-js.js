@@ -193,12 +193,15 @@ export async function Game_js() {
     }
 
     // Send movement data to server
-    gameSocket.send(
-      JSON.stringify({
-        paddle_move_left: leftPaddleMovement,
-        paddle_move_right: rightPaddleMovement,
-      })
-    );
+    if (gameSocket)
+    {
+      gameSocket.send(
+        JSON.stringify({
+          paddle_move_left: leftPaddleMovement,
+          paddle_move_right: rightPaddleMovement,
+        })
+      );
+    }
   }
 
   function handleKeyUp(e) {
