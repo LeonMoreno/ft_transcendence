@@ -120,7 +120,10 @@ function FormSendData(event) {
     })
     .then(data => {
       // console.log('Success:', data);
-      showNotification("User successfully updated", "success");
+      if (data.error)
+        showNotification("This name is used", "error");
+      else
+        showNotification("User successfully updated", "success");
       updateInfo();
     })
     .catch((error) => {
