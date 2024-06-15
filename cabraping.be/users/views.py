@@ -112,6 +112,9 @@ class UserViewSet(viewsets.ModelViewSet):
     # method to check for existing username
     def create(self, request, *args, **kwargs):
         username = request.data.get('username')
+        email = request.data.get('email')
+        if CustomUser.objects.filter(email=email).exists():
+            return Response({"error": "user already created"}, status=status.HTTP_200_OK)
         if CustomUser.objects.filter(username=username).exists():
             last_user = CustomUser.objects.last()
             new_username = f"{username}{last_user.id + 1}"
