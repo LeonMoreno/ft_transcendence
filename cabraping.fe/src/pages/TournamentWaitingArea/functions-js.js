@@ -39,6 +39,12 @@ function updateStartButton(participants) {
 
                 let check_tournament = await getTournamentForId(tournamentId);
 
+                if (!check_tournament)
+                {
+                    showNotification("Sorry, Error in cokies, login again.", "error");
+                    return;
+                }
+
                 // console.log("run -if check_tournament.participants[0].id:", (check_tournament.participants[0].id));
                 // console.log("run -if userId:", (userId));
                 // console.log("run -if check_tournament.participants[0].id !== userId:", (check_tournament.participants[0].id !== userId));
@@ -48,7 +54,11 @@ function updateStartButton(participants) {
                     return;
                 }
 
+                console.log("> startButton.disabled:", startButton.disabled);
                 startButton.disabled = true;
+                const cancelButton = document.getElementById('cancelTournamentButton');
+                if (cancelButton) cancelButton.disabled = true
+                console.log("< startButton.disabled:", startButton.disabled);
                 try {
                     const response = await fetch(`${BACKEND_URL}/api/tournaments/${tournamentId}/update_status/`, {
                         method: 'PUT',

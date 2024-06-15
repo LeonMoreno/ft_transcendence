@@ -618,33 +618,6 @@ export async function connectWebSocketGlobal() {
                         localStorage.removeItem(`system_tournament_name_${tournamentId}_data`)
                     }
                 }
-
-                // const response = await fetch(`${BACKEND_URL}/api/games/`, {
-                //     headers: { Authorization: `Bearer ${getToken()}` },
-                // });
-
-                // let result = await response.json();
-                // if (response.ok)
-                // {
-                //     let pendeingGame = result.filter((game) => game.invitationStatus === "ACCEPTED");
-                //     await pendeingGame.map( async (game) => {
-                //         let disconnected_invitee = message.user_ids.some( (userId_active) => userId_active === String(game.invitee.id))
-                //         let disconnected_inviter = message.user_ids.some( (userId_active) => userId_active === String(game.inviter.id))
-
-                //         if ((disconnected_invitee === true && disconnected_inviter === false) ||
-                //             !(disconnected_invitee === false && disconnected_inviter === true) ||
-                //             !(disconnected_invitee === false && disconnected_inviter === false))
-                //         {
-                //             let data_game = await Cancel_a_Game(game.id);
-                //             if (game.inviter.id === getUserIdFromJWT() || game.invitee.id === getUserIdFromJWT())
-                //             {
-                //                 showNotification("Cancel Game", "cancel")
-                //                 window.location.href = `/#`;
-                //             }
-                //         }
-                //         return
-                //     })
-                // }
                 break;
             case 'update_waiting_list':
                 //console.log("--> Matching: 🍀 update_waiting_list 🍀", message);

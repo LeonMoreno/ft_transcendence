@@ -96,7 +96,6 @@ export async function Send_data_bacnd_the_winner(first_player, secong_player, wi
 
 
     if (response.ok){
-        console.log("🧶🧶>> Send_data_bacnd_the_winner:", user_id);
 
         sendWinnerOfGameTournamentNotifications(user_id, "null",  `system_Tournament_${tournament_id}:${winner}`);
     }else{
@@ -121,7 +120,6 @@ export async function Send_data_bacnd_the_winner(first_player, secong_player, wi
                 system_winner = winner;
             }
 
-            console.log("🧶🧶>> tengo system_winner?:", system_winner);
             if (!system_winner || system_winner === "no") {
                 return;
             }
