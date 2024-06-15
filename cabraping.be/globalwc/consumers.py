@@ -132,6 +132,23 @@ class NotificationConsumer(AsyncWebsocketConsumer):
                             'message': 'You have been matched and removed from the waiting list.',
                         })
 
+            elif event_type == 'delete_matched' and len(matched_user_ids) == 1 :
+                # Remove matched users from the waiting list
+                matched_user_id = matched_user_ids[0]
+                waiting_users.discard(matched_user_id)
+                if matched_user_id in waiting_channels:
+                        del waiting_channels[matched_user_id]
+
+                # Notify all waiting users
+                await self.notify_waiting_users()
+
+                # Notify the matched users
+                if matched_user_id in waiting_channels:
+                    await self.channel_layer.send(waiting_channels[matched_user_id], {
+                        'type': 'send_matched_message',
+                        'message': 'You have been matched and removed from the waiting list.',
+                    })
+
             elif event_type == 'tournament_invite':
                 # Send the tournament invitation to all users except the sender
                 await self.send_tournament_invitation({

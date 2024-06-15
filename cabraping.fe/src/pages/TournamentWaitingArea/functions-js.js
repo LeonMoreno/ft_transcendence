@@ -44,10 +44,11 @@ function updateStartButton(participants) {
                 // console.log("run -if check_tournament.participants[0].id !== userId:", (check_tournament.participants[0].id !== userId));
                 if (check_tournament.participants[0].user.id !== userId)
                 {
-                    showNotification("Sorry, amigo. Only the creator can start the tournament.", "error");
+                    showNotification("Sorry, friend. Only the creator can start the tournament.", "error");
                     return;
                 }
 
+                startButton.disabled = true;
                 try {
                     const response = await fetch(`${BACKEND_URL}/api/tournaments/${tournamentId}/update_status/`, {
                         method: 'PUT',
@@ -196,7 +197,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (check_tournament.participants[0].user.id !== userId)
         {
-            startButton.style.display = 'none';
+            // startButton.style.display = 'none';
+            startButton.disabled = true;
             return;
         }
 

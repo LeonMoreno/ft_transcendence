@@ -34,7 +34,7 @@ import { Matching_js } from "../pages/Matching/funcions-js.js";
 import { getToken } from "../utils/get-token.js";
 import { getTournamentForId } from "../pages/Tournament/cancel.js";
 import { Cancel_a_Game } from "../pages/Game/cancel.js";
-import { sendGameCancelTournamentNotifications } from "../components/wcGlobal-funcions-send-message.js";
+import { sendDeleteMeForMatchedMessage, sendGameCancelTournamentNotifications } from "../components/wcGlobal-funcions-send-message.js";
 
 const routes = {
   "/": [Home_html, Home_js],
@@ -72,10 +72,9 @@ const router = async () => {
   await WS_check_the_torunament_pending();
 
   if (checNotifi !== 0)
-    {
-      // handleTournamentInvite();
-      Tournament_check_notificacion();
-    }
+  {
+    Tournament_check_notificacion();
+  }
 
   if (getToken())
   {
@@ -90,7 +89,6 @@ const router = async () => {
     }
   }
 
-  // console.log("--> Route: localStorage.getItem(currentTournamentId):", localStorage.getItem("currentTournamentId"));
   if(localStorage.getItem("currentTournamentId"))
   {
     let tournament_id =localStorage.getItem("currentTournamentId")
@@ -107,17 +105,22 @@ const router = async () => {
       if (localStorage.getItem("currentTournamentId"))
       {
         CancelTournament_for_descconecte_();
-        return;
+      }else{
+        if (gameSocket)
+        {
+          gameSocket.close()
+        }
+        let send_notificaque = await Cancel_a_Game(localStorage.getItem("system_game_id"));
+        sendGameCancelTournamentNotifications(getUserIdFromJWT(), localStorage.getItem('username'), send_notificaque);
+        localStorage.removeItem("system_game_id");
       }
-      if (gameSocket)
-      {
-        gameSocket.close()
-      }
-      let send_notificaque = await Cancel_a_Game(localStorage.getItem("system_game_id"));
-      sendGameCancelTournamentNotifications(getUserIdFromJWT(), localStorage.getItem('username'), send_notificaque);
-      localStorage.removeItem("system_game_id");
   }
 
+  if (localStorage.getItem("Im_in_the_Matching"))
+  {
+    // sendDeleteMeForMatchedMessage
+    sendDeleteMeForMatchedMessage();
+  }
 
   content.innerHTML = await render[0]();
   if (render.length > 1) {

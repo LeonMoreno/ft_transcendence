@@ -1,4 +1,5 @@
 import { showNotification, showNotificationPopup } from "../../components/showNotification.js";
+import { timeout } from "../../components/utils.js";
 import { sendGameInitiate_Waiting, sendGameInviteNotifications, sendGameInviteTournamentNotifications, sendWinnerOfGameTournamentNotifications } from "../../components/wcGlobal-funcions-send-message.js";
 import { BACKEND_URL } from "../../components/wcGlobal.js";
 import { getToken } from "../../utils/get-token.js";
@@ -95,7 +96,7 @@ export async function Send_data_bacnd_the_winner(first_player, secong_player, wi
 
 
     if (response.ok){
-        // console.log("🧶🧶>> Send_data_bacnd_the_winner:", user_id);
+        console.log("🧶🧶>> Send_data_bacnd_the_winner:", user_id);
 
         sendWinnerOfGameTournamentNotifications(user_id, "null",  `system_Tournament_${tournament_id}:${winner}`);
     }else{
@@ -114,24 +115,21 @@ export async function Send_data_bacnd_the_winner(first_player, secong_player, wi
         const data = await matchesResponse.json();
         const matches = data.matches;
         // console.log("------------------------> matches:", matches);
-        if (matches.length <= 2) {
+        if (matches.length <= 2 && !localStorage.getItem(`final_tournametn_${localStorage.getItem("currentTournamentId")}`)) {
             let system_winner = localStorage.getItem(`system_Tournament_${tournament_id}_winner`);
+            if (!system_winner){
+                system_winner = winner;
+            }
 
-            // console.log("🧶🧶>> tengo system_winner?:", system_winner);
+            console.log("🧶🧶>> tengo system_winner?:", system_winner);
             if (!system_winner || system_winner === "no") {
                 return;
             }
             let system_final = localStorage.getItem(`system_Tournament_status_${tournament_id}`);
             let system_final_final = localStorage.getItem(`system_Tournament_status_${tournament_id}_final`);
 
-            // console.log("🧶 >>>>>> system_final:", system_final);
-            // console.log("🧶 >>>>>> system_final_final:", system_final_final);
-
-            // console.log("🧶🧶🧶>> system_winner:", system_winner);
-            // console.log("🧶🧶🧶>> winner:", winner);
-            // console.log("🧶🧶🧶>> user_id:", user_id);
-
             if (system_winner !== user_id) {
+                localStorage.removeItem(`final_tournametn_${localStorage.getItem("currentTournamentId")}`);
                 let status = await sendGameInitiate_Waiting(user_id, system_winner);
                 // console.log("🧶🧶🧶🧶>> user_id:", status);
                 if (status.ok) {
@@ -144,13 +142,22 @@ export async function Send_data_bacnd_the_winner(first_player, secong_player, wi
             }
         }
         else{
+            console.log("finish");
             // console.log("soy el ganador y voy a terminar el tournament");
             localStorage.setItem(`system_Tournament_status_${tournament_id}`, "no");
             update_winner_of_tournament(tournament_id, winner);
         }
+
+
     }
 
 
+    if (localStorage.getItem("currentTournamentId"))
+    {
+        showNotification("You are going to be in the grand final. Waiting for the competitor...", "info");
+        localStorage.setItem(`final_tournametn_${localStorage.getItem("currentTournamentId")}`, true);
+        await timeout(1000);
+    }
 
     return false;
 }

@@ -1,3 +1,4 @@
+import { getUserIdFromJWT } from "../pages/Chat/funcions-js.js";
 import { getToken } from "../utils/get-token.js";
 import { WSsocket, BACKEND_URL, WS_URL, connectWebSocketGlobal } from "./wcGlobal.js";
 
@@ -138,6 +139,7 @@ export function sendWaitMatchedMessage(userId) {
     };
 
     WSsocket.send(JSON.stringify(message));
+    localStorage.setItem("Im_in_the_Matching", true);
 }
 
 export function sendDeleteMatchedMessage(userId, otherId) {
@@ -149,6 +151,21 @@ export function sendDeleteMatchedMessage(userId, otherId) {
     const message = {
         "type": "delete_matched",
         "matched_user_ids": [String(userId), String(otherId)]
+    }
+
+    WSsocket.send(JSON.stringify(message));
+    localStorage.removeItem("Im_in_the_Matching");
+}
+
+export function sendDeleteMeForMatchedMessage() {
+    if (!WSsocket || WSsocket.readyState !== WebSocket.OPEN) {
+        //console.log('WebSocket is not connected');
+        return;
+    }
+
+    const message = {
+        "type": "delete_matched",
+        "matched_user_ids": [getUserIdFromJWT()]
     }
 
     WSsocket.send(JSON.stringify(message));
@@ -297,6 +314,23 @@ export function sendGameAcceptTournamentNotifications(userId, userName, destUser
     const message = {
         type: "notify",
         message: text,
+        user_id: String(userId),
+        user_name: userName,
+        dest_user_id: String(destUserId)
+    };
+
+    WSsocket.send(JSON.stringify(message));
+}
+
+export function sendFinalOftTournamentNotifications(userId, userName, destUserId) {
+    if (!WSsocket || WSsocket.readyState !== WebSocket.OPEN) {
+        //console.log('WebSocket is not connected');
+        return;
+    }
+
+    const message = {
+        type: "notify",
+        message: `final_of_the_tournament_${localStorage.getItem("currentTournamentId")}`,
         user_id: String(userId),
         user_name: userName,
         dest_user_id: String(destUserId)

@@ -20,7 +20,8 @@ export function showNotification(message, type) {
     case "warning":
       notification.classList.add("bg-warning");
       break;
-    case "warning":
+    case "info":
+      notification.classList.add("bg-info");
       break;
     default:
       notification.classList.add("bg-danger");

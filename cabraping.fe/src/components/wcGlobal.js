@@ -9,11 +9,12 @@ import { showModal, hideModal } from "../utils/modal.js";
 import { startTournament, handleTournamentCanceled, update_list_tournamet } from "../pages/TournamentWaitingArea/functions-js.js";
 import { updateWaitingParticipantsList } from "../pages/TournamentWaitingArea/functions-js.js";
 
-import { sendAcceptedGameNotifications, sendTournamentNotifications, sendDeleteMatchedMessage, handleUpdateWaitingList, sendUpdateList_of_tournament_Notifications, sendGameCancelTournamentNotifications } from "./wcGlobal-funcions-send-message.js";
+import { sendAcceptedGameNotifications, sendTournamentNotifications, sendDeleteMatchedMessage, handleUpdateWaitingList, sendUpdateList_of_tournament_Notifications, sendGameCancelTournamentNotifications, sendFinalOftTournamentNotifications } from "./wcGlobal-funcions-send-message.js";
 import { sendGameAcceptTournament_final_Waiting, sendGameAcceptTournament_Waiting, system_invite_game_Tournament } from "../pages/TournamentWaitingArea/game-logic.js";
 import { Cancel_a_Game, checkAcceptedGames, getDifference_in_array } from "../pages/Game/cancel.js";
 import { gameSocket } from "../pages/Game/funcions-js.js";
 import { getTournamentForId } from "../pages/Tournament/cancel.js";
+import { timeout } from "./utils.js";
 
 const frontendURL = new URL(window.location.href);
 const serverIPAddress = frontendURL.hostname;
@@ -467,6 +468,11 @@ async function execute_processes_by_category_message(message, myUser) {
                 //console.log("-> system-tournament - final showNotificationPopup myUser:", myUser,);
                 //console.log("-> system-tournament - final showNotificationPopup message.dest_user_id:", message.dest_user_id, ", message.user_id:", message.user_id);
                 // diego - aceptarjuego
+                showNotification(`The grand final you will be with ${message.user_name} starting in 3 seconds...`, "info");
+                localStorage.setItem(`final_tournametn_${localStorage.getItem("currentTournamentId")}`, true);
+                console.log(">> message.user_id:", message.user_id);
+                sendFinalOftTournamentNotifications(getUserIdFromJWT(), localStorage.getItem('username'), message.user_id);
+                await timeout(3000);
                 sendGameAcceptTournament_final_Waiting(message.dest_user_id, message.user_id, myUser);
             }else{
                 Chat_Update_js();
@@ -486,6 +492,7 @@ async function execute_processes_by_category_message(message, myUser) {
 
 async function run_processes_per_message(message) {
 
+    let text_tournamet = `final_of_the_tournament_${localStorage.getItem("currentTournamentId")}`;
     switch (message.message) {
         case "Send friend request":
             Friends_js();
@@ -501,6 +508,11 @@ async function run_processes_per_message(message) {
             Friends_js();
             Users_js();
             Chat_Update_js();
+            break;
+        case text_tournamet:
+            // showNotification("Semifinals have ended. Final starting in 3 seconds...", "info");
+            showNotification(`The grand final you will be with ${message.user_name} starting in 3 seconds...`, "info");
+            localStorage.setItem(`final_tournametn_${localStorage.getItem("currentTournamentId")}`, true);
             break;
         case "Cancel Game":
             if (gameSocket.readyState === 1)
