@@ -761,11 +761,7 @@ function loadMessagesFromLocalStorage(channelId) {
 
 
   let check_channel = channels.find((channel_check) => channel_check.id === channel_now);
-  console.log("channels:", channels);
-  console.log("check_channel:", check_channel);
   let members_channel =  check_channel.members;
-
-  console.log("members_channel:", members_channel);
 
   messages.forEach(message => {
     // userImage.src = `${message.userDetails.avatarImageURL}`;
