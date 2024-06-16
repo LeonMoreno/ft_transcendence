@@ -255,6 +255,10 @@ async function inviteGame(jwt) {
 
   async function checkRequestGame() {
 
+    // console.log("> channel_now:",channel_now);
+    if (channel_now === "/")
+      return
+
     const jwt = localStorage.getItem('jwt');
     if (!jwt || communication_user_id == -1) {
         return;
