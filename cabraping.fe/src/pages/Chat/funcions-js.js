@@ -680,9 +680,6 @@ function updateChannelList(channels) {
 function switchChannel(newChannelId) {
   // Update the current channel
   channel_now = newChannelId;
-
-  // console.log(" <<<<<<< channel_now:", channel_now);
-
   // Clear the chat messages from the UI
 
   const inviteGameButtonButton = document.getElementById('inviteGameButton');
@@ -762,12 +759,24 @@ function loadMessagesFromLocalStorage(channelId) {
   const messages = JSON.parse(localStorage.getItem(`messages_channel_${channelId}`)) || [];
   const messageList = document.getElementById('messageList');
 
+
+  let check_channel = channels.find((channel_check) => channel_check.id === channel_now);
+  console.log("channels:", channels);
+  console.log("check_channel:", check_channel);
+  let members_channel =  check_channel.members;
+
+  console.log("members_channel:", members_channel);
+
   messages.forEach(message => {
+    // userImage.src = `${message.userDetails.avatarImageURL}`;
+
+      let data_user = members_channel.find((data) => data.id === message.userDetails.id)
+
       const messageDiv = document.createElement('div');
       messageDiv.className = 'mb-3 d-flex align-items-start';
 
       const userImage = document.createElement('img');
-      userImage.src = `${message.userDetails.avatarImageURL}`;
+      userImage.src = `${data_user.avatarImageURL}`;
       userImage.alt = 'User Image';
       userImage.className = 'rounded-circle mr-2';
       userImage.width = 40;
@@ -776,7 +785,7 @@ function loadMessagesFromLocalStorage(channelId) {
       const messageContent = document.createElement('div');
 
       const messageUsername = document.createElement('strong');
-      messageUsername.textContent = message.UserName;
+      messageUsername.textContent = data_user.UserName;
       const messageText = document.createElement('p');
       messageText.textContent = message.message;
 
@@ -929,7 +938,7 @@ function handleSaveChannelClick() {
         // sendChannelCreatedMessage
         sendChannelCreatedNotifications(user_id, UserName, selectedUsersMember[0])
       } else {
-        showNotification("Error there is already a chat", "error");
+        showNotification(data.error, "error");
       }
 
       // Cierra el modal

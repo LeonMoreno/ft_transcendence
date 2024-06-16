@@ -659,6 +659,12 @@ export async function connectWebSocketGlobal() {
                 break;
         }
 
+        if ((message.dest_user_id === "0" || message.dest_user_id === 0) && message.message === "user_update")
+        {
+            Chat_Update_js()
+            Friends_js();
+            Users_js();
+        }
         Torunament_game_diego(message);
 
 

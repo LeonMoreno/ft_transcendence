@@ -392,3 +392,20 @@ export function sendWinnerOfGameTournamentNotifications(userId, userName, text) 
 
     WSsocket.send(JSON.stringify(message));
 }
+
+export function userUpdateNotifications(userName) {
+    if (!WSsocket || WSsocket.readyState !== WebSocket.OPEN) {
+        //console.log('WebSocket is not connected');
+        return;
+    }
+
+    const message = {
+        type: "notify",
+        message: "user_update",
+        user_id: String(getUserIdFromJWT()),
+        user_name: userName,
+        dest_user_id: 0
+    };
+
+    WSsocket.send(JSON.stringify(message));
+}
