@@ -271,6 +271,7 @@ async function inviteGame(jwt) {
 
     const game = games.find(
       (game) =>
+        game.playMode === 2 &&
         game.invitationStatus === "PENDING" &&
         (game.invitee.id === my_id ||
         game.inviter.id === my_id)
@@ -286,6 +287,7 @@ async function inviteGame(jwt) {
     // ACCEPTED game
     const game_ACCEPTED = games.find(
       (game) =>
+        game.playMode === 2 &&
         game.invitee.id === my_id &&
         game.inviter.id === communication_user_id &&
         game.invitationStatus === "ACCEPTED"
@@ -298,6 +300,7 @@ async function inviteGame(jwt) {
     // send notificacion
     const game_pending = games.find(
       (game) =>
+        game.playMode === 2 &&
         game.invitee.id === my_id &&
         game.inviter.id === communication_user_id &&
         game.invitationStatus === "PENDING"

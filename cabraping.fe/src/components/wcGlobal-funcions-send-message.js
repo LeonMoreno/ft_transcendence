@@ -207,6 +207,7 @@ async function hasPendingOrAcceptedGames(userId) {
 
     const games = await response.json();
     return games.some(game =>
+        game.playMode === 2 &&
         (game.invitee.id === userId || game.inviter.id === userId) &&
         (game.invitationStatus === "PENDING" || game.invitationStatus === "ACCEPTED")
     );

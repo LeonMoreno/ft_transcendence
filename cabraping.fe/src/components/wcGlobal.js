@@ -718,6 +718,7 @@ async function sendGameAccept_Waiting(userId, dest_user_id, myUser) {
 
     const game = games.find(
         (game) =>
+            game.playMode === 2 &&
             game.invitee.id === Number(userId) &&
             game.inviter.id === Number(dest_user_id) &&
             game.invitationStatus === "PENDING"
