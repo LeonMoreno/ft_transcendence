@@ -55,7 +55,7 @@ export async function Chat_Update_js() {
   }
 
   if (channels.length > 0) {
-    updateChannelList(channels); // Call the new function to update the channels dropdown
+    await updateChannelList(channels); // Call the new function to update the channels dropdown
     channel = channels[0].id; // Sets the first channel as the current channel
     // Subscribe to all channels
     channels.forEach(channel => {
@@ -63,7 +63,7 @@ export async function Chat_Update_js() {
   });
   }
 
-  // checkRequestGame();
+  checkRequestGame();
 }
 
 export async function Chat_js() {
@@ -152,7 +152,7 @@ export async function Chat_js() {
     // console.log("getUserChannels_filter_blockuser", filter);
 
     if (channels.length > 0) {
-      updateChannelList(channels); // Call the new function to update the channels dropdown
+      await updateChannelList(channels); // Call the new function to update the channels dropdown
       channel = channels[0].id; // Sets the first channel as the current channel
 
       // Subscribe to all channels
@@ -204,24 +204,24 @@ async function inviteGame(jwt) {
 
 
 
-  const existing_invitate_Game_me = games.find(
-    (game) =>
-        game.playMode === 2 &&
-        game.invitationStatus === "PENDING" &&
-        (game.invitee.id === myUser.id || game.inviter.id === myUser.id)
-  );
-  const existing_invitate_Game_order = games.find(
-    (game) =>
-        game.playMode === 2 &&
-        game.invitationStatus === "PENDING" &&
-        (game.invitee.id === communication_user_id || game.inviter.id === communication_user_id)
-  );
+  // const existing_invitate_Game_me = games.find(
+  //   (game) =>
+  //       game.playMode === 2 &&
+  //       game.invitationStatus === "PENDING" &&
+  //       (game.invitee.id === myUser.id || game.inviter.id === myUser.id)
+  // );
+  // const existing_invitate_Game_order = games.find(
+  //   (game) =>
+  //       game.playMode === 2 &&
+  //       game.invitationStatus === "PENDING" &&
+  //       (game.invitee.id === communication_user_id || game.inviter.id === communication_user_id)
+  // );
 
-  if (existing_invitate_Game_me || existing_invitate_Game_order)
-  {
-    showNotification('the user already has an invitation to the game', 'warning');
-    return;
-  }
+  // if (existing_invitate_Game_me || existing_invitate_Game_order)
+  // {
+  //   showNotification('the user already has an invitation to the game', 'warning');
+  //   return;
+  // }
 
   if (existingGame) {
       showNotification('There is already a pending game invitation', 'warning');
@@ -251,6 +251,8 @@ async function inviteGame(jwt) {
 
   const inviteGameButtonButton = document.getElementById('inviteGameButton');
   if (inviteGameButtonButton) inviteGameButtonButton.disabled = true;
+
+  await updateChannelList(channels);
 }
 
   async function checkRequestGame() {
@@ -264,9 +266,7 @@ async function inviteGame(jwt) {
         return;
     }
 
-    const payload = jwt.split('.')[1];
-    const decodedPayload = JSON.parse(atob(payload));
-    let my_id = decodedPayload.user_id; // Update user_id variable with the user ID extracted from the JWT
+    let my_id = getUserIdFromJWT();
 
     const responseGames = await fetch(`${BACKEND_URL}/api/games/`, {
       headers: { Authorization: `Bearer ${jwt}` },
@@ -277,8 +277,11 @@ async function inviteGame(jwt) {
       (game) =>
         game.playMode === 2 &&
         game.invitationStatus === "PENDING" &&
-        (game.invitee.id === my_id ||
-        game.inviter.id === my_id)
+        (
+          (game.inviter.id === my_id && game.invitee.id === communication_user_id)
+          ||
+          (game.inviter.id === communication_user_id && game.invitee.id === my_id)
+        )
     );
 
     if(game){
@@ -327,8 +330,33 @@ async function inviteGame(jwt) {
         return;
     }
 
-    if (gameId === "-1" && gameId === -1){
+    if (gameId === "-1" || gameId === -1){
+      showNotification('Erro in game', 'warning');
       return
+    }
+
+    const responseGames = await fetch(`${BACKEND_URL}/api/games/`, {
+      headers: { Authorization: `Bearer ${jwt}` },
+    });
+    const games = await responseGames.json();
+
+    if (!games)
+    {
+      showNotification('Erro in game', 'warning');
+      return;
+    }
+
+    const existing_invitate_Game_order = games.find(
+        (game) =>
+            game.playMode === 2 &&
+            game.invitationStatus === "ACCEPTED" &&
+            (game.invitee.id === communication_user_id || game.inviter.id === communication_user_id)
+      );
+
+    if (existing_invitate_Game_order)
+    {
+      showNotification('The user is in a game', 'warning');
+      return;
     }
 
     const result = await fetch(
@@ -368,7 +396,7 @@ async function inviteGame(jwt) {
     });
 
     switchChannel(-1);
-    updateChannelList(channels);
+    await updateChannelList(channels);
 
     if (response.ok) {
       showNotification('User blocked successfully', 'success');
@@ -588,8 +616,40 @@ function handleButtonClick() {
   }
 }
 
+async function getGameStatus(userId) {
+  const response = await fetch(`${BACKEND_URL}/api/games/`, {
+      headers: { Authorization: `Bearer ${getToken()}` }
+  });
+
+  if (!response.ok) {
+      // console.error('Error fetching games:', response.statusText);
+      return null;
+  }
+
+  const games = await response.json();
+  const pendingGame = games.find(game =>
+      game.playMode === 2 &&
+      game.invitationStatus === "PENDING" &&
+      (
+        (game.invitee.id === getUserIdFromJWT() && game.inviter.id === Number(userId))
+        ||
+        (game.invitee.id === Number(userId) && game.inviter.id === getUserIdFromJWT())
+      )
+  );
+
+  if (pendingGame) {
+      if (pendingGame.invitee.id === userId) {
+        return 'waiting';
+      } else if (pendingGame.inviter.id === userId) {
+        return 'invited';
+      }
+  }
+
+  return null;
+}
+
 // Function to update the channels list UI with a selector
-function updateChannelList(channels) {
+async function updateChannelList(channels) {
   const channelsDiv = document.getElementById('chanelsLists');
   if (channelsDiv){
     // Clear previous options
@@ -603,76 +663,82 @@ function updateChannelList(channels) {
 
     // Add an option for each channel
     array_channels = channels;
-    channels.forEach(channel => {
 
+    for (const channel of channels) {
       const isBlocked = channel.members.some(member =>
-        blockUsersList.some(blockedUser => blockedUser.id === member.id)
-    );
+          blockUsersList.some(blockedUser => blockedUser.id === member.id)
+      );
 
       if (!isBlocked){
-        const option_component = document.createElement('div');
-        option_component.className = 'd-flex align-items-center p-2 border-bottom chat-item';
-        option_component.style.cursor = 'pointer';
+          const option_component = document.createElement('div');
+          option_component.className = 'd-flex align-items-center p-2 border-bottom chat-item';
+          option_component.style.cursor = 'pointer';
 
-        const option_img = document.createElement('img');
-        option_img.className = 'rounded-circle me-3';
-        option_img.height = 40;
-        option_img.width = 40;
-
-        const option_name = document.createElement('p');
-        option_name.className = 'mb-0';
-
-        option_component.value = channel.id;
-
-        // Encuentra un miembro cuyo username sea diferente de UserName
-        const differentMember = channel.members.find(member => member.username !== UserName);
-        // Verifica si se encontró un miembro diferente
-        if (differentMember) {
-          // option.textContent = differentMember.username;
-          option_name.textContent = differentMember.username;
+          const option_img = document.createElement('img');
+          option_img.className = 'rounded-circle me-3';
           option_img.height = 40;
-          option_img.src = differentMember.avatarImageURL;
+          option_img.width = 40;
 
-        } else {
-          option_name.textContent = "No disponible";
-        }
-        let friend_status = showActiveFriends(myUser.friends, differentMember.id);
+          const option_name = document.createElement('p');
+          option_name.className = 'mb-0';
 
-        option_component.appendChild(option_img);
-        option_component.appendChild(option_name);
+          option_component.value = channel.id;
 
-        if (typeof(friend_status) === "boolean"){
+          // Encuentra un miembro cuyo username sea diferente de UserName
+          const differentMember = channel.members.find(member => member.username !== UserName);
+          // Verifica si se encontró un miembro diferente
+          if (differentMember) {
+              option_name.textContent = differentMember.username;
+              option_img.height = 40;
+              option_img.src = differentMember.avatarImageURL;
 
-          const option_frind = document.createElement('p');
-          option_frind.style.height = "20px";
-          option_frind.style.width = "20px";
-
-          if (friend_status === true){
-            option_frind.className = 'mb-0 ms-3 rounded-circle bg-success';
-          }else{
-            option_frind.className = 'mb-0 ms-3 rounded-circle bg-secondary';
+              const gameStatus = await getGameStatus(differentMember.id);
+              if (gameStatus) {
+                  const statusSpan = document.createElement('span');
+                  statusSpan.textContent = ` (${gameStatus})`;
+                  if (gameStatus === "invited")
+                    statusSpan.style.color = 'orange';
+                  else
+                    statusSpan.style.color = 'text-dark';
+                  option_name.appendChild(statusSpan);
+              }
+          } else {
+              option_name.textContent = "No disponible";
           }
-          option_component.appendChild(option_frind);
-        }
+          let friend_status = showActiveFriends(myUser.friends, differentMember.id);
 
-        channelsDiv.appendChild(option_component);
+          option_component.appendChild(option_img);
+          option_component.appendChild(option_name);
 
+          if (typeof(friend_status) === "boolean"){
+              const option_frind = document.createElement('p');
+              option_frind.style.height = "20px";
+              option_frind.style.width = "20px";
 
-        option_component.addEventListener('click', () => switchChannel(channel.id));
+              if (friend_status === true){
+                  option_frind.className = 'mb-0 ms-3 rounded-circle bg-success';
+              }else{
+                  option_frind.className = 'mb-0 ms-3 rounded-circle bg-secondary';
+              }
+              option_component.appendChild(option_frind);
+          }
 
-        // Add hover effect using Bootstrap utility classes
-        option_component.addEventListener('mouseover', () => {
-            option_component.classList.add('bg-primary');
-            option_name.classList.add("text-white");
+          channelsDiv.appendChild(option_component);
+
+          option_component.addEventListener('click', () => switchChannel(channel.id));
+
+          // Add hover effect using Bootstrap utility classes
+          option_component.addEventListener('mouseover', () => {
+              option_component.classList.add('bg-primary');
+              option_name.classList.add("text-white");
           });
 
-        option_component.addEventListener('mouseout', () => {
-            option_component.classList.remove('bg-primary');
-            option_name.classList.remove("text-white");
-        });
+          option_component.addEventListener('mouseout', () => {
+              option_component.classList.remove('bg-primary');
+              option_name.classList.remove("text-white");
+          });
       }
-
-    });
+    }
 
   }
 }
