@@ -1,7 +1,10 @@
 from django.db import models
 from users.models import CustomUser
 
+
 class Game(models.Model):
+    playMode = models.IntegerField(null=True, blank=True)
+
     invitationStatus = models.CharField(max_length=50)
 
     inviter = models.ForeignKey(

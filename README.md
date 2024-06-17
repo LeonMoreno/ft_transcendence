@@ -35,7 +35,7 @@ Compatibility and Community Support: Redis is widely used and supported in the d
 
 Ensuring that Redis is running and correctly configured is a crucial step in the setup and debugging process of any application that uses it, especially when working with real-time technologies like Django Channels. Without Redis running, these applications will not be able to properly handle real-time connections or utilize the storage and messaging features that Redis provides.
 
-## isntall redis MACOS
+## install redis MACOS
 
 - brew install redis
 
@@ -61,15 +61,15 @@ This will start the Redis service and configure it to start automatically at boo
 
 ## pip intall
 
-- pip install -r pip_environment_dependencies.txt
+```sh
+pip install -r pip_environment_dependencies.txt
+```
 
 ### PosgresSQL
 
 Migrate the database. You must have a database named "transcendence_db"
 
 ```sh
-
-
 python3 manage.py makemigrations chat users
 ```
 

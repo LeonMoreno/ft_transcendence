@@ -11,6 +11,7 @@ RUN apt-get update && apt-get install -y netcat-openbsd && rm -rf /var/lib/apt/l
 COPY ./cabraping.be/pip_environment_dependencies.txt /app/
 
 # We install the project dependencies
+RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r pip_environment_dependencies.txt
 
 # We copy the rest of the project source code to the container.
