@@ -5,6 +5,7 @@ import { BACKEND_URL, WS_URL } from "../../components/wcGlobal.js";
 import { sendAcceptedGameNotifications, sendChannelCreatedNotifications, sendGameInviteNotifications } from "../../components/wcGlobal-funcions-send-message.js";
 import { getToken } from "../../utils/get-token.js";
 import { validateAndSanitizeInput } from "../../components/security.js";
+import { CancelGame_selecte } from "./uitls.js";
 
 let image = "assets/logo.svg";
 
@@ -117,6 +118,12 @@ export async function Chat_js() {
     if (acceptGameButton) {
       acceptGameButton.disabled = true;
       acceptGameButton.addEventListener('click', () => acceptGame());
+    }
+
+    const cancelGameButton = document.getElementById('cancelGameButton');
+    if (cancelGameButton) {
+      cancelGameButton.disabled = true;
+      cancelGameButton.addEventListener('click', () => CancelGame_selecte(gameId));
     }
 
     // Agregar evento para el botón "Users"
@@ -299,6 +306,9 @@ async function inviteGame(jwt) {
 
       const inviteGameButtonButton = document.getElementById('inviteGameButton');
       if (inviteGameButtonButton) inviteGameButtonButton.disabled = true;
+
+      const cancelGameButton = document.getElementById('cancelGameButton');
+      if (cancelGameButton) cancelGameButton.disabled = false;
     }
 
     // ACCEPTED game
@@ -627,17 +637,18 @@ function handleButtonClick() {
   }
 }
 
-async function getGameStatus(userId) {
-  const response = await fetch(`${BACKEND_URL}/api/games/`, {
-      headers: { Authorization: `Bearer ${getToken()}` }
-  });
+async function getGameStatus(userId, games) {
+  
+  // const response = await fetch(`${BACKEND_URL}/api/games/`, {
+  //     headers: { Authorization: `Bearer ${getToken()}` }
+  // });
 
-  if (!response.ok) {
-      // console.error('Error fetching games:', response.statusText);
-      return null;
-  }
+  // if (!response.ok) {
+  //     // console.error('Error fetching games:', response.statusText);
+  //     return null;
+  // }
 
-  const games = await response.json();
+  // const games = await response.json();
   const pendingGame = games.find(game =>
       game.playMode === 2 &&
       game.invitationStatus === "PENDING" &&
@@ -675,6 +686,17 @@ async function updateChannelList(channels) {
     // Add an option for each channel
     array_channels = channels;
 
+    const response = await fetch(`${BACKEND_URL}/api/games/`, {
+        headers: { Authorization: `Bearer ${getToken()}` }
+    });
+
+    if (!response.ok) {
+        // console.error('Error fetching games:', response.statusText);
+        return null;
+    }
+
+    const list_games = await response.json();
+
     for (const channel of channels) {
       const isBlocked = channel.members.some(member =>
           blockUsersList.some(blockedUser => blockedUser.id === member.id)
@@ -703,7 +725,7 @@ async function updateChannelList(channels) {
               option_img.height = 40;
               option_img.src = differentMember.avatarImageURL;
 
-              const gameStatus = await getGameStatus(differentMember.id);
+              const gameStatus = await getGameStatus(differentMember.id, list_games);
               if (gameStatus) {
                   const statusSpan = document.createElement('span');
                   statusSpan.textContent = ` (${gameStatus})`;
@@ -761,6 +783,7 @@ function switchChannel(newChannelId) {
 
   const inviteGameButtonButton = document.getElementById('inviteGameButton');
   const acceptGameButtonButton = document.getElementById('acceptGameButton');
+  const cancelGameButton = document.getElementById('cancelGameButton');
   const userButton = document.getElementById('usersRouteButton');
   const blockButton = document.getElementById('blockUserButton');
   const sendButton = document.getElementById('sendButton');
@@ -781,6 +804,7 @@ function switchChannel(newChannelId) {
     if (blockButton) blockButton.disabled = true;
     if (inviteGameButtonButton) inviteGameButtonButton.disabled = true;
     if (acceptGameButtonButton) acceptGameButtonButton.disabled = true;
+    if (cancelGameButton) cancelGameButton.disabled = true;
     if (messageTextarea) {
         messageTextarea.disabled = true;
         messageTextarea.placeholder = "Select a channel to send messages";
@@ -805,8 +829,7 @@ function switchChannel(newChannelId) {
     if (blockButton) blockButton.disabled = false;
     if (inviteGameButtonButton) inviteGameButtonButton.disabled = false;
     if (acceptGameButtonButton) acceptGameButtonButton.disabled = false;
-    // if (inviteGameButtonButton && !currentTournamentId) inviteGameButtonButton.disabled = false;
-    // if (acceptGameButtonButton && !currentTournamentId) acceptGameButtonButton.disabled = false;
+    if (cancelGameButton) cancelGameButton.disabled = true;
     if (messageTextarea) {
         messageTextarea.disabled = false;
         messageTextarea.placeholder = "Enter your message here...";
