@@ -189,6 +189,16 @@ async function inviteGame(jwt) {
       return;
   }
 
+  let currentTournamentId = localStorage.getItem("currentTournamentId");
+  if (currentTournamentId)
+  {
+    console.log("currentTournamentId:", currentTournamentId);
+    const acceptGameButtonButton = document.getElementById('acceptGameButton');
+    if (acceptGameButtonButton) acceptGameButtonButton.disabled = true;
+    showNotification("You created a tournament", "warning");
+    return;
+  }
+
   const responseGames = await fetch(`${BACKEND_URL}/api/games/`, {
       headers: { Authorization: `Bearer ${jwt}` },
   });
@@ -314,8 +324,9 @@ async function inviteGame(jwt) {
     );
 
     const acceptGameButton = document.getElementById('acceptGameButton');
-    let currentTournamentId = localStorage.getItem("currentTournamentId");
-    if (game_pending && !currentTournamentId)
+    // let currentTournamentId = localStorage.getItem("currentTournamentId");
+    // if (game_pending && !currentTournamentId)
+    if (game_pending)
     {
       if (acceptGameButton) acceptGameButton.disabled = false;
     }else{
@@ -762,8 +773,6 @@ function switchChannel(newChannelId) {
   }
   messageList.innerHTML = '';
 
-  let currentTournamentId = localStorage.getItem("currentTournamentId");
-
   if (newChannelId === -1) {
 
     // If no channel is selected, disable send functionality and close WebSocket
@@ -794,8 +803,10 @@ function switchChannel(newChannelId) {
     if (sendButton) sendButton.disabled = false;
     if (userButton) userButton.disabled = false;
     if (blockButton) blockButton.disabled = false;
-    if (inviteGameButtonButton && !currentTournamentId) inviteGameButtonButton.disabled = false;
-    if (acceptGameButtonButton && !currentTournamentId) acceptGameButtonButton.disabled = false;
+    if (inviteGameButtonButton) inviteGameButtonButton.disabled = false;
+    if (acceptGameButtonButton) acceptGameButtonButton.disabled = false;
+    // if (inviteGameButtonButton && !currentTournamentId) inviteGameButtonButton.disabled = false;
+    // if (acceptGameButtonButton && !currentTournamentId) acceptGameButtonButton.disabled = false;
     if (messageTextarea) {
         messageTextarea.disabled = false;
         messageTextarea.placeholder = "Enter your message here...";
@@ -827,6 +838,8 @@ function loadMessagesFromLocalStorage(channelId) {
 
 
   let check_channel = channels.find((channel_check) => channel_check.id === channel_now);
+  if (!check_channel)
+    return
   let members_channel =  check_channel.members;
 
   messages.forEach(message => {
